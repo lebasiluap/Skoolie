@@ -41,9 +41,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#0D9488] flex flex-col">
       {/* Teal header */}
       <div className="flex flex-col items-center pt-16 pb-10">
-        <div className="flex items-center gap-1 mb-4">
-          <div className="w-10 h-10 rounded-full border-2 border-white" />
-          <div className="w-10 h-10 rounded-full bg-white" />
+        <div className="mb-4">
+          <img src="/logo.png" alt="Skoolie" className="w-20 h-20" />
         </div>
         <h1 className="text-3xl font-bold text-white tracking-tight">Skoolie</h1>
         <p className="text-white/70 mt-1 text-sm">Your healthcare test companion</p>

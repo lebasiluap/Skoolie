@@ -106,7 +106,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds }: Pr
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-        <Link href="/dashboard" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg">
+        <Link href="/practice/flashcards" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg">
           ←
         </Link>
         <div className="flex flex-col items-center">

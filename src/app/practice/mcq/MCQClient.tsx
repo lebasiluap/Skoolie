@@ -138,7 +138,7 @@ export default function MCQClient({ questions, userId, profession, bookmarkedIds
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-        <Link href="/dashboard" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">←</Link>
+        <Link href="/practice/mcq" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">←</Link>
         <span className="text-sm font-semibold text-gray-500">{index + 1} / {questions.length}</span>
         <BookmarkButton
           questionId={question.id}

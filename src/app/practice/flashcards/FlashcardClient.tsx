@@ -38,12 +38,9 @@ export default function FlashcardClient({ questions, userId }: Props) {
     if (index + 1 >= questions.length) {
       const supabase = createClient()
       const xpEarned = newKnown * 5
-      await Promise.all([
-        xpEarned > 0
-          ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }).catch(() => {})
-          : Promise.resolve(),
-        supabase.rpc('update_streak', { user_id: userId }).catch(() => {}),
-      ])
+      const calls = [supabase.rpc('update_streak', { user_id: userId })]
+      if (xpEarned > 0) calls.push(supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }))
+      await Promise.allSettled(calls)
       setDone(true)
       return
     }

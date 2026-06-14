@@ -53,9 +53,9 @@ export default function MCQClient({ questions, userId, profession }: Props) {
 
     // Award XP + update streak in background
     const supabase = createClient()
-    await Promise.all([
-      supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }).catch(() => {}),
-      supabase.rpc('update_streak', { user_id: userId }).catch(() => {}),
+    await Promise.allSettled([
+      supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }),
+      supabase.rpc('update_streak', { user_id: userId }),
     ])
   }
 

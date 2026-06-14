@@ -65,6 +65,37 @@ export interface UserStats {
   questions_by_topic: Record<string, { answered: number; correct: number }>
 }
 
+// ─── Case Study ───────────────────────────────────────────────────────────────
+
+export interface CaseStudyQuestion {
+  question_number: number
+  question: string
+  options: string[]
+  correct_answer: string
+  explanation: string
+}
+
+export interface CaseStudy {
+  id: string
+  professions: Profession[]
+  course: string
+  topic: string
+  subtopic: string
+  title: string
+  year_level: string[]
+  style: 'multi_question' | 'osce'
+  difficulty: Difficulty
+  clinical_vignette: string
+  patient_history: Record<string, string>
+  examination_findings: Record<string, string>
+  investigations: Record<string, string>
+  questions: CaseStudyQuestion[]
+  region: Region
+  high_yield: boolean
+  source_reference?: string
+  created_at: string
+}
+
 // ─── Quiz Session ─────────────────────────────────────────────────────────────
 
 export interface QuizSession {

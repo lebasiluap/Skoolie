@@ -171,6 +171,7 @@ export default async function DashboardPage() {
             {[
               { label: 'MCQ', icon: '📝', href: '/practice/mcq' },
               { label: 'Flashcards', icon: '🃏', href: '/practice/flashcards' },
+              { label: 'Cases', icon: '🩺', href: '/practice/cases' },
               { label: 'Bookmarks', icon: '🔖', href: '/bookmarks' },
             ].map(mode => (
               <Link

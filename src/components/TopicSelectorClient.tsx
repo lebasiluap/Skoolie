@@ -12,7 +12,7 @@ interface TopicRow {
 
 interface Props {
   topicRows: TopicRow[]
-  mode: 'mcq' | 'flashcard'
+  mode: 'mcq' | 'flashcard' | 'case_study'
   totalAvailable: number
 }
 
@@ -65,8 +65,9 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable }:
     if (topic) params.set('topic', topic)
     if (subtopic) params.set('subtopic', subtopic)
     if (difficulty !== 'all') params.set('difficulty', difficulty)
-    params.set('limit', String(limit))
-    return `/practice/${mode}?${params.toString()}`
+    if (mode !== 'case_study') params.set('limit', String(limit))
+    const path = mode === 'case_study' ? '/practice/cases' : `/practice/${mode}`
+    return `${path}?${params.toString()}`
   }
 
   function handleStartAll() {
@@ -85,9 +86,11 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable }:
         </Link>
         <div>
           <h1 className="text-base font-bold text-[#101010]">
-            {mode === 'mcq' ? 'MCQ Practice' : 'Flashcards'}
+            {mode === 'mcq' ? 'MCQ Practice' : mode === 'flashcard' ? 'Flashcards' : 'Case Studies'}
           </h1>
-          <p className="text-xs text-gray-400">{totalAvailable} questions available</p>
+          <p className="text-xs text-gray-400">
+            {totalAvailable} {mode === 'case_study' ? 'cases' : 'questions'} available
+          </p>
         </div>
       </div>
 

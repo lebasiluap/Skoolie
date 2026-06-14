@@ -16,13 +16,19 @@ export default async function MCQPage() {
 
   if (!profile) redirect('/onboarding')
 
-  // Fetch questions for this profession (or general)
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('*')
-    .contains('professions', [profile.profession as Profession])
-    .eq('question_type', 'mcq')
-    .limit(10)
+  // Fetch questions + user bookmarks in parallel
+  const [{ data: questions }, { data: bookmarkRows }] = await Promise.all([
+    supabase
+      .from('questions')
+      .select('*')
+      .contains('professions', [profile.profession as Profession])
+      .eq('question_type', 'mcq')
+      .limit(10),
+    supabase
+      .from('bookmarks')
+      .select('question_id')
+      .eq('user_id', user.id),
+  ])
 
   if (!questions || questions.length === 0) {
     return (
@@ -32,5 +38,14 @@ export default async function MCQPage() {
     )
   }
 
-  return <MCQClient questions={questions as Question[]} userId={user.id} profession={profile.profession} />
+  const bookmarkedIds = (bookmarkRows ?? []).map(b => b.question_id)
+
+  return (
+    <MCQClient
+      questions={questions as Question[]}
+      userId={user.id}
+      profession={profile.profession}
+      bookmarkedIds={bookmarkedIds}
+    />
+  )
 }

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import BottomNav from '@/components/BottomNav'
+import AvatarUpload from '@/components/AvatarUpload'
 
 const PROFESSION_META: Record<string, { label: string; icon: string }> = {
   pharmacy: { label: 'Pharmacy',  icon: '💊' },
@@ -57,9 +59,13 @@ export default async function ProfilePage() {
     <div className="min-h-screen bg-gray-50 pb-28">
       {/* Header */}
       <div className="bg-[#101010] px-5 pt-12 pb-10 flex flex-col items-center">
-        {/* Avatar */}
-        <div className="w-20 h-20 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
-          {initials}
+        {/* Avatar with upload */}
+        <div className="mb-4 shadow-lg">
+          <AvatarUpload
+            userId={user.id}
+            initials={initials}
+            currentAvatarUrl={profile.avatar_url ?? null}
+          />
         </div>
         <h1 className="text-white text-xl font-bold">{profile.full_name}</h1>
         <p className="text-white/50 text-sm mt-0.5">{user.email}</p>
@@ -158,21 +164,7 @@ export default async function ProfilePage() {
         </form>
       </div>
 
-      {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 flex justify-around">
-        {[
-          { label: 'Home',     icon: '🏠', href: '/dashboard',    active: false },
-          { label: 'Practice', icon: '📝', href: '/practice/mcq', active: false },
-          { label: 'Progress', icon: '📊', href: '/progress',      active: false },
-          { label: 'Profile',  icon: '👤', href: '/profile',       active: true  },
-        ].map(item => (
-          <Link key={item.label} href={item.href} className="flex flex-col items-center gap-1">
-            <span className="text-xl">{item.icon}</span>
-            <span className={`text-xs font-semibold ${item.active ? 'text-[#0D9488]' : 'text-gray-400'}`}>{item.label}</span>
-            {item.active && <div className="w-5 h-0.5 rounded-full bg-[#0D9488]" />}
-          </Link>
-        ))}
-      </div>
+      <BottomNav />
     </div>
   )
 }

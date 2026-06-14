@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import BottomNav from '@/components/BottomNav'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
   // Fetch all sessions for stats + recent 4 for activity list
   const { data: allSessions } = await supabase
     .from('quiz_sessions')
-    .select('score, question_ids, xp_earned, started_at')
+    .select('score, question_ids, xp_earned, started_at, answers')
     .eq('user_id', user.id)
     .order('started_at', { ascending: false })
 
@@ -28,6 +29,44 @@ export default async function DashboardPage() {
   const totalAnswered = allSessions?.reduce((acc, s) => acc + (s.question_ids?.length ?? 0), 0) ?? 0
   const totalCorrect  = allSessions?.reduce((acc, s) => acc + (s.score ?? 0), 0) ?? 0
   const avgAccuracy   = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : null
+
+  // Build topic performance breakdown
+  const allQuestionIds = [...new Set(allSessions?.flatMap(s => s.question_ids ?? []) ?? [])]
+  let topicStats: { topic: string; total: number; correct: number; accuracy: number }[] = []
+
+  if (allQuestionIds.length > 0) {
+    const { data: questionMeta } = await supabase
+      .from('questions')
+      .select('id, topic, correct_answer')
+      .in('id', allQuestionIds)
+
+    if (questionMeta) {
+      const qMap = new Map(questionMeta.map(q => [q.id, q]))
+      const topicMap = new Map<string, { total: number; correct: number }>()
+
+      for (const session of allSessions ?? []) {
+        const answers = session.answers as Record<string, string> | null
+        for (const qId of session.question_ids ?? []) {
+          const q = qMap.get(qId)
+          if (!q) continue
+          const entry = topicMap.get(q.topic) ?? { total: 0, correct: 0 }
+          entry.total += 1
+          if (answers?.[qId] === q.correct_answer) entry.correct += 1
+          topicMap.set(q.topic, entry)
+        }
+      }
+
+      topicStats = Array.from(topicMap.entries())
+        .map(([topic, { total, correct }]) => ({
+          topic,
+          total,
+          correct,
+          accuracy: Math.round((correct / total) * 100),
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 6)
+    }
+  }
 
   const initials = profile.full_name
     .split(' ')
@@ -58,9 +97,13 @@ export default async function DashboardPage() {
           <span className="text-xs bg-[#0D9488]/20 text-[#0D9488] px-3 py-1 rounded-full font-semibold">
             🔥 {profile.current_streak} day streak
           </span>
-          <div className="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-sm font-bold">
-            {initials}
-          </div>
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="Profile" className="w-9 h-9 rounded-full object-cover" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-sm font-bold">
+              {initials}
+            </div>
+          )}
         </div>
       </div>
 
@@ -98,6 +141,29 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Topic performance */}
+        {topicStats.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-[#101010] mb-3">Topic performance</h2>
+            <div className="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+              {topicStats.map(({ topic, total, correct, accuracy }) => (
+                <div key={topic}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-semibold text-[#101010] truncate max-w-[60%]">{topic}</span>
+                    <span className="text-xs text-gray-400">{correct}/{total} · <span className={`font-semibold ${accuracy >= 70 ? 'text-[#0D9488]' : accuracy >= 50 ? 'text-orange-500' : 'text-red-400'}`}>{accuracy}%</span></span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${accuracy >= 70 ? 'bg-[#0D9488]' : accuracy >= 50 ? 'bg-orange-400' : 'bg-red-400'}`}
+                      style={{ width: `${accuracy}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Start studying */}
         <div>
           <h2 className="text-sm font-semibold text-[#101010] mb-3">Start studying</h2>
@@ -105,7 +171,7 @@ export default async function DashboardPage() {
             {[
               { label: 'MCQ', icon: '📝', href: '/practice/mcq' },
               { label: 'Flashcards', icon: '🃏', href: '/practice/flashcards' },
-              { label: 'Case Study', icon: '🩺', href: '/practice/cases' },
+              { label: 'Bookmarks', icon: '🔖', href: '/bookmarks' },
             ].map(mode => (
               <Link
                 key={mode.label}
@@ -152,23 +218,7 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 flex justify-around">
-        {[
-          { label: 'Home', icon: '🏠', href: '/dashboard', active: true },
-          { label: 'Practice', icon: '📝', href: '/practice/mcq', active: false },
-          { label: 'Progress', icon: '📊', href: '/progress', active: false },
-          { label: 'Profile', icon: '👤', href: '/profile', active: false },
-        ].map(item => (
-          <Link key={item.label} href={item.href} className="flex flex-col items-center gap-1">
-            <span className="text-xl">{item.icon}</span>
-            <span className={`text-xs font-semibold ${item.active ? 'text-[#0D9488]' : 'text-gray-400'}`}>
-              {item.label}
-            </span>
-            {item.active && <div className="w-5 h-0.5 rounded-full bg-[#0D9488]" />}
-          </Link>
-        ))}
-      </div>
+      <BottomNav />
     </div>
   )
 }

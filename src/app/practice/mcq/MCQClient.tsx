@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Question } from '@/types'
+import BookmarkButton from '@/components/BookmarkButton'
 
 const XP_PER_CORRECT = 10
 const XP_PER_WRONG = 2
@@ -15,11 +16,12 @@ interface Props {
   questions: Question[]
   userId: string
   profession: string
+  bookmarkedIds: string[]
 }
 
 type Phase = 'question' | 'review'
 
-export default function MCQClient({ questions, userId, profession }: Props) {
+export default function MCQClient({ questions, userId, profession, bookmarkedIds }: Props) {
   const router = useRouter()
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
@@ -136,11 +138,13 @@ export default function MCQClient({ questions, userId, profession }: Props) {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-        <Link href="/dashboard" className="text-gray-400 text-xl">←</Link>
+        <Link href="/dashboard" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">←</Link>
         <span className="text-sm font-semibold text-gray-500">{index + 1} / {questions.length}</span>
-        <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold capitalize">
-          {profession}
-        </span>
+        <BookmarkButton
+          questionId={question.id}
+          userId={userId}
+          initialBookmarked={bookmarkedIds.includes(question.id)}
+        />
       </div>
 
       {/* Progress bar */}
@@ -230,23 +234,45 @@ export default function MCQClient({ questions, userId, profession }: Props) {
 
         {/* Explanation (review phase) */}
         {phase === 'review' && (
-          <div className={`rounded-2xl p-5 ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <p className={`font-bold mb-2 ${isCorrect ? 'text-green-700' : 'text-red-600'}`}>
-              {isCorrect ? `✓ Correct! +${XP_PER_CORRECT} XP` : `✗ Incorrect +${XP_PER_WRONG} XP`}
-            </p>
-            <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+          <div className="flex flex-col gap-3">
+            {/* Result badge */}
+            <div className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold w-fit ${
+              isCorrect ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+            }`}>
+              {isCorrect ? `✓ Correct! +${XP_PER_CORRECT} XP` : `✗ Incorrect · +${XP_PER_WRONG} XP`}
+            </div>
 
-            {/* Why other options are wrong */}
-            {!isCorrect && distractors && selected && distractors[selected] && (
-              <div className="mt-3 pt-3 border-t border-red-100">
-                <p className="text-xs font-semibold text-red-500 mb-1">Why {selected} is wrong:</p>
-                <p className="text-xs text-gray-600">{distractors[selected]}</p>
+            {/* Avatar + speech bubble */}
+            <div className="flex items-start gap-3">
+              <img
+                src="/avatar.png"
+                alt="Tutor"
+                className="w-11 h-11 rounded-full shrink-0 object-cover mt-1 shadow-sm"
+              />
+              <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
+                {/* Bubble tail */}
+                <div
+                  className="absolute -left-2 top-3 w-0 h-0"
+                  style={{
+                    borderTop: '7px solid transparent',
+                    borderBottom: '7px solid transparent',
+                    borderRight: '8px solid white',
+                  }}
+                />
+                <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+
+                {!isCorrect && distractors && selected && distractors[selected] && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-xs font-semibold text-red-500 mb-1">Why {selected} is wrong:</p>
+                    <p className="text-xs text-gray-600">{distractors[selected]}</p>
+                  </div>
+                )}
+
+                {question.source_reference && (
+                  <p className="text-xs text-gray-400 mt-3">📚 {question.source_reference}</p>
+                )}
               </div>
-            )}
-
-            {question.source_reference && (
-              <p className="text-xs text-gray-400 mt-3">📚 {question.source_reference}</p>
-            )}
+            </div>
           </div>
         )}
       </div>

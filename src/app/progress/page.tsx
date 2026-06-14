@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
+import BottomNav from '@/components/BottomNav'
 
 const LEAGUE_CONFIG = {
   bronze:  { label: 'Bronze',  emoji: '🥉', color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200',  min: 0    },
@@ -134,21 +134,7 @@ export default async function ProgressPage() {
         </div>
       </div>
 
-      {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-3 flex justify-around">
-        {[
-          { label: 'Home',     icon: '🏠', href: '/dashboard',      active: false },
-          { label: 'Practice', icon: '📝', href: '/practice/mcq',   active: false },
-          { label: 'Progress', icon: '📊', href: '/progress',        active: true  },
-          { label: 'Profile',  icon: '👤', href: '/profile',         active: false },
-        ].map(item => (
-          <Link key={item.label} href={item.href} className="flex flex-col items-center gap-1">
-            <span className="text-xl">{item.icon}</span>
-            <span className={`text-xs font-semibold ${item.active ? 'text-[#0D9488]' : 'text-gray-400'}`}>{item.label}</span>
-            {item.active && <div className="w-5 h-0.5 rounded-full bg-[#0D9488]" />}
-          </Link>
-        ))}
-      </div>
+      <BottomNav />
     </div>
   )
 }

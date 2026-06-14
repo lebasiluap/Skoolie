@@ -4,13 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Question } from '@/types'
+import BookmarkButton from '@/components/BookmarkButton'
 
 interface Props {
   questions: Question[]
   userId: string
+  bookmarkedIds: string[]
 }
 
-export default function FlashcardClient({ questions, userId }: Props) {
+export default function FlashcardClient({ questions, userId, bookmarkedIds }: Props) {
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState(0)
@@ -111,16 +113,11 @@ export default function FlashcardClient({ questions, userId }: Props) {
           <span className="text-[#101010] font-semibold text-sm">{index + 1} / {questions.length}</span>
           <span className="text-gray-400 text-xs">{question.topic}</span>
         </div>
-        <div className="flex gap-2 items-center">
-          {question.high_yield && <span className="text-yellow-500 text-sm">⭐</span>}
-          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-            question.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
-            question.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
-            'bg-red-50 text-red-500'
-          }`}>
-            {question.difficulty}
-          </span>
-        </div>
+        <BookmarkButton
+          questionId={question.id}
+          userId={userId}
+          initialBookmarked={bookmarkedIds.includes(question.id)}
+        />
       </div>
 
       {/* Progress bar */}
@@ -179,13 +176,10 @@ export default function FlashcardClient({ questions, userId }: Props) {
               className="absolute inset-0 bg-[#0D9488] rounded-3xl p-8 flex flex-col items-center justify-center shadow-2xl"
             >
               <p className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6">Answer</p>
-              <p className="text-white text-lg leading-relaxed font-bold text-center mb-4">
+              <p className="text-white text-xl leading-relaxed font-bold text-center">
                 {answerText}
               </p>
-              <div className="w-12 h-px bg-white/20 mb-4" />
-              <p className="text-white/70 text-sm text-center leading-relaxed">
-                {question.explanation}
-              </p>
+              <p className="text-white/50 text-xs mt-6">↓ Scroll for explanation</p>
             </div>
           </div>
         </div>
@@ -195,13 +189,33 @@ export default function FlashcardClient({ questions, userId }: Props) {
           <p className="text-center text-xs text-gray-300 mt-4">tap card to flip</p>
         )}
 
-        {/* Action buttons — appear after flip */}
+        {/* Avatar explanation + action buttons — appear after flip */}
         <div
-          className={`mt-6 transition-all duration-300 ${
+          className={`mt-5 transition-all duration-400 ${
             flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
         >
-          <p className="text-center text-xs text-gray-400 mb-4">How did you do?</p>
+          {/* Avatar speech bubble */}
+          <div className="flex items-start gap-3 mb-5">
+            <img
+              src="/avatar.png"
+              alt="Tutor"
+              className="w-11 h-11 rounded-full shrink-0 object-cover shadow-sm"
+            />
+            <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
+              <div
+                className="absolute -left-2 top-3 w-0 h-0"
+                style={{
+                  borderTop: '7px solid transparent',
+                  borderBottom: '7px solid transparent',
+                  borderRight: '8px solid white',
+                }}
+              />
+              <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-gray-400 mb-3">How did you do?</p>
           <div className="flex gap-4">
             <button
               onClick={() => handleResult(false)}
@@ -211,7 +225,7 @@ export default function FlashcardClient({ questions, userId }: Props) {
             </button>
             <button
               onClick={() => handleResult(true)}
-              className="flex-1 py-4 rounded-2xl bg-white text-[#101010] font-semibold text-base hover:bg-white/90 transition-colors"
+              className="flex-1 py-4 rounded-2xl bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors"
             >
               ✓ Got it!
             </button>

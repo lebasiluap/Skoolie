@@ -16,12 +16,18 @@ export default async function FlashcardsPage() {
 
   if (!profile) redirect('/onboarding')
 
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('*')
-    .contains('professions', [profile.profession as Profession])
-    .eq('question_type', 'flashcard')
-    .limit(20)
+  const [{ data: questions }, { data: bookmarkRows }] = await Promise.all([
+    supabase
+      .from('questions')
+      .select('*')
+      .contains('professions', [profile.profession as Profession])
+      .eq('question_type', 'flashcard')
+      .limit(20),
+    supabase
+      .from('bookmarks')
+      .select('question_id')
+      .eq('user_id', user.id),
+  ])
 
   if (!questions || questions.length === 0) {
     return (
@@ -32,5 +38,7 @@ export default async function FlashcardsPage() {
     )
   }
 
-  return <FlashcardClient questions={questions as Question[]} userId={user.id} />
+  const bookmarkedIds = (bookmarkRows ?? []).map(b => b.question_id)
+
+  return <FlashcardClient questions={questions as Question[]} userId={user.id} bookmarkedIds={bookmarkedIds} />
 }

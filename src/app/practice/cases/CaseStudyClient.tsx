@@ -18,15 +18,17 @@ const STYLE_LABEL: Record<string, string> = {
   osce: 'OSCE',
 }
 
+const OPTION_LETTERS = ['A', 'B', 'C', 'D']
+
 function HistoryTable({ data }: { data: Record<string, string> }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       {Object.entries(data).map(([key, val]) => (
-        <div key={key} className="flex gap-2 text-sm">
-          <span className="text-gray-400 capitalize min-w-[120px] shrink-0">
+        <div key={key} className="flex gap-3 text-sm">
+          <span className="text-[#555555] capitalize min-w-[120px] shrink-0">
             {key.replace(/_/g, ' ')}
           </span>
-          <span className="text-[#101010] leading-snug">{val}</span>
+          <span className="text-[#CCCCCC] leading-snug">{val}</span>
         </div>
       ))}
     </div>
@@ -38,14 +40,11 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   const [phase, setPhase] = useState<Phase>('vignette')
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
-  const [answered, setAnswered] = useState<Record<number, string>>({}) // qIndex → chosen letter
+  const [answered, setAnswered] = useState<Record<number, string>>({})
   const [score, setScore] = useState(0)
   const [totalDone, setTotalDone] = useState(0)
 
   const cs = cases[caseIndex]
-
-  const OPTION_LETTERS = ['A', 'B', 'C', 'D']
-
   const currentQ = cs?.questions[qIndex]
   const isCorrect = selected === currentQ?.correct_answer
   const isReviewing = qIndex in answered
@@ -64,7 +63,6 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       setSelected(null)
       return
     }
-    // Case complete
     const supabase = createClient()
     const xpEarned = score * 10
     await Promise.allSettled([
@@ -91,39 +89,39 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
 
   if (!cs) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-center">
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-6 text-center">
         <div>
           <p className="text-4xl mb-4">🔍</p>
-          <p className="font-semibold text-[#101010]">No cases found</p>
+          <p className="font-semibold text-white">No cases found</p>
           <Link href="/practice/cases" className="mt-4 inline-block text-[#0D9488] text-sm">← Back</Link>
         </div>
       </div>
     )
   }
 
-  // ── Done screen ────────────────────────────────────────────────────────────
+  // Done screen
   if (phase === 'done') {
     const accuracy = Math.round((score / totalDone) * 100) || 0
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-24 h-24 rounded-full bg-[#f0fdfb] flex items-center justify-center mb-6">
-          <span className="text-5xl">🎉</span>
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-20 h-20 rounded-full bg-[#0D9488]/15 border border-[#0D9488]/30 flex items-center justify-center mb-6">
+          <span className="text-4xl">🎉</span>
         </div>
-        <h1 className="text-2xl font-bold text-[#101010] mb-1">Case complete!</h1>
-        <p className="text-gray-400 text-sm mb-8">Here&apos;s how you did</p>
+        <h1 className="text-2xl font-bold text-white mb-1">Case complete!</h1>
+        <p className="text-[#888888] text-sm mb-8">Here&apos;s how you did</p>
 
         <div className="w-full max-w-xs grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
+          <div className="bg-[#141414] rounded-2xl p-4 text-center border border-[#1F1F1F]">
             <p className="text-2xl font-bold text-[#0D9488]">{score}/{totalDone}</p>
-            <p className="text-xs text-gray-400 mt-1">Correct</p>
+            <p className="text-xs text-[#888888] mt-1">Correct</p>
           </div>
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-500">{accuracy}%</p>
-            <p className="text-xs text-gray-400 mt-1">Accuracy</p>
+          <div className="bg-[#141414] rounded-2xl p-4 text-center border border-[#1F1F1F]">
+            <p className="text-2xl font-bold text-[#0D9488]">{accuracy}%</p>
+            <p className="text-xs text-[#888888] mt-1">Accuracy</p>
           </div>
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-orange-500">+{score * 10}</p>
-            <p className="text-xs text-gray-400 mt-1">XP earned</p>
+          <div className="bg-[#141414] rounded-2xl p-4 text-center border border-[#1F1F1F]">
+            <p className="text-2xl font-bold text-orange-400">+{score * 10}</p>
+            <p className="text-xs text-[#888888] mt-1">XP earned</p>
           </div>
         </div>
 
@@ -131,20 +129,20 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
           {caseIndex + 1 < cases.length && (
             <button
               onClick={handleNextCase}
-              className="w-full py-3 rounded-full bg-[#0D9488] text-white font-semibold hover:bg-[#0b7a6e] transition-colors"
+              className="w-full py-3 rounded-full bg-[#0D9488] text-black font-semibold hover:bg-[#0b7a6e] transition-colors"
             >
               Next case →
             </button>
           )}
           <Link
             href="/practice/cases"
-            className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-full border border-[#2A2A2A] text-white font-semibold text-center hover:bg-[#141414] transition-colors"
           >
             ← All cases
           </Link>
           <Link
             href="/dashboard"
-            className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
+            className="w-full py-3 rounded-full border border-[#2A2A2A] text-white font-semibold text-center hover:bg-[#141414] transition-colors"
           >
             Dashboard
           </Link>
@@ -153,78 +151,81 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
     )
   }
 
-  // ── Vignette screen ────────────────────────────────────────────────────────
+  // Vignette screen
   if (phase === 'vignette') {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
         {/* Header */}
-        <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-          <Link href="/practice/cases" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+        <div className="bg-[#0A0A0A] px-5 py-4 flex items-center justify-between border-b border-[#1F1F1F]">
+          <Link
+            href="/practice/cases"
+            className="w-9 h-9 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] hover:text-white transition-colors"
+          >
             ←
           </Link>
           <div className="text-center">
-            <p className="text-xs font-semibold text-[#101010]">Case {caseIndex + 1} of {cases.length}</p>
-            {showTags && <p className="text-xs text-gray-400">{cs.topic}</p>}
+            <p className="text-xs font-semibold text-white">Case {caseIndex + 1} of {cases.length}</p>
+            {showTags && <p className="text-xs text-[#888888]">{cs.topic}</p>}
           </div>
-          <div className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            cs.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
-            cs.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
-            'bg-red-50 text-red-500'
+          <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+            cs.difficulty === 'easy'   ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+            cs.difficulty === 'medium' ? 'bg-orange-400/10 text-orange-400 border border-orange-400/20' :
+                                         'bg-red-500/10 text-red-400 border border-red-500/20'
           }`}>
             {cs.difficulty}
           </div>
         </div>
 
-        <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-52 overflow-y-auto">
+        <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
           {/* Tags */}
           <div className="flex gap-2 flex-wrap items-center">
             {showTags
-              ? <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">{cs.subtopic}</span>
-              : <span className="text-xs text-gray-400 italic">Enable tags in Settings to see topic</span>
+              ? <span className="text-xs bg-[#1F1F1F] text-[#888888] px-3 py-1 rounded-full font-medium">{cs.subtopic}</span>
+              : <span className="text-xs text-[#555555] italic">Enable tags in Settings to see topic</span>
             }
-            <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-semibold">{STYLE_LABEL[cs.style]}</span>
+            <span className="text-xs bg-[#1F1F1F] text-[#888888] px-3 py-1 rounded-full font-medium">{STYLE_LABEL[cs.style]}</span>
             {cs.high_yield && (
-              <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full font-semibold">⭐ High Yield</span>
+              <span className="text-xs bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 px-3 py-1 rounded-full font-medium">⭐ High Yield</span>
             )}
           </div>
 
           {/* Title */}
-          <h2 className="text-lg font-bold text-[#101010] leading-snug">{cs.title}</h2>
+          <h2 className="text-lg font-bold text-white leading-snug">{cs.title}</h2>
 
           {/* Clinical vignette */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Clinical Vignette</p>
-            <p className="text-sm text-[#101010] leading-relaxed">{cs.clinical_vignette}</p>
+          <div className="bg-[#141414] rounded-2xl p-5 border border-[#1F1F1F]">
+            <p className="text-[10px] font-bold text-[#0D9488] uppercase tracking-widest mb-3">Clinical Vignette</p>
+            <p className="text-sm text-[#CCCCCC] leading-relaxed">{cs.clinical_vignette}</p>
           </div>
 
           {/* Patient history */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Patient History</p>
+          <div className="bg-[#141414] rounded-2xl p-5 border border-[#1F1F1F]">
+            <p className="text-[10px] font-bold text-[#0D9488] uppercase tracking-widest mb-3">Patient History</p>
             <HistoryTable data={cs.patient_history} />
           </div>
 
           {/* Examination */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Examination Findings</p>
+          <div className="bg-[#141414] rounded-2xl p-5 border border-[#1F1F1F]">
+            <p className="text-[10px] font-bold text-[#0D9488] uppercase tracking-widest mb-3">Examination Findings</p>
             <HistoryTable data={cs.examination_findings} />
           </div>
 
           {/* Investigations */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Investigations</p>
+          <div className="bg-[#141414] rounded-2xl p-5 border border-[#1F1F1F]">
+            <p className="text-[10px] font-bold text-[#0D9488] uppercase tracking-widest mb-3">Investigations</p>
             <HistoryTable data={cs.investigations} />
           </div>
 
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-[#555555] text-center">
             {cs.questions.length} question{cs.questions.length !== 1 ? 's' : ''} follow
           </p>
         </div>
 
         {/* CTA */}
-        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-5">
+        <div className="fixed bottom-16 left-0 right-0 bg-[#0A0A0A] border-t border-[#1F1F1F] px-5 py-4">
           <button
             onClick={() => setPhase('questions')}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors"
+            className="w-full py-3.5 rounded-full bg-[#0D9488] text-black font-semibold text-base hover:bg-[#0b7a6e] transition-colors"
           >
             Start questions →
           </button>
@@ -233,61 +234,74 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
     )
   }
 
-  // ── Questions screen ───────────────────────────────────────────────────────
+  // Questions screen
   const progress = ((qIndex + (isReviewing ? 1 : 0)) / cs.questions.length) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
       {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
+      <div className="bg-[#0A0A0A] px-5 py-4 flex items-center justify-between border-b border-[#1F1F1F]">
         <button
           onClick={() => setPhase('vignette')}
-          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
+          className="w-9 h-9 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] hover:text-white transition-colors"
         >
           ←
         </button>
-        <span className="text-sm font-semibold text-gray-500">
+        <span className="text-sm font-semibold text-[#888888]">
           Q{qIndex + 1} / {cs.questions.length}
         </span>
-        <div />
+        <div className="w-9" />
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-gray-100">
+      <div className="h-1 bg-[#1F1F1F]">
         <div
           className="h-full bg-[#0D9488] transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-52 overflow-y-auto">
+      <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
         {/* Question */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+        <div className="bg-[#141414] rounded-2xl p-5 border border-[#1F1F1F]">
+          <p className="text-[10px] font-bold text-[#0D9488] uppercase tracking-widest mb-3">
             Question {currentQ.question_number}
           </p>
-          <p className="text-[#101010] text-base leading-relaxed font-medium">
+          <p className="text-white text-base leading-relaxed font-medium">
             {currentQ.question}
           </p>
         </div>
 
         {/* Options */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {currentQ.options.map((option, i) => {
             const letter = OPTION_LETTERS[i]
             const isSelected = selected === letter
             const isAnswer = letter === currentQ.correct_answer
             const isChosen = answered[qIndex] === letter
 
-            let style = 'border-gray-200 bg-white'
+            let containerStyle = 'border border-[#1F1F1F] bg-transparent hover:border-[#2A2A2A]'
             if (isReviewing) {
-              if (isAnswer) style = 'border-[#0D9488] bg-[#f0fdfb]'
-              else if (isChosen && !isAnswer) style = 'border-red-300 bg-red-50'
-              else style = 'border-gray-100 bg-gray-50 opacity-60'
+              if (isAnswer) containerStyle = 'border border-[#0D9488] bg-[#0D9488]/[0.07]'
+              else if (isChosen && !isAnswer) containerStyle = 'border border-red-500 bg-red-500/[0.07]'
+              else containerStyle = 'border border-[#1F1F1F] bg-transparent opacity-50'
             } else if (isSelected) {
-              style = 'border-[#0D9488] bg-[#f0fdfb]'
-            } else {
-              style = 'border-gray-200 bg-white hover:border-gray-300'
+              containerStyle = 'border border-[#0D9488] bg-[#0D9488]/[0.07]'
+            }
+
+            let badgeStyle = 'bg-[#1F1F1F] text-[#555555]'
+            if (isReviewing) {
+              if (isAnswer) badgeStyle = 'bg-[#0D9488] text-black'
+              else if (isChosen && !isAnswer) badgeStyle = 'bg-red-500 text-white'
+            } else if (isSelected) {
+              badgeStyle = 'bg-[#0D9488] text-black'
+            }
+
+            let textColor = 'text-white'
+            if (isReviewing) {
+              if (isAnswer) textColor = 'text-[#5EEAD4] font-semibold'
+              else if (isChosen && !isAnswer) textColor = 'text-red-400 font-semibold'
+              else textColor = 'text-[#555555]'
             }
 
             return (
@@ -295,23 +309,14 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
                 key={letter}
                 onClick={() => !isReviewing && setSelected(letter)}
                 disabled={isReviewing}
-                className={`w-full text-left px-4 py-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${style}`}
+                className={`w-full text-left px-4 py-3.5 rounded-2xl transition-all flex items-center gap-3.5 ${containerStyle}`}
               >
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                  isReviewing && isAnswer ? 'bg-[#0D9488] text-white' :
-                  isReviewing && isChosen && !isAnswer ? 'bg-red-400 text-white' :
-                  isSelected ? 'bg-[#0D9488] text-white' :
-                  'bg-gray-100 text-gray-500'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${badgeStyle}`}>
                   {isReviewing && isAnswer ? '✓' :
                    isReviewing && isChosen && !isAnswer ? '✗' :
                    letter}
                 </div>
-                <span className={`text-sm leading-snug ${
-                  isReviewing && isAnswer ? 'text-[#0D9488] font-semibold' :
-                  isReviewing && isChosen && !isAnswer ? 'text-red-500 font-semibold' :
-                  'text-[#101010]'
-                }`}>
+                <span className={`text-sm leading-snug ${textColor}`}>
                   {option.replace(/^[A-D]\.\s*/, '')}
                 </span>
               </button>
@@ -322,50 +327,35 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
         {/* Explanation (after answer) */}
         {isReviewing && (
           <div className="flex flex-col gap-3">
-            <div className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold w-fit ${
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold w-fit ${
               answered[qIndex] === currentQ.correct_answer
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-600'
+                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                : 'bg-red-500/10 text-red-400 border border-red-500/20'
             }`}>
               {answered[qIndex] === currentQ.correct_answer ? '✓ Correct! +10 XP' : '✗ Incorrect · +0 XP'}
             </div>
 
-            <div className="flex items-start gap-3">
-              <img
-                src="/avatar.png"
-                alt="Tutor"
-                className="w-11 h-11 rounded-full shrink-0 object-cover mt-1 shadow-sm"
-              />
-              <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
-                <div
-                  className="absolute -left-2 top-3 w-0 h-0"
-                  style={{
-                    borderTop: '7px solid transparent',
-                    borderBottom: '7px solid transparent',
-                    borderRight: '8px solid white',
-                  }}
-                />
-                <p className="text-sm text-gray-700 leading-relaxed">{currentQ.explanation}</p>
-              </div>
+            <div className="bg-[#141414] rounded-2xl border border-[#1F1F1F] p-4">
+              <p className="text-sm text-[#CCCCCC] leading-relaxed">{currentQ.explanation}</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Bottom button */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-5">
+      <div className="fixed bottom-16 left-0 right-0 bg-[#0A0A0A] border-t border-[#1F1F1F] px-5 py-4">
         {!isReviewing ? (
           <button
             onClick={handleAnswer}
             disabled={!selected}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-40"
+            className="w-full py-3.5 rounded-full bg-[#0D9488] text-black font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-30"
           >
             Submit Answer
           </button>
         ) : (
           <button
             onClick={handleNext}
-            className="w-full py-3.5 rounded-full bg-[#101010] text-white font-semibold text-base hover:bg-[#222] transition-colors"
+            className="w-full py-3.5 rounded-full bg-[#1A1A1A] border border-[#2A2A2A] text-white font-semibold text-base hover:bg-[#222] transition-colors"
           >
             {qIndex + 1 >= cs.questions.length ? 'Finish case →' : 'Next question →'}
           </button>

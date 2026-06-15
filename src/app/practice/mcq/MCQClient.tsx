@@ -174,7 +174,7 @@ export default function MCQClient({ questions, userId, profession, bookmarkedIds
         />
       </div>
 
-      <div className="flex-1 px-5 py-6 flex flex-col gap-5 pb-32">
+      <div className="flex-1 px-5 py-6 flex flex-col gap-5 pb-52">
         {/* Tags — hidden in challenge mode */}
         {showTags && (
           <div className="flex gap-2 flex-wrap">
@@ -299,7 +299,7 @@ export default function MCQClient({ questions, userId, profession, bookmarkedIds
       </div>
 
       {/* Bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-5">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-5">
         {phase === 'question' ? (
           <button
             onClick={handleSubmit}

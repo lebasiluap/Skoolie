@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NavWrapper from "@/components/NavWrapper";
 
 export const metadata: Metadata = {
   title: "Skoolie — Healthcare Test Companion",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <NavWrapper />
+      </body>
     </html>
   );
 }

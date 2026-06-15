@@ -175,7 +175,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
           </div>
         </div>
 
-        <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
+        <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-52 overflow-y-auto">
           {/* Tags */}
           <div className="flex gap-2 flex-wrap items-center">
             {showTags
@@ -221,7 +221,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
         </div>
 
         {/* CTA */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-5">
+        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-5">
           <button
             onClick={() => setPhase('questions')}
             className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors"
@@ -260,7 +260,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
         />
       </div>
 
-      <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
+      <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-52 overflow-y-auto">
         {/* Question */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -353,7 +353,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       </div>
 
       {/* Bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-5">
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 p-5">
         {!isReviewing ? (
           <button
             onClick={handleAnswer}

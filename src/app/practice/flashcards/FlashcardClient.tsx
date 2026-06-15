@@ -255,7 +255,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
         </div>
       </div>
 
-      <div className="h-10" />
+      <div className="h-20" />
     </div>
   )
 }

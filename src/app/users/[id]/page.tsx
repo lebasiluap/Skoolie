@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import BottomNav from '@/components/BottomNav'
+
 
 const LEAGUE_CONFIG = {
   bronze:  { label: 'Bronze',  emoji: '🥉', color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200',  min: 0    },
@@ -128,7 +128,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         </div>
       </div>
 
-      <BottomNav />
+
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import BottomNav from '@/components/BottomNav'
+
 import AvatarUpload from '@/components/AvatarUpload'
 import ProfileSettingsClient from '@/components/ProfileSettingsClient'
 import type { StudyYear } from '@/types'
@@ -177,7 +177,7 @@ export default async function ProfilePage() {
         </form>
       </div>
 
-      <BottomNav />
+
     </div>
   )
 }

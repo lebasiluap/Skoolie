@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import BottomNav from '@/components/BottomNav'
+
 
 export default async function BookmarksPage() {
   const supabase = await createClient()
@@ -129,7 +129,7 @@ export default async function BookmarksPage() {
         )}
       </div>
 
-      <BottomNav />
+
     </div>
   )
 }

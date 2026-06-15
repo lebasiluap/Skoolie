@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PracticeLanding from './PracticeLanding'
-import BottomNav from '@/components/BottomNav'
+
 import type { Profession } from '@/types'
 
 export default async function PracticePage() {
@@ -48,7 +48,7 @@ export default async function PracticePage() {
         studyYear={profile.study_year ?? null}
         profession={profile.profession}
       />
-      <BottomNav />
+
     </div>
   )
 }

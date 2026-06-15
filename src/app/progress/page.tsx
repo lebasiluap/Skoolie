@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
 
 const LEAGUE_CONFIG = {
@@ -109,9 +110,10 @@ export default async function ProgressPage() {
             const initials = u.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
             return (
-              <div
+              <Link
                 key={u.id}
-                className={`flex items-center gap-3 px-4 py-3.5 ${i < topUsers.length - 1 ? 'border-b border-gray-50' : ''} ${isMe ? 'bg-[#f0fdfb]' : ''}`}
+                href={`/users/${u.id}`}
+                className={`flex items-center gap-3 px-4 py-3.5 ${i < topUsers.length - 1 ? 'border-b border-gray-50' : ''} ${isMe ? 'bg-[#f0fdfb]' : 'hover:bg-gray-50'} transition-colors`}
               >
                 <span className={`text-base font-bold w-8 text-center ${rank <= 3 ? 'text-xl' : 'text-gray-400'}`}>{rankDisplay}</span>
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isMe ? 'bg-[#0D9488] text-white' : 'bg-gray-100 text-gray-500'}`}>
@@ -124,7 +126,7 @@ export default async function ProgressPage() {
                   <p className="text-xs text-gray-400 capitalize">{u.profession} · Lv.{u.level}</p>
                 </div>
                 <span className={`text-sm font-bold ${isMe ? 'text-[#0D9488]' : 'text-gray-500'}`}>{u.xp} XP</span>
-              </div>
+              </Link>
             )
           }) : (
             <div className="p-8 text-center">

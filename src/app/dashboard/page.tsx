@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   // Fetch all sessions for stats + recent 4 for activity list
   const { data: allSessions } = await supabase
     .from('quiz_sessions')
-    .select('score, question_ids, xp_earned, started_at, answers')
+    .select('score, question_ids, xp_earned, started_at')
     .eq('user_id', user.id)
     .order('started_at', { ascending: false })
 
@@ -30,42 +30,33 @@ export default async function DashboardPage() {
   const totalCorrect  = allSessions?.reduce((acc, s) => acc + (s.score ?? 0), 0) ?? 0
   const avgAccuracy   = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : null
 
-  // Build topic performance breakdown
-  const allQuestionIds = [...new Set(allSessions?.flatMap(s => s.question_ids ?? []) ?? [])]
+  // Build topic performance from user_question_history (immune to answer reshuffles)
   let topicStats: { topic: string; total: number; correct: number; accuracy: number }[] = []
 
-  if (allQuestionIds.length > 0) {
-    const { data: questionMeta } = await supabase
-      .from('questions')
-      .select('id, topic, correct_answer')
-      .in('id', allQuestionIds)
+  const { data: historyRows } = await supabase
+    .from('user_question_history')
+    .select('topic, was_correct')
+    .eq('user_id', user.id)
+    .eq('question_type', 'mcq')
 
-    if (questionMeta) {
-      const qMap = new Map(questionMeta.map(q => [q.id, q]))
-      const topicMap = new Map<string, { total: number; correct: number }>()
-
-      for (const session of allSessions ?? []) {
-        const answers = session.answers as Record<string, string> | null
-        for (const qId of session.question_ids ?? []) {
-          const q = qMap.get(qId)
-          if (!q) continue
-          const entry = topicMap.get(q.topic) ?? { total: 0, correct: 0 }
-          entry.total += 1
-          if (answers?.[qId] === q.correct_answer) entry.correct += 1
-          topicMap.set(q.topic, entry)
-        }
-      }
-
-      topicStats = Array.from(topicMap.entries())
-        .map(([topic, { total, correct }]) => ({
-          topic,
-          total,
-          correct,
-          accuracy: Math.round((correct / total) * 100),
-        }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 6)
+  if (historyRows && historyRows.length > 0) {
+    const topicMap = new Map<string, { total: number; correct: number }>()
+    for (const row of historyRows) {
+      if (!row.topic) continue
+      const entry = topicMap.get(row.topic) ?? { total: 0, correct: 0 }
+      entry.total += 1
+      if (row.was_correct) entry.correct += 1
+      topicMap.set(row.topic, entry)
     }
+    topicStats = Array.from(topicMap.entries())
+      .map(([topic, { total, correct }]) => ({
+        topic,
+        total,
+        correct,
+        accuracy: Math.round((correct / total) * 100),
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6)
   }
 
   const initials = profile.full_name

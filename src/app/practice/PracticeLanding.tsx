@@ -1,0 +1,153 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+
+type Region = 'all' | 'universal' | 'ghana'
+
+interface ModeStat {
+  mode: 'mcq' | 'flashcard' | 'case_study'
+  label: string
+  icon: string
+  description: string
+  count: number
+  path: string
+  randomLimit: number
+}
+
+interface Props {
+  mcqCount: number
+  flashcardCount: number
+  caseCount: number
+  studyYear: string | null
+  profession: string
+}
+
+const REGION_LABELS: Record<Region, string> = {
+  all: 'All',
+  universal: 'Global',
+  ghana: 'Regional',
+}
+
+export default function PracticeLanding({ mcqCount, flashcardCount, caseCount, studyYear, profession }: Props) {
+  const [region, setRegion] = useState<Region>('all')
+
+  function buildUrl(path: string, extra: Record<string, string> = {}) {
+    const params = new URLSearchParams(extra)
+    if (region !== 'all') params.set('region', region)
+    const qs = params.toString()
+    return qs ? `${path}?${qs}` : path
+  }
+
+  const modes: ModeStat[] = [
+    { mode: 'mcq',        label: 'MCQs',         icon: '📝', description: 'Multiple choice questions', count: mcqCount,       path: '/practice/mcq',        randomLimit: 10 },
+    { mode: 'flashcard',  label: 'Flashcards',   icon: '🃏', description: 'Test your recall',          count: flashcardCount, path: '/practice/flashcards', randomLimit: 20 },
+    { mode: 'case_study', label: 'Case Studies', icon: '🩺', description: 'Clinical scenarios',        count: caseCount,      path: '/practice/cases',      randomLimit: 0  },
+  ]
+
+  const PROF_LABELS: Record<string, string> = {
+    pharmacy: 'Pharmacy',
+    medicine: 'Medicine',
+    nursing: 'Nursing',
+    general: 'General',
+  }
+
+  const YEAR_LABELS: Record<string, string> = {
+    year1: 'Year 1', year2: 'Year 2', year3: 'Year 3',
+    year4: 'Year 4', year5: 'Year 5', year6: 'Year 6',
+    practitioner: 'Practitioner',
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-28">
+      {/* Header */}
+      <div className="bg-[#101010] px-5 pt-10 pb-8">
+        <h1 className="text-white text-2xl font-bold">Practice</h1>
+        <p className="text-white/50 text-sm mt-1">
+          {PROF_LABELS[profession] ?? profession}
+          {studyYear ? ` · ${YEAR_LABELS[studyYear] ?? studyYear}` : ''}
+        </p>
+      </div>
+
+      <div className="px-5 py-5 flex flex-col gap-5">
+        {/* Region toggle */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Question set</p>
+          <div className="bg-white rounded-2xl p-1.5 flex gap-1 shadow-sm">
+            {(['all', 'universal', 'ghana'] as Region[]).map(r => (
+              <button
+                key={r}
+                onClick={() => setRegion(r)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  region === r
+                    ? 'bg-[#0D9488] text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {r === 'all' ? '🌍 All' : r === 'universal' ? '🌐 Global' : '🇬🇭 Regional'}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-1.5 px-1">
+            {region === 'all' ? 'Showing all available questions' :
+             region === 'universal' ? 'Showing globally applicable questions only' :
+             'Showing Ghana-specific questions only'}
+          </p>
+        </div>
+
+        {/* Mode cards */}
+        <div className="flex flex-col gap-4">
+          {modes.map(m => (
+            <div key={m.mode} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              {/* Card header */}
+              <div className="px-5 pt-5 pb-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#f0fdfb] flex items-center justify-center text-2xl">
+                  {m.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="text-base font-bold text-[#101010]">{m.label}</p>
+                  <p className="text-xs text-gray-400">{m.description}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-[#0D9488]">{m.count}</p>
+                  <p className="text-[10px] text-gray-400">{m.mode === 'case_study' ? 'cases' : 'questions'}</p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="px-5 pb-5 flex gap-3">
+                <Link
+                  href={buildUrl(m.path, { random: '1', ...(m.randomLimit ? { limit: String(m.randomLimit) } : {}) })}
+                  className="flex-1 py-3 rounded-full bg-[#0D9488] text-white text-sm font-semibold text-center hover:bg-[#0b7a6e] transition-colors"
+                >
+                  🎲 Start Random
+                </Link>
+                <Link
+                  href={buildUrl(m.path)}
+                  className="flex-1 py-3 rounded-full border border-gray-200 text-[#101010] text-sm font-semibold text-center hover:bg-gray-50 transition-colors"
+                >
+                  Browse Topics
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bookmarks shortcut */}
+        <Link
+          href="/bookmarks"
+          className="flex items-center justify-between px-5 py-4 bg-white rounded-2xl shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🔖</span>
+            <div>
+              <p className="text-sm font-semibold text-[#101010]">Bookmarks</p>
+              <p className="text-xs text-gray-400">Questions you&apos;ve saved</p>
+            </div>
+          </div>
+          <span className="text-gray-300 text-lg">→</span>
+        </Link>
+      </div>
+    </div>
+  )
+}

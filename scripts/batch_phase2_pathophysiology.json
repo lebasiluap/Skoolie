@@ -1,0 +1,45 @@
+[
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Hypertension","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Hypertension","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Hypertension","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Heart Failure","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Heart Failure","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Heart Failure","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Stable Angina","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Stable Angina","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Stable Angina","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Acute Coronary Syndrome","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Acute Coronary Syndrome","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Acute Coronary Syndrome","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Arrhythmias","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Arrhythmias","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Arrhythmias","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Dyslipidaemia","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Dyslipidaemia","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Dyslipidaemia","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Valvular Heart Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Valvular Heart Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Valvular Heart Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Cardiomyopathies","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Cardiomyopathies","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Cardiomyopathies","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Infective Endocarditis","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Infective Endocarditis","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Infective Endocarditis","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Pericardial Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Pericardial Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Pericardial Disease","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Venous Thromboembolism","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Venous Thromboembolism","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pathophysiology","subtopic":"Venous Thromboembolism","years":["year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"}
+]

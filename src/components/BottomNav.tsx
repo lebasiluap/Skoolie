@@ -42,7 +42,7 @@ function ProfileIcon({ active }: { active: boolean }) {
 
 const NAV_ITEMS = [
   { label: 'Home',     href: '/dashboard',    Icon: HomeIcon     },
-  { label: 'Practice', href: '/practice/mcq', Icon: PracticeIcon },
+  { label: 'Practice', href: '/practice',     Icon: PracticeIcon },
   { label: 'Progress', href: '/progress',     Icon: ProgressIcon },
   { label: 'Profile',  href: '/profile',      Icon: ProfileIcon  },
 ]

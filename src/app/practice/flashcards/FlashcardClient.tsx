@@ -10,9 +10,10 @@ interface Props {
   questions: Question[]
   userId: string
   bookmarkedIds: string[]
+  showTags: boolean
 }
 
-export default function FlashcardClient({ questions, userId, bookmarkedIds }: Props) {
+export default function FlashcardClient({ questions, userId, bookmarkedIds, showTags }: Props) {
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState(0)
@@ -23,13 +24,14 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds }: Pr
   const question = questions[index]
   const progress = (index / questions.length) * 100
 
-  const answerLetter = question?.correct_answer
-  const answerOption = (question?.options as string[])?.find(
-    o => o.startsWith(answerLetter + '.') || o.startsWith(answerLetter + ' ')
-  )
-  const answerText = answerOption
-    ? answerOption.replace(/^[A-D][\.\s]\s*/, '')
-    : question?.explanation
+  // For flashcards options is [], so correct_answer holds the answer text directly.
+  // For MCQ-style flashcards (shouldn't normally appear here), fall back to option lookup.
+  const opts = question?.options as string[]
+  const isFlashcard = !opts || opts.length === 0
+  const answerText = isFlashcard
+    ? question?.correct_answer
+    : (opts.find(o => o.startsWith(question?.correct_answer + '.') || o.startsWith(question?.correct_answer + ' '))
+        ?.replace(/^[A-D][\.\s]\s*/, '') ?? question?.explanation)
 
   async function handleResult(gotIt: boolean) {
     const newKnown = gotIt ? known + 1 : known
@@ -40,9 +42,29 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds }: Pr
     if (index + 1 >= questions.length) {
       const supabase = createClient()
       const xpEarned = newKnown * 5
-      const calls = [supabase.rpc('update_streak', { user_id: userId })]
-      if (xpEarned > 0) calls.push(supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }))
-      await Promise.allSettled(calls)
+      const now = new Date().toISOString()
+
+      await Promise.allSettled([
+        supabase.rpc('update_streak', { user_id: userId }),
+        xpEarned > 0
+          ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned })
+          : Promise.resolve(),
+        // Record history for no-repeat tracking
+        supabase.from('user_question_history').upsert(
+          questions.map(q => ({
+            user_id: userId,
+            question_id: q.id,
+            question_type: 'flashcard',
+            topic: q.topic,
+            category: (q as unknown as Record<string, unknown>).category as string ?? null,
+            subtopic: q.subtopic ?? null,
+            difficulty: q.difficulty,
+            answered_at: now,
+            was_correct: null, // flashcards don't have definitive correct/incorrect
+          })),
+          { onConflict: 'user_id,question_id' }
+        ),
+      ])
       setDone(true)
       return
     }
@@ -111,7 +133,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds }: Pr
         </Link>
         <div className="flex flex-col items-center">
           <span className="text-[#101010] font-semibold text-sm">{index + 1} / {questions.length}</span>
-          <span className="text-gray-400 text-xs">{question.topic}</span>
+          {showTags && <span className="text-gray-400 text-xs">{question.topic}</span>}
         </div>
         <BookmarkButton
           questionId={question.id}

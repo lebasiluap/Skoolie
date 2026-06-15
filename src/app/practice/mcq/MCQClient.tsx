@@ -17,11 +17,12 @@ interface Props {
   userId: string
   profession: string
   bookmarkedIds: string[]
+  showTags: boolean
 }
 
 type Phase = 'question' | 'review'
 
-export default function MCQClient({ questions, userId, profession, bookmarkedIds }: Props) {
+export default function MCQClient({ questions, userId, profession, bookmarkedIds, showTags }: Props) {
   const router = useRouter()
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
@@ -63,16 +64,34 @@ export default function MCQClient({ questions, userId, profession, bookmarkedIds
 
   async function handleNext() {
     if (index + 1 >= questions.length) {
-      // Save session
       const supabase = createClient()
-      await supabase.from('quiz_sessions').insert({
-        user_id: userId,
-        question_ids: questions.map(q => q.id),
-        answers,
-        score,
-        xp_earned: totalXP,
-        completed_at: new Date().toISOString(),
-      })
+      const now = new Date().toISOString()
+      await Promise.allSettled([
+        // Save session record
+        supabase.from('quiz_sessions').insert({
+          user_id: userId,
+          question_ids: questions.map(q => q.id),
+          answers,
+          score,
+          xp_earned: totalXP,
+          completed_at: now,
+        }),
+        // Record per-question history for no-repeat tracking
+        supabase.from('user_question_history').upsert(
+          questions.map(q => ({
+            user_id: userId,
+            question_id: q.id,
+            question_type: 'mcq',
+            topic: q.topic,
+            category: (q as unknown as Record<string, unknown>).category as string ?? null,
+            subtopic: q.subtopic ?? null,
+            difficulty: q.difficulty,
+            answered_at: now,
+            was_correct: answers[q.id] === q.correct_answer,
+          })),
+          { onConflict: 'user_id,question_id' }
+        ),
+      ])
       setSessionDone(true)
       return
     }
@@ -156,27 +175,29 @@ export default function MCQClient({ questions, userId, profession, bookmarkedIds
       </div>
 
       <div className="flex-1 px-5 py-6 flex flex-col gap-5 pb-32">
-        {/* Tags */}
-        <div className="flex gap-2 flex-wrap">
-          <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">
-            {question.topic}
-          </span>
-          <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
-            question.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
-            question.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
-            'bg-red-50 text-red-500'
-          }`}>
-            {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
-          </span>
-          <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-semibold capitalize">
-            {question.region}
-          </span>
-          {question.high_yield && (
-            <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full font-semibold">
-              ⭐ High Yield
+        {/* Tags — hidden in challenge mode */}
+        {showTags && (
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">
+              {question.topic}
             </span>
-          )}
-        </div>
+            <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
+              question.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
+              question.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
+              'bg-red-50 text-red-500'
+            }`}>
+              {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
+            </span>
+            <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-semibold capitalize">
+              {question.region}
+            </span>
+            {question.high_yield && (
+              <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full font-semibold">
+                ⭐ High Yield
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Question */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">

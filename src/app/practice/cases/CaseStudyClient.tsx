@@ -8,6 +8,7 @@ import type { CaseStudy } from '@/types'
 interface Props {
   cases: CaseStudy[]
   userId: string
+  showTags: boolean
 }
 
 type Phase = 'vignette' | 'questions' | 'done'
@@ -32,7 +33,7 @@ function HistoryTable({ data }: { data: Record<string, string> }) {
   )
 }
 
-export default function CaseStudyClient({ cases, userId }: Props) {
+export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   const [caseIndex, setCaseIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('vignette')
   const [qIndex, setQIndex] = useState(0)
@@ -163,7 +164,7 @@ export default function CaseStudyClient({ cases, userId }: Props) {
           </Link>
           <div className="text-center">
             <p className="text-xs font-semibold text-[#101010]">Case {caseIndex + 1} of {cases.length}</p>
-            <p className="text-xs text-gray-400">{cs.topic}</p>
+            {showTags && <p className="text-xs text-gray-400">{cs.topic}</p>}
           </div>
           <div className={`px-2 py-1 rounded-full text-xs font-semibold ${
             cs.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
@@ -176,8 +177,11 @@ export default function CaseStudyClient({ cases, userId }: Props) {
 
         <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
           {/* Tags */}
-          <div className="flex gap-2 flex-wrap">
-            <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">{cs.subtopic}</span>
+          <div className="flex gap-2 flex-wrap items-center">
+            {showTags
+              ? <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">{cs.subtopic}</span>
+              : <span className="text-xs text-gray-400 italic">Enable tags in Settings to see topic</span>
+            }
             <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-semibold">{STYLE_LABEL[cs.style]}</span>
             {cs.high_yield && (
               <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full font-semibold">⭐ High Yield</span>

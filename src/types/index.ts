@@ -4,6 +4,7 @@ export type Profession = 'pharmacy' | 'medicine' | 'nursing' | 'general'
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type QuestionType = 'mcq' | 'flashcard' | 'case_study'
 export type Region = 'ghana' | 'universal'
+export type StudyYear = 'year1' | 'year2' | 'year3' | 'year4' | 'year5' | 'year6' | 'practitioner'
 
 // ─── Question ─────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,9 @@ export interface UserProfile {
   longest_streak: number
   last_active_date: string
   created_at: string
+  study_year?: StudyYear
+  allow_repeat_questions: boolean
+  show_question_tags: boolean
 }
 
 // ─── Gamification ─────────────────────────────────────────────────────────────

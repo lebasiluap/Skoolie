@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
 import AvatarUpload from '@/components/AvatarUpload'
+import ProfileSettingsClient from '@/components/ProfileSettingsClient'
+import type { StudyYear } from '@/types'
 
 const PROFESSION_META: Record<string, { label: string; icon: string }> = {
   pharmacy: { label: 'Pharmacy',  icon: '💊' },
@@ -123,12 +125,13 @@ export default async function ProfilePage() {
       <div className="px-5 mt-6">
         <h2 className="text-sm font-bold text-[#101010] mb-3">Settings</h2>
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {/* Change profession */}
           <Link
             href="/onboarding"
             className="flex items-center justify-between px-4 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <span className="text-xl">🎓</span>
+              <span className="text-xl">💊</span>
               <div>
                 <p className="text-sm font-semibold text-[#101010]">Change profession</p>
                 <p className="text-xs text-gray-400">Currently: {profMeta.label}</p>
@@ -136,9 +139,19 @@ export default async function ProfilePage() {
             </div>
             <span className="text-gray-300 text-lg">→</span>
           </Link>
+
+          {/* Study year + practice preferences (interactive) */}
+          <ProfileSettingsClient
+            userId={user.id}
+            initialStudyYear={(profile.study_year as StudyYear) ?? null}
+            initialAllowRepeat={profile.allow_repeat_questions ?? true}
+            initialShowTags={profile.show_question_tags ?? true}
+          />
+
+          {/* Leaderboard */}
           <Link
             href="/progress"
-            className="flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between px-4 py-4 border-t border-gray-50 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <span className="text-xl">🏆</span>

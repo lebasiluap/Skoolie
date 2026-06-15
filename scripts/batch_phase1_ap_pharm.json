@@ -1,0 +1,21 @@
+[
+  {"type":"mcq","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":15,"profession":"pharmacy","region":"universal"},
+
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Anatomy & Physiology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":25,"profession":"pharmacy","region":"universal"},
+
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":25,"profession":"pharmacy","region":"universal"},
+  {"type":"flashcard","topic":"Cardiovascular System","category":"Pharmacology","subtopic":"","years":["year1","year2","year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":18,"profession":"pharmacy","region":"universal"}
+]

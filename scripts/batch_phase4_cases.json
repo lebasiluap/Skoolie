@@ -1,0 +1,15 @@
+[
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Hypertension","years":["year3","year4"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Heart Failure","years":["year3","year4"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Stable Angina","years":["year3","year4"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Acute Coronary Syndrome","years":["year4","year5"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Arrhythmias","years":["year4","year5"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Dyslipidaemia","years":["year3","year4"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Venous Thromboembolism","years":["year4","year5"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Valvular Heart Disease","years":["year4","year5"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Cardiomyopathies","years":["year4","year5"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Infective Endocarditis","years":["year5","year6"],"count":4,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Pericardial Disease","years":["year4","year5"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Hypertension","years":["year5","year6","practitioner"],"count":3,"profession":"pharmacy","region":"ghana"},
+  {"type":"case_study","topic":"Cardiovascular System","subtopic":"Heart Failure","years":["year5","year6","practitioner"],"count":2,"profession":"pharmacy","region":"ghana"}
+]

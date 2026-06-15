@@ -1,0 +1,38 @@
+[
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Hypertension","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":13,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Hypertension","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":10,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Heart Failure","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":13,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Heart Failure","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":13,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Stable Angina","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":22,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Stable Angina","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":21,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Acute Coronary Syndrome","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":20,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Acute Coronary Syndrome","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":20,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Arrhythmias","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":20,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Arrhythmias","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":18,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Dyslipidaemia","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":22,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Dyslipidaemia","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":21,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Venous Thromboembolism","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":20,"profession":"pharmacy","region":"ghana"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Venous Thromboembolism","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"ghana"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Valvular Heart Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Valvular Heart Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Valvular Heart Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Cardiomyopathies","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Cardiomyopathies","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Cardiomyopathies","years":["year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Infective Endocarditis","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Infective Endocarditis","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Infective Endocarditis","years":["year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"},
+
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Pericardial Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"easy","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Pericardial Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"medium","count":17,"profession":"pharmacy","region":"universal"},
+  {"type":"mcq","topic":"Cardiovascular System","category":"Clinicals","subtopic":"Pericardial Disease","years":["year3","year4","year5","year6","practitioner"],"difficulty":"hard","count":16,"profession":"pharmacy","region":"universal"}
+]

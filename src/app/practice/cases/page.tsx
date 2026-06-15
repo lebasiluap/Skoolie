@@ -7,8 +7,11 @@ import type { CaseStudy, Profession } from '@/types'
 interface PageProps {
   searchParams: Promise<{
     topic?: string
+    category?: string
     subtopic?: string
     difficulty?: string
+    region?: string
+    random?: string
   }>
 }
 
@@ -19,20 +22,21 @@ export default async function CasesPage({ searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('profession')
+    .select('profession, study_year, show_question_tags')
     .eq('id', user.id)
     .single()
 
   if (!profile) redirect('/onboarding')
 
   const params = await searchParams
-  const { topic, subtopic, difficulty } = params
+  const { topic, category, subtopic, difficulty, region, random } = params
+  const isRandom = random === '1'
 
-  // ── No topic selected → show topic selector ─────────────────────────────────
-  if (!topic) {
+  // ── No topic + not random → show topic selector ─────────────────────────────
+  if (!topic && !isRandom) {
     const { data: allRows } = await supabase
       .from('case_studies')
-      .select('topic, subtopic')
+      .select('topic, category, subtopic')
       .contains('professions', [profile.profession as Profession])
 
     if (!allRows || allRows.length === 0) {
@@ -45,40 +49,46 @@ export default async function CasesPage({ searchParams }: PageProps) {
       )
     }
 
-    const countMap: Record<string, Record<string, number>> = {}
+    const countMap = new Map<string, number>()
     for (const row of allRows) {
       if (!row.topic) continue
-      if (!countMap[row.topic]) countMap[row.topic] = {}
-      const sub = row.subtopic ?? '__all__'
-      countMap[row.topic][sub] = (countMap[row.topic][sub] ?? 0) + 1
+      const key = `${row.topic}|||${row.category ?? ''}|||${row.subtopic ?? ''}`
+      countMap.set(key, (countMap.get(key) ?? 0) + 1)
     }
-
-    const topicData = Object.entries(countMap).flatMap(([t, subs]) =>
-      Object.entries(subs).map(([s, count]) => ({
-        topic: t,
-        subtopic: s === '__all__' ? null : s,
-        count,
-      }))
-    )
+    const topicData = Array.from(countMap.entries()).map(([key, count]) => {
+      const [t, c, s] = key.split('|||')
+      return { topic: t, category: c || null, subtopic: s || null, count }
+    })
 
     return (
       <TopicSelectorClient
         topicRows={topicData}
         mode="case_study"
         totalAvailable={allRows.length}
+        region={region}
       />
     )
   }
 
-  // ── Topic selected → fetch cases ────────────────────────────────────────────
+  // ── Fetch cases ─────────────────────────────────────────────────────────────
   let query = supabase
     .from('case_studies')
     .select('*')
     .contains('professions', [profile.profession as Profession])
-    .eq('topic', topic)
 
+  if (topic) query = query.eq('topic', topic)
+  if (category) query = query.eq('category', category)
   if (subtopic) query = query.eq('subtopic', subtopic)
   if (difficulty && difficulty !== 'all') query = query.eq('difficulty', difficulty)
+
+  // Region filter
+  if (region === 'universal') query = query.eq('region', 'universal')
+  else if (region === 'ghana') query = query.eq('region', 'ghana')
+
+  // Year filter
+  if (profile.study_year) {
+    query = query.contains('year_level', [profile.study_year])
+  }
 
   const { data: cases } = await query
 
@@ -88,17 +98,13 @@ export default async function CasesPage({ searchParams }: PageProps) {
         <p className="text-4xl mb-4">🔍</p>
         <p className="text-[#101010] font-semibold mb-1">No cases found</p>
         <p className="text-gray-400 text-sm mb-6">Try a different topic or difficulty.</p>
-        <a
-          href="/practice/cases"
-          className="px-6 py-3 rounded-full bg-[#0D9488] text-white font-semibold text-sm"
-        >
+        <a href="/practice/cases" className="px-6 py-3 rounded-full bg-[#0D9488] text-white font-semibold text-sm">
           ← Back to topics
         </a>
       </div>
     )
   }
 
-  // Shuffle
   const shuffled = [...cases]
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -109,6 +115,7 @@ export default async function CasesPage({ searchParams }: PageProps) {
     <CaseStudyClient
       cases={shuffled as CaseStudy[]}
       userId={user.id}
+      showTags={profile.show_question_tags ?? true}
     />
   )
 }

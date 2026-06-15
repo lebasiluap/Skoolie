@@ -32,7 +32,7 @@ function Toggle({
     <button
       onClick={() => onChange(!checked)}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-        checked ? 'bg-[#0D9488]' : 'bg-gray-200'
+        checked ? 'bg-[#0D9488]' : 'bg-[#2A2A2A]'
       }`}
     >
       <span
@@ -83,35 +83,35 @@ export default function ProfileSettingsClient({
   const currentYearLabel = STUDY_YEARS.find(y => y.value === studyYear)?.label ?? 'Not set'
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       {/* Study year */}
       <div>
         <button
           onClick={() => setYearPickerOpen(o => !o)}
-          className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-4 border-b border-[#1F1F1F] hover:bg-[#1A1A1A] transition-colors"
         >
           <div className="flex items-center gap-3">
             <span className="text-xl">🎓</span>
             <div className="text-left">
-              <p className="text-sm font-semibold text-[#101010]">Study year</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm font-semibold text-white">Study year</p>
+              <p className="text-xs text-[#888888]">
                 {saving === 'study_year' ? 'Saving…' : currentYearLabel}
               </p>
             </div>
           </div>
-          <span className={`text-gray-300 text-lg transition-transform duration-200 ${yearPickerOpen ? 'rotate-90' : ''}`}>→</span>
+          <span className={`text-[#555555] text-lg transition-transform duration-200 ${yearPickerOpen ? 'rotate-90' : ''}`}>→</span>
         </button>
 
         {yearPickerOpen && (
-          <div className="border-b border-gray-100 bg-gray-50">
+          <div className="border-b border-[#1F1F1F] bg-[#0A0A0A]">
             {STUDY_YEARS.map(y => (
               <button
                 key={y.value}
                 onClick={() => handleYearChange(y.value)}
                 className={`w-full text-left px-6 py-2.5 text-sm transition-colors ${
                   studyYear === y.value
-                    ? 'text-[#0D9488] font-semibold bg-[#f0fdfb]'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'text-[#0D9488] font-semibold bg-[#0D9488]/10'
+                    : 'text-[#888888] hover:bg-[#1A1A1A] hover:text-white'
                 }`}
               >
                 {y.label}
@@ -123,12 +123,12 @@ export default function ProfileSettingsClient({
       </div>
 
       {/* Allow repeat questions */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-50">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-[#1F1F1F]">
         <div className="flex items-center gap-3">
           <span className="text-xl">🔁</span>
           <div>
-            <p className="text-sm font-semibold text-[#101010]">Repeat questions</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm font-semibold text-white">Repeat questions</p>
+            <p className="text-xs text-[#888888]">
               {saving === 'allow_repeat_questions' ? 'Saving…' : 'Show already-answered questions'}
             </p>
           </div>
@@ -141,8 +141,8 @@ export default function ProfileSettingsClient({
         <div className="flex items-center gap-3">
           <span className="text-xl">🏷️</span>
           <div>
-            <p className="text-sm font-semibold text-[#101010]">Show topic tags</p>
-            <p className="text-xs text-gray-400">
+            <p className="text-sm font-semibold text-white">Show topic tags</p>
+            <p className="text-xs text-[#888888]">
               {saving === 'show_question_tags' ? 'Saving…' : 'Display topic/subtopic on questions'}
             </p>
           </div>

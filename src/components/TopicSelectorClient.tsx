@@ -35,6 +35,7 @@ const TOPIC_ICONS: Record<string, string> = {
   'Gastroenterology': '🫃',
   'Pain Management': '💉',
   'Neurology': '🧠',
+  'Central Nervous System': '🧠',
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -52,7 +53,6 @@ function getCategoryIcon(cat: string) {
   return CATEGORY_ICONS[cat] ?? '📖'
 }
 
-// Grouped structure: topic → category → subtopics[]
 interface SubtopicEntry { name: string; count: number }
 interface CategoryEntry { total: number; subtopics: SubtopicEntry[] }
 interface TopicEntry { total: number; categories: Map<string, CategoryEntry> }
@@ -62,9 +62,8 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
   const [difficulty, setDifficulty] = useState<Difficulty>('all')
   const [limit, setLimit] = useState<number>(10)
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null) // "topic::category"
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
-  // Build 3-level grouped structure
   const grouped = new Map<string, TopicEntry>()
 
   for (const row of topicRows) {
@@ -87,8 +86,6 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
   }
 
   const sortedTopics = Array.from(grouped.entries()).sort((a, b) => b[1].total - a[1].total)
-
-  // Category display order
   const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
 
   function buildUrl(topic?: string, category?: string, subtopic?: string) {
@@ -108,7 +105,6 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
 
   function handleStartAll() {
     const url = buildUrl()
-    // random=1 tells the server page to skip the topic selector
     const sep = url.includes('?') ? '&' : '?'
     router.push(url + sep + 'random=1')
   }
@@ -116,20 +112,20 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
   const categoryKey = (topic: string, cat: string) => `${topic}::${cat}`
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
       {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center gap-3 border-b border-gray-100">
+      <div className="bg-[#0A0A0A] px-5 py-4 flex items-center gap-3 border-b border-[#1F1F1F]">
         <Link
-          href="/dashboard"
-          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
+          href="/practice"
+          className="w-9 h-9 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] hover:text-white transition-colors"
         >
           ←
         </Link>
         <div>
-          <h1 className="text-base font-bold text-[#101010]">
+          <h1 className="text-base font-bold text-white">
             {mode === 'mcq' ? 'MCQ Practice' : mode === 'flashcard' ? 'Flashcards' : 'Case Studies'}
           </h1>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[#888888]">
             {totalAvailable} {mode === 'case_study' ? 'cases' : 'questions'} available
           </p>
         </div>
@@ -138,19 +134,19 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
       <div className="flex-1 px-5 py-5 flex flex-col gap-5 pb-32">
         {/* Difficulty filter */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Difficulty</p>
-          <div className="flex gap-2">
+          <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-2">Difficulty</p>
+          <div className="flex gap-2 flex-wrap">
             {DIFFICULTIES.map(d => (
               <button
                 key={d}
                 onClick={() => setDifficulty(d)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all capitalize ${
                   difficulty === d
-                    ? d === 'all' ? 'bg-[#101010] text-white border-[#101010]'
+                    ? d === 'all' ? 'bg-white text-black border-white'
                     : d === 'easy' ? 'bg-green-500 text-white border-green-500'
                     : d === 'medium' ? 'bg-orange-400 text-white border-orange-400'
                     : 'bg-red-500 text-white border-red-500'
-                    : 'bg-white text-gray-500 border-gray-200'
+                    : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-[#555555]'
                 }`}
               >
                 {d === 'all' ? 'All levels' : d}
@@ -159,10 +155,10 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
           </div>
         </div>
 
-        {/* Question count (not for case studies) */}
+        {/* Question count */}
         {mode !== 'case_study' && (
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Questions per session</p>
+            <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-2">Questions per session</p>
             <div className="flex gap-2">
               {LIMITS.map(n => (
                 <button
@@ -170,8 +166,8 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
                   onClick={() => setLimit(n)}
                   className={`w-12 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                     limit === n
-                      ? 'bg-[#0D9488] text-white border-[#0D9488]'
-                      : 'bg-white text-gray-500 border-gray-200'
+                      ? 'bg-[#0D9488] text-black border-[#0D9488]'
+                      : 'bg-transparent text-[#888888] border-[#2A2A2A] hover:border-[#555555]'
                   }`}
                 >
                   {n}
@@ -181,20 +177,20 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
           </div>
         )}
 
-        {/* Quick start — all */}
+        {/* Quick start */}
         <button
           onClick={handleStartAll}
-          className="w-full py-3.5 rounded-2xl bg-[#0D9488] text-white font-semibold text-sm flex items-center justify-between px-5"
+          className="w-full py-3.5 rounded-2xl bg-[#0D9488] text-black font-semibold text-sm flex items-center justify-between px-5"
         >
           <span>🎲 Surprise me</span>
-          <span className="opacity-70 text-xs">
+          <span className="opacity-60 text-xs">
             {mode === 'case_study' ? 'Random cases →' : `Random ${limit} questions →`}
           </span>
         </button>
 
         {/* Topic list */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Choose a topic</p>
+          <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-3">Choose a topic</p>
           <div className="flex flex-col gap-2">
             {sortedTopics.map(([topic, topicData]) => {
               const isTopicExpanded = expandedTopic === topic
@@ -205,20 +201,20 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
               })
 
               return (
-                <div key={topic} className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                <div key={topic} className="bg-[#141414] rounded-2xl overflow-hidden border border-[#1F1F1F]">
                   {/* Topic row */}
                   <div className="flex items-center gap-3 px-4 py-3.5">
                     <span className="text-xl">{getTopicIcon(topic)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#101010] truncate">{topic}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-sm font-semibold text-white truncate">{topic}</p>
+                      <p className="text-xs text-[#888888]">
                         {topicData.total} {mode === 'case_study' ? 'cases' : 'questions'} · {sortedCats.length} {sortedCats.length === 1 ? 'category' : 'categories'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Link
                         href={buildUrl(topic)}
-                        className="px-3 py-1.5 rounded-full bg-[#f0fdfb] text-[#0D9488] text-xs font-semibold"
+                        className="px-3 py-1.5 rounded-full bg-[#0D9488]/15 text-[#0D9488] text-xs font-semibold border border-[#0D9488]/20"
                       >
                         Start →
                       </Link>
@@ -227,7 +223,7 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
                           setExpandedTopic(isTopicExpanded ? null : topic)
                           setExpandedCategory(null)
                         }}
-                        className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs transition-transform duration-200"
+                        className="w-7 h-7 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] text-xs transition-transform duration-200"
                         style={{ transform: isTopicExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                       >
                         ↓
@@ -237,34 +233,34 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
 
                   {/* Category rows */}
                   {isTopicExpanded && (
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-[#1F1F1F]">
                       {sortedCats.map(([cat, catData]) => {
                         const ck = categoryKey(topic, cat)
                         const isCatExpanded = expandedCategory === ck
                         const hasSubtopics = catData.subtopics.length > 0
 
                         return (
-                          <div key={cat} className="border-b border-gray-50 last:border-0">
+                          <div key={cat} className="border-b border-[#1F1F1F] last:border-0">
                             {/* Category row */}
-                            <div className="flex items-center gap-3 px-5 py-3 bg-gray-50/50">
+                            <div className="flex items-center gap-3 px-5 py-3 bg-[#0D0D0D]">
                               <span className="text-base">{getCategoryIcon(cat)}</span>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-[#101010]">{cat}</p>
-                                <p className="text-[10px] text-gray-400">
+                                <p className="text-xs font-semibold text-white">{cat}</p>
+                                <p className="text-[10px] text-[#888888]">
                                   {catData.total} {mode === 'case_study' ? 'cases' : 'questions'}
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Link
                                   href={buildUrl(topic, cat)}
-                                  className="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-[#0D9488] text-xs font-semibold"
+                                  className="px-2.5 py-1 rounded-full bg-[#141414] border border-[#2A2A2A] text-[#0D9488] text-xs font-semibold"
                                 >
                                   Start →
                                 </Link>
                                 {hasSubtopics && (
                                   <button
                                     onClick={() => setExpandedCategory(isCatExpanded ? null : ck)}
-                                    className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-[10px] transition-transform duration-200"
+                                    className="w-6 h-6 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] text-[10px] transition-transform duration-200"
                                     style={{ transform: isCatExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
                                   >
                                     ↓
@@ -282,11 +278,11 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
                                     <Link
                                       key={sub.name}
                                       href={buildUrl(topic, cat, sub.name)}
-                                      className="flex items-center justify-between px-7 py-2.5 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 bg-white"
+                                      className="flex items-center justify-between px-7 py-2.5 hover:bg-[#1A1A1A] transition-colors border-b border-[#1F1F1F] last:border-0 bg-[#0A0A0A]"
                                     >
-                                      <span className="text-sm text-gray-600">{sub.name}</span>
+                                      <span className="text-sm text-[#888888]">{sub.name}</span>
                                       <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-[#555555]">
                                           {sub.count}{mode === 'case_study' ? 'c' : 'q'}
                                         </span>
                                         <span className="text-[#0D9488] text-xs">→</span>

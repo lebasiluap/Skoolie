@@ -32,8 +32,6 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      // If email confirmation is required, go to verify screen
-      // If auto-confirmed (e.g. in dev), go straight to onboarding
       if (data.session) {
         router.push('/onboarding')
       } else {
@@ -51,40 +49,40 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D9488] flex flex-col">
-      {/* Teal header */}
-      <div className="flex flex-col pt-14 pb-8 px-6">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col px-6">
+      {/* Brand */}
+      <div className="pt-14 pb-8">
         <h2 className="text-3xl font-bold text-white">Create account</h2>
-        <p className="text-white/70 mt-2 text-sm">Join thousands of healthcare students</p>
+        <p className="text-[#888888] mt-2 text-sm">Join thousands of healthcare students</p>
       </div>
 
-      {/* White card */}
-      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-12">
+      {/* Form */}
+      <div className="flex-1 pb-12">
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Full name</label>
+            <label className="text-[10px] font-semibold text-[#555555] uppercase tracking-widest">Full name</label>
             <input
               type="text"
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Your full name"
               required
-              className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#101010] placeholder-gray-400 focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]"
+              className="mt-2 w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555555] focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]/50 transition-colors"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email address</label>
+            <label className="text-[10px] font-semibold text-[#555555] uppercase tracking-widest">Email address</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@email.com"
               required
-              className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#101010] placeholder-gray-400 focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]"
+              className="mt-2 w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555555] focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]/50 transition-colors"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Password</label>
+            <label className="text-[10px] font-semibold text-[#555555] uppercase tracking-widest">Password</label>
             <input
               type="password"
               value={password}
@@ -92,32 +90,32 @@ export default function SignupPage() {
               placeholder="Create a strong password"
               required
               minLength={6}
-              className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#101010] placeholder-gray-400 focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]"
+              className="mt-2 w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555555] focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]/50 transition-colors"
             />
           </div>
 
           {error && (
-            <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>
+            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-60"
+            className="w-full py-3.5 rounded-full bg-[#0D9488] text-black font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-50 mt-2"
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
         <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-gray-400 text-sm">or continue with</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-[#2A2A2A]" />
+          <span className="text-[#555555] text-sm">or</span>
+          <div className="flex-1 h-px bg-[#2A2A2A]" />
         </div>
 
         <button
           onClick={handleGoogleSignup}
-          className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-base hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-full border border-[#2A2A2A] bg-[#141414] text-white font-semibold text-base hover:bg-[#1A1A1A] transition-colors flex items-center justify-center gap-2"
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -128,7 +126,7 @@ export default function SignupPage() {
           Continue with Google
         </button>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
+        <p className="text-center text-sm text-[#888888] mt-8">
           Already have an account?{' '}
           <Link href="/login" className="text-[#0D9488] font-semibold">Sign in</Link>
         </p>

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import NavWrapper from "@/components/NavWrapper";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "Skoolie — Healthcare Test Companion",
@@ -13,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`h-full antialiased ${inter.variable}`}>
+      <body className="min-h-full flex flex-col bg-[#0A0A0A] text-white">
         {children}
         <NavWrapper />
       </body>

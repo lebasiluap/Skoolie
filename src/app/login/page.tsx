@@ -38,39 +38,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col px-6">
-      {/* Brand */}
+    <div className="min-h-screen bg-[#0D9488] flex flex-col">
+      {/* Teal header */}
       <div className="flex flex-col items-center pt-16 pb-10">
-        <div className="w-14 h-14 rounded-2xl bg-[#0D9488] flex items-center justify-center mb-4">
-          <svg width="28" height="28" viewBox="0 0 56 44" fill="none">
-            <path d="M0 22L14 4L28 22L14 40L0 22Z" fill="white" />
-            <path d="M28 22L42 4L56 22L42 40L28 22Z" fill="white" fillOpacity="0.4" />
-          </svg>
+        <div className="mb-4">
+          <img src="/logo.png" alt="Skoolie" className="w-20 h-20" />
         </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Skoolie</h1>
-        <p className="text-[#888888] mt-1 text-sm">Your healthcare test companion</p>
+        <h1 className="text-3xl font-bold text-white tracking-tight">Skoolie</h1>
+        <p className="text-white/70 mt-1 text-sm">Your healthcare test companion</p>
       </div>
 
-      {/* Form */}
-      <div className="flex-1">
-        <h2 className="text-2xl font-bold text-white mb-1">Welcome back</h2>
-        <p className="text-[#888888] text-sm mb-8">Sign in to continue your streak</p>
+      {/* White card */}
+      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-12">
+        <h2 className="text-2xl font-bold text-[#101010] mb-1">Welcome back</h2>
+        <p className="text-gray-500 text-sm mb-8">Sign in to continue your streak</p>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div>
-            <label className="text-[10px] font-semibold text-[#555555] uppercase tracking-widest">Email address</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email address</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@email.com"
               required
-              className="mt-2 w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555555] focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]/50 transition-colors"
+              className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#101010] placeholder-gray-400 focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]"
             />
           </div>
           <div>
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-semibold text-[#555555] uppercase tracking-widest">Password</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Password</label>
               <Link href="/forgot-password" className="text-xs text-[#0D9488] font-semibold">Forgot password?</Link>
             </div>
             <input
@@ -79,32 +76,32 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="Enter password"
               required
-              className="mt-2 w-full px-4 py-3.5 rounded-xl bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555555] focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]/50 transition-colors"
+              className="mt-1 w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-[#101010] placeholder-gray-400 focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488]"
             />
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl">{error}</p>
+            <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-xl">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-black font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-50 mt-2"
+            className="w-full py-3 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-60"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
         <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-[#2A2A2A]" />
-          <span className="text-[#555555] text-sm">or</span>
-          <div className="flex-1 h-px bg-[#2A2A2A]" />
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-gray-400 text-sm">or continue with</span>
+          <div className="flex-1 h-px bg-gray-200" />
         </div>
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full py-3.5 rounded-full border border-[#2A2A2A] bg-[#141414] text-white font-semibold text-base hover:bg-[#1A1A1A] transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-base hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -115,7 +112,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="text-center text-sm text-[#888888] mt-8">
+        <p className="text-center text-sm text-gray-500 mt-8">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-[#0D9488] font-semibold">Sign up</Link>
         </p>

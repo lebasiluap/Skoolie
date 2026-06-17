@@ -60,8 +60,10 @@ export default async function UserProfilePage({ params }: PageProps) {
   const league = getLeague(profile.xp)
   const leagueConf = LEAGUE_CONFIG[league]
 
-  const xpToNextLevel = 400
-  const xpProgress = Math.min((profile.xp / xpToNextLevel) * 100, 100)
+  const XP_PER_LEVEL = 400
+  const xpIntoCurrentLevel = profile.xp % XP_PER_LEVEL
+  const xpToNextLevel = XP_PER_LEVEL - xpIntoCurrentLevel
+  const xpProgress = (xpIntoCurrentLevel / XP_PER_LEVEL) * 100
 
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
@@ -101,7 +103,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold text-[#101010]">Level {profile.level}</span>
-            <span className="text-xs text-gray-400">{profile.xp} / {xpToNextLevel} XP</span>
+            <span className="text-xs text-gray-400">{xpIntoCurrentLevel} / {XP_PER_LEVEL} XP</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
@@ -109,7 +111,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               style={{ width: `${xpProgress}%` }}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-1">{xpToNextLevel - profile.xp} XP to Level {profile.level + 1}</p>
+          <p className="text-xs text-gray-400 mt-1">{xpToNextLevel} XP to Level {profile.level + 1}</p>
         </div>
 
         {/* Stats */}

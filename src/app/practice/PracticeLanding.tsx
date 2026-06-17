@@ -59,11 +59,11 @@ export default function PracticeLanding({ mcqCount, flashcardCount, caseCount, s
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-28">
+    <div className="min-h-screen bg-gray-50 pb-28">
       {/* Header */}
-      <div className="bg-[#0A0A0A] px-5 pt-12 pb-6 border-b border-[#1F1F1F]">
+      <div className="bg-[#101010] px-5 pt-10 pb-8">
         <h1 className="text-white text-2xl font-bold">Practice</h1>
-        <p className="text-[#888888] text-sm mt-1">
+        <p className="text-white/50 text-sm mt-1">
           {PROF_LABELS[profession] ?? profession}
           {studyYear ? ` · ${YEAR_LABELS[studyYear] ?? studyYear}` : ''}
         </p>
@@ -72,23 +72,23 @@ export default function PracticeLanding({ mcqCount, flashcardCount, caseCount, s
       <div className="px-5 py-5 flex flex-col gap-5">
         {/* Region toggle */}
         <div>
-          <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-2">Question set</p>
-          <div className="bg-[#141414] rounded-2xl p-1.5 flex gap-1 border border-[#1F1F1F]">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Question set</p>
+          <div className="bg-white rounded-2xl p-1.5 flex gap-1 shadow-sm">
             {(['all', 'universal', 'ghana'] as Region[]).map(r => (
               <button
                 key={r}
                 onClick={() => setRegion(r)}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
                   region === r
-                    ? 'bg-[#0D9488] text-black shadow-sm'
-                    : 'text-[#888888] hover:text-white'
+                    ? 'bg-[#0D9488] text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 {r === 'all' ? '🌍 All' : r === 'universal' ? '🌐 Global' : '🇬🇭 Regional'}
               </button>
             ))}
           </div>
-          <p className="text-xs text-[#555555] mt-1.5 px-1">
+          <p className="text-xs text-gray-400 mt-1.5 px-1">
             {region === 'all' ? 'Showing all available questions' :
              region === 'universal' ? 'Showing globally applicable questions only' :
              'Showing Ghana-specific questions only'}
@@ -96,38 +96,35 @@ export default function PracticeLanding({ mcqCount, flashcardCount, caseCount, s
         </div>
 
         {/* Mode cards */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {modes.map(m => (
-            <div key={m.mode} className="bg-[#141414] rounded-2xl border border-[#1F1F1F] overflow-hidden">
+            <div key={m.mode} className="bg-white rounded-2xl shadow-sm overflow-hidden">
               {/* Card header */}
               <div className="px-5 pt-5 pb-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#0D9488]/15 border border-[#0D9488]/20 flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 rounded-2xl bg-[#f0fdfb] flex items-center justify-center text-2xl">
                   {m.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="text-base font-bold text-white">{m.label}</p>
-                  <p className="text-xs text-[#888888]">{m.description}</p>
+                  <p className="text-base font-bold text-[#101010]">{m.label}</p>
+                  <p className="text-xs text-gray-400">{m.description}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-[#0D9488]">{m.count}</p>
-                  <p className="text-[10px] text-[#555555]">{m.mode === 'case_study' ? 'cases' : 'questions'}</p>
+                  <p className="text-[10px] text-gray-400">{m.mode === 'case_study' ? 'cases' : 'questions'}</p>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="h-px bg-[#1F1F1F] mx-5" />
-
               {/* Action buttons */}
-              <div className="px-5 py-4 flex gap-3">
+              <div className="px-5 pb-5 flex gap-3">
                 <Link
                   href={buildUrl(m.path, { random: '1', ...(m.randomLimit ? { limit: String(m.randomLimit) } : {}) })}
-                  className="flex-1 py-3 rounded-full bg-[#0D9488] text-black text-sm font-semibold text-center hover:bg-[#0b7a6e] transition-colors"
+                  className="flex-1 py-3 rounded-full bg-[#0D9488] text-white text-sm font-semibold text-center hover:bg-[#0b7a6e] transition-colors"
                 >
                   🎲 Start Random
                 </Link>
                 <Link
                   href={buildUrl(m.path)}
-                  className="flex-1 py-3 rounded-full border border-[#2A2A2A] text-white text-sm font-semibold text-center hover:bg-[#1A1A1A] transition-colors"
+                  className="flex-1 py-3 rounded-full border border-gray-200 text-[#101010] text-sm font-semibold text-center hover:bg-gray-50 transition-colors"
                 >
                   Browse Topics
                 </Link>
@@ -139,16 +136,16 @@ export default function PracticeLanding({ mcqCount, flashcardCount, caseCount, s
         {/* Bookmarks shortcut */}
         <Link
           href="/bookmarks"
-          className="flex items-center justify-between px-5 py-4 bg-[#141414] rounded-2xl border border-[#1F1F1F] hover:bg-[#1A1A1A] transition-colors"
+          className="flex items-center justify-between px-5 py-4 bg-white rounded-2xl shadow-sm"
         >
           <div className="flex items-center gap-3">
             <span className="text-xl">🔖</span>
             <div>
-              <p className="text-sm font-semibold text-white">Bookmarks</p>
-              <p className="text-xs text-[#888888]">Questions you&apos;ve saved</p>
+              <p className="text-sm font-semibold text-[#101010]">Bookmarks</p>
+              <p className="text-xs text-gray-400">Questions you&apos;ve saved</p>
             </div>
           </div>
-          <span className="text-[#555555] text-lg">→</span>
+          <span className="text-gray-300 text-lg">→</span>
         </Link>
       </div>
     </div>

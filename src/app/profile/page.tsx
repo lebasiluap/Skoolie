@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-
+import BottomNav from '@/components/BottomNav'
 import AvatarUpload from '@/components/AvatarUpload'
 import ProfileSettingsClient from '@/components/ProfileSettingsClient'
 import type { StudyYear } from '@/types'
@@ -58,10 +58,11 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-28">
+    <div className="min-h-screen bg-gray-50 pb-28">
       {/* Header */}
-      <div className="bg-[#0A0A0A] px-5 pt-12 pb-8 flex flex-col items-center border-b border-[#1F1F1F]">
-        <div className="mb-4">
+      <div className="bg-[#101010] px-5 pt-12 pb-10 flex flex-col items-center">
+        {/* Avatar with upload */}
+        <div className="mb-4 shadow-lg">
           <AvatarUpload
             userId={user.id}
             initials={initials}
@@ -69,75 +70,77 @@ export default async function ProfilePage() {
           />
         </div>
         <h1 className="text-white text-xl font-bold">{profile.full_name}</h1>
-        <p className="text-[#888888] text-sm mt-0.5">{user.email}</p>
+        <p className="text-white/50 text-sm mt-0.5">{user.email}</p>
 
         <div className="flex items-center gap-2 mt-3">
-          <span className="text-xs bg-[#0D9488]/15 text-[#0D9488] px-3 py-1 rounded-full font-semibold border border-[#0D9488]/30">
+          <span className="text-xs bg-[#0D9488]/20 text-[#0D9488] px-3 py-1 rounded-full font-semibold">
             {profMeta.icon} {profMeta.label}
           </span>
-          <span className="text-xs bg-[#1F1F1F] text-[#888888] px-3 py-1 rounded-full font-semibold border border-[#2A2A2A]">
+          <span className="text-xs bg-white/10 text-white/60 px-3 py-1 rounded-full font-semibold">
             Level {profile.level}
           </span>
         </div>
 
-        <p className="text-[#555555] text-xs mt-3">Member since {joined}</p>
+        <p className="text-white/30 text-xs mt-3">Member since {joined}</p>
       </div>
 
       {/* XP bar */}
       <div className="px-5 mt-5">
-        <div className="bg-[#141414] rounded-2xl p-4 border border-[#1F1F1F]">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-white">Level {profile.level}</span>
-            <span className="text-xs text-[#888888]">{profile.xp} / {profile.level * 400} XP</span>
+            <span className="text-sm font-semibold text-[#101010]">Level {profile.level}</span>
+            <span className="text-xs text-gray-400">{profile.xp % 400} / 400 XP</span>
           </div>
-          <div className="h-1.5 bg-[#1F1F1F] rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-[#0D9488] rounded-full"
-              style={{ width: `${Math.min((profile.xp / (profile.level * 400)) * 100, 100)}%` }}
+              style={{ width: `${((profile.xp % 400) / 400) * 100}%` }}
             />
           </div>
-          <p className="text-xs text-[#555555] mt-2">
-            {Math.max(profile.level * 400 - profile.xp, 0)} XP to Level {profile.level + 1}
+          <p className="text-xs text-gray-400 mt-1">
+            {400 - (profile.xp % 400)} XP to Level {profile.level + 1}
           </p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="px-5 mt-4">
-        <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-3">Your stats</p>
+        <h2 className="text-sm font-bold text-[#101010] mb-3">Your stats</h2>
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: 'Questions answered', value: totalQuestions, color: 'text-[#0D9488]' },
-            { label: 'Accuracy',           value: `${accuracy}%`,  color: 'text-[#0D9488]' },
-            { label: 'Total XP earned',    value: totalXP,         color: 'text-orange-400' },
+            { label: 'Accuracy',           value: `${accuracy}%`,  color: 'text-green-500' },
+            { label: 'Total XP earned',    value: totalXP,         color: 'text-orange-500' },
             { label: 'Best streak',        value: `${profile.longest_streak}d`, color: 'text-[#0D9488]' },
           ].map(stat => (
-            <div key={stat.label} className="bg-[#141414] rounded-2xl p-4 border border-[#1F1F1F]">
+            <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-sm">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-              <p className="text-xs text-[#888888] mt-1">{stat.label}</p>
+              <p className="text-xs text-gray-400 mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Settings */}
-      <div className="px-5 mt-5">
-        <p className="text-[10px] font-semibold text-[#0D9488] uppercase tracking-widest mb-3">Settings</p>
-        <div className="bg-[#141414] rounded-2xl border border-[#1F1F1F] overflow-hidden">
+      <div className="px-5 mt-6">
+        <h2 className="text-sm font-bold text-[#101010] mb-3">Settings</h2>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          {/* Change profession */}
           <Link
             href="/onboarding"
-            className="flex items-center justify-between px-4 py-4 border-b border-[#1F1F1F] hover:bg-[#1A1A1A] transition-colors"
+            className="flex items-center justify-between px-4 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <span className="text-xl">💊</span>
               <div>
-                <p className="text-sm font-semibold text-white">Change profession</p>
-                <p className="text-xs text-[#888888]">Currently: {profMeta.label}</p>
+                <p className="text-sm font-semibold text-[#101010]">Change profession</p>
+                <p className="text-xs text-gray-400">Currently: {profMeta.label}</p>
               </div>
             </div>
-            <span className="text-[#555555] text-lg">→</span>
+            <span className="text-gray-300 text-lg">→</span>
           </Link>
 
+          {/* Study year + practice preferences (interactive) */}
           <ProfileSettingsClient
             userId={user.id}
             initialStudyYear={(profile.study_year as StudyYear) ?? null}
@@ -145,18 +148,19 @@ export default async function ProfilePage() {
             initialShowTags={profile.show_question_tags ?? true}
           />
 
+          {/* Leaderboard */}
           <Link
             href="/progress"
-            className="flex items-center justify-between px-4 py-4 border-t border-[#1F1F1F] hover:bg-[#1A1A1A] transition-colors"
+            className="flex items-center justify-between px-4 py-4 border-t border-gray-50 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
               <span className="text-xl">🏆</span>
               <div>
-                <p className="text-sm font-semibold text-white">View leaderboard</p>
-                <p className="text-xs text-[#888888]">See how you rank against others</p>
+                <p className="text-sm font-semibold text-[#101010]">View leaderboard</p>
+                <p className="text-xs text-gray-400">See how you rank against others</p>
               </div>
             </div>
-            <span className="text-[#555555] text-lg">→</span>
+            <span className="text-gray-300 text-lg">→</span>
           </Link>
         </div>
       </div>
@@ -166,12 +170,14 @@ export default async function ProfilePage() {
         <form action={handleLogout}>
           <button
             type="submit"
-            className="w-full py-3.5 rounded-full border border-[#2A2A2A] text-[#888888] text-sm font-semibold hover:bg-[#141414] transition-colors"
+            className="w-full py-3.5 rounded-full border border-red-200 text-red-400 text-sm font-semibold hover:bg-red-50 transition-colors"
           >
             Sign out
           </button>
         </form>
       </div>
+
+      <BottomNav />
     </div>
   )
 }

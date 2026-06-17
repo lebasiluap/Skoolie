@@ -51,7 +51,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#141414] border-t border-[#1F1F1F] px-2 py-2 flex justify-around">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 py-2 flex justify-around safe-area-inset-bottom">
       {NAV_ITEMS.map(({ label, href, Icon }) => {
         const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href.split('/').slice(0, 2).join('/')))
         return (
@@ -59,11 +59,11 @@ export default function BottomNav() {
             key={label}
             href={href}
             className={`flex flex-col items-center gap-1 px-4 py-1.5 rounded-2xl transition-all duration-200 ${
-              active ? 'text-[#0D9488]' : 'text-[#555555] hover:text-[#888888]'
+              active ? 'text-[#0D9488]' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
             <Icon active={active} />
-            <span className={`text-[10px] font-semibold tracking-wide ${active ? 'text-[#0D9488]' : 'text-[#555555]'}`}>
+            <span className={`text-[10px] font-semibold tracking-wide ${active ? 'text-[#0D9488]' : 'text-gray-400'}`}>
               {label}
             </span>
             {active && <div className="w-1 h-1 rounded-full bg-[#0D9488]" />}

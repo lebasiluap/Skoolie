@@ -24,6 +24,8 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
   const question = questions[index]
   const progress = (index / questions.length) * 100
 
+  // For flashcards options is [], so correct_answer holds the answer text directly.
+  // For MCQ-style flashcards (shouldn't normally appear here), fall back to option lookup.
   const opts = question?.options as string[]
   const isFlashcard = !opts || opts.length === 0
   const answerText = isFlashcard
@@ -47,6 +49,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
         xpEarned > 0
           ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned })
           : Promise.resolve(),
+        // Record history for no-repeat tracking
         supabase.from('user_question_history').upsert(
           questions.map(q => ({
             user_id: userId,
@@ -57,7 +60,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
             subtopic: q.subtopic ?? null,
             difficulty: q.difficulty,
             answered_at: now,
-            was_correct: null,
+            was_correct: null, // flashcards don't have definitive correct/incorrect
           })),
           { onConflict: 'user_id,question_id' }
         ),
@@ -66,6 +69,7 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
       return
     }
 
+    // Flip back then advance
     setAnimating(true)
     setFlipped(false)
     setTimeout(() => {
@@ -77,41 +81,41 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
   if (done) {
     const accuracy = Math.round((known / questions.length) * 100)
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-20 h-20 rounded-full bg-[#0D9488]/15 border border-[#0D9488]/30 flex items-center justify-center mb-6">
-          <span className="text-4xl">🎉</span>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-24 h-24 rounded-full bg-[#f0fdfb] flex items-center justify-center mb-6">
+          <span className="text-5xl">🎉</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-1">Deck complete!</h1>
-        <p className="text-[#888888] text-sm mb-8">Here&apos;s how you did</p>
+        <h1 className="text-3xl font-bold text-[#101010] mb-1">Deck complete!</h1>
+        <p className="text-gray-400 text-sm mb-10">Here&apos;s how you did</p>
 
-        <div className="w-full max-w-xs grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-green-500/10 rounded-2xl p-4 text-center border border-green-500/20">
-            <p className="text-2xl font-bold text-green-400">{known}</p>
-            <p className="text-xs text-[#888888] mt-1">Got it</p>
+        <div className="w-full max-w-xs grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-green-50 rounded-2xl p-4 text-center">
+            <p className="text-2xl font-bold text-green-500">{known}</p>
+            <p className="text-xs text-gray-400 mt-1">Got it</p>
           </div>
-          <div className="bg-red-500/10 rounded-2xl p-4 text-center border border-red-500/20">
+          <div className="bg-red-50 rounded-2xl p-4 text-center">
             <p className="text-2xl font-bold text-red-400">{unknown}</p>
-            <p className="text-xs text-[#888888] mt-1">Missed</p>
+            <p className="text-xs text-gray-400 mt-1">Missed</p>
           </div>
-          <div className="bg-[#141414] rounded-2xl p-4 text-center border border-[#1F1F1F]">
-            <p className="text-2xl font-bold text-orange-400">+{known * 5}</p>
-            <p className="text-xs text-[#888888] mt-1">XP</p>
+          <div className="bg-[#f0fdfb] rounded-2xl p-4 text-center">
+            <p className="text-2xl font-bold text-[#0D9488]">+{known * 5}</p>
+            <p className="text-xs text-gray-400 mt-1">XP</p>
           </div>
         </div>
 
         <p className="text-5xl font-bold text-[#0D9488] mb-1">{accuracy}%</p>
-        <p className="text-[#888888] text-sm mb-10">accuracy</p>
+        <p className="text-gray-400 text-sm mb-10">accuracy</p>
 
         <div className="w-full max-w-xs flex flex-col gap-3">
           <button
             onClick={() => { setIndex(0); setFlipped(false); setKnown(0); setUnknown(0); setDone(false) }}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-black font-semibold hover:bg-[#0b7a6e] transition-colors"
+            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold hover:bg-[#0b7a6e] transition-colors"
           >
             Study again
           </button>
           <Link
             href="/dashboard"
-            className="w-full py-3.5 rounded-full border border-[#2A2A2A] text-white font-semibold text-center hover:bg-[#141414] transition-colors"
+            className="w-full py-3.5 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
           >
             Back to dashboard
           </Link>
@@ -121,18 +125,15 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-[#0A0A0A] px-5 py-4 flex items-center justify-between border-b border-[#1F1F1F]">
-        <Link
-          href="/practice/flashcards"
-          className="w-9 h-9 rounded-full bg-[#1F1F1F] flex items-center justify-center text-[#888888] hover:text-white transition-colors"
-        >
+      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
+        <Link href="/practice/flashcards" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg">
           ←
         </Link>
         <div className="flex flex-col items-center">
-          <span className="text-white font-semibold text-sm">{index + 1} / {questions.length}</span>
-          {showTags && <span className="text-[#888888] text-xs">{question.topic}</span>}
+          <span className="text-[#101010] font-semibold text-sm">{index + 1} / {questions.length}</span>
+          {showTags && <span className="text-gray-400 text-xs">{question.topic}</span>}
         </div>
         <BookmarkButton
           questionId={question.id}
@@ -142,21 +143,23 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-[#1F1F1F]">
+      <div className="h-1.5 bg-gray-100">
         <div
-          className="h-full bg-[#0D9488] transition-all duration-500"
+          className="h-full bg-[#0D9488] rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Score pills */}
       <div className="flex justify-center gap-4 py-4">
-        <span className="text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full">✗ {unknown} missed</span>
-        <span className="text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">✓ {known} got it</span>
+        <span className="text-xs font-semibold text-red-500 bg-red-50 px-3 py-1 rounded-full">✗ {unknown} missed</span>
+        <span className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">✓ {known} got it</span>
       </div>
 
-      {/* Flip card */}
-      <div className="flex-1 px-5 flex flex-col justify-center pb-24">
+      {/* Scrollable content — pb-44 clears BottomNav + fixed action bar */}
+      <div className="flex-1 overflow-y-auto px-5 pt-2 pb-44">
+
+        {/* 3D Flip Card */}
         <div
           style={{ perspective: '1200px' }}
           className="w-full"
@@ -168,73 +171,99 @@ export default function FlashcardClient({ questions, userId, bookmarkedIds, show
               transition: 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
               transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
               position: 'relative',
-              height: '300px',
+              minHeight: '280px',
               cursor: 'pointer',
             }}
           >
             {/* Front */}
             <div
               style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-              className="absolute inset-0 bg-[#141414] rounded-3xl p-8 flex flex-col items-center justify-center border border-[#1F1F1F]"
+              className="absolute inset-0 bg-white rounded-3xl p-7 flex flex-col items-center justify-center shadow-2xl"
             >
-              <p className="text-[10px] font-bold text-[#555555] uppercase tracking-widest mb-6">Question</p>
-              <p className="text-white text-base leading-relaxed font-medium text-center">
+              <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Question</p>
+              <p className="text-[#101010] text-base leading-relaxed font-medium text-center">
                 {question.question_text}
               </p>
-              <div className="mt-8 flex items-center gap-2 text-[#555555]">
+              <div className="mt-6 flex items-center gap-2 text-gray-300">
+                <span className="text-sm">↕</span>
                 <p className="text-xs">Tap to reveal answer</p>
               </div>
             </div>
 
-            {/* Back */}
+            {/* Back — scrollable text so long answers never overflow the card */}
             <div
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
               }}
-              className="absolute inset-0 bg-[#0D9488]/10 rounded-3xl p-8 flex flex-col items-center justify-center border border-[#0D9488]/40"
+              className="absolute inset-0 bg-[#0D9488] rounded-3xl p-7 flex flex-col items-center shadow-2xl overflow-hidden"
             >
-              <p className="text-[10px] font-bold text-[#0D9488]/60 uppercase tracking-widest mb-6">Answer</p>
-              <p className="text-[#5EEAD4] text-lg leading-relaxed font-bold text-center">
-                {answerText}
-              </p>
+              <p className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4 shrink-0">Answer</p>
+              <div className="flex-1 overflow-y-auto w-full">
+                <div className="min-h-full flex items-center justify-center py-2">
+                  <p className="text-white text-base leading-relaxed font-bold text-center">
+                    {answerText}
+                  </p>
+                </div>
+              </div>
+              <p className="text-white/50 text-xs mt-4 shrink-0">↓ Scroll for explanation</p>
             </div>
           </div>
         </div>
 
+        {/* Hint when not flipped */}
         {!flipped && (
-          <p className="text-center text-xs text-[#555555] mt-4">tap card to flip</p>
+          <p className="text-center text-xs text-gray-300 mt-4">tap card to flip</p>
         )}
 
-        {/* Explanation + action buttons — appear after flip */}
+        {/* Avatar explanation — appears after flip */}
         <div
           className={`mt-5 transition-all duration-400 ${
             flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
         >
-          {/* Explanation card */}
-          <div className="bg-[#141414] rounded-2xl border border-[#1F1F1F] p-4 mb-5">
-            <p className="text-sm text-[#CCCCCC] leading-relaxed">{question.explanation}</p>
+          <div className="flex items-start gap-3">
+            <img
+              src="/avatar.png"
+              alt="Tutor"
+              className="w-11 h-11 rounded-full shrink-0 object-cover shadow-sm"
+            />
+            <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
+              <div
+                className="absolute -left-2 top-3 w-0 h-0"
+                style={{
+                  borderTop: '7px solid transparent',
+                  borderBottom: '7px solid transparent',
+                  borderRight: '8px solid white',
+                }}
+              />
+              <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <p className="text-center text-xs text-[#555555] mb-3">How did you do?</p>
+      {/* Action buttons — fixed above BottomNav, always reachable */}
+      {flipped && (
+        <div className="fixed bottom-[68px] left-0 right-0 bg-white border-t border-gray-100 px-5 pt-3 pb-3">
+          <p className="text-center text-xs text-gray-400 mb-2">How did you do?</p>
           <div className="flex gap-3">
             <button
               onClick={() => handleResult(false)}
-              className="flex-1 py-4 rounded-2xl border border-red-500/30 text-red-400 font-semibold text-sm hover:bg-red-500/10 transition-colors"
+              className="flex-1 py-3.5 rounded-2xl border-2 border-red-400/40 text-red-400 font-semibold text-sm hover:bg-red-400/10 transition-colors"
             >
               ✗ Didn&apos;t know
             </button>
             <button
               onClick={() => handleResult(true)}
-              className="flex-1 py-4 rounded-2xl bg-[#0D9488] text-black font-semibold text-sm hover:bg-[#0b7a6e] transition-colors"
+              className="flex-1 py-3.5 rounded-2xl bg-[#0D9488] text-white font-semibold text-sm hover:bg-[#0b7a6e] transition-colors"
             >
               ✓ Got it!
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

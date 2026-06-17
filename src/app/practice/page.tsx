@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PracticeLanding from './PracticeLanding'
-
 import type { Profession } from '@/types'
 
 export default async function PracticePage() {
@@ -26,29 +25,32 @@ export default async function PracticePage() {
   const flashQ = supabase.from('questions').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
     .eq('question_type', 'flashcard')
-  const caseQ = supabase.from('case_studies').select('id', { count: 'exact', head: true })
+  const caseRichQ = supabase.from('case_studies').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
+  const caseMcqQ = supabase.from('questions').select('id', { count: 'exact', head: true })
+    .contains('professions', [profile.profession as Profession])
+    .eq('question_type', 'case_study')
 
   const [
     { count: mcqCount },
     { count: flashcardCount },
-    { count: caseCount },
+    { count: richCaseCount },
+    { count: mcqCaseCount },
   ] = await Promise.all([
     yearFilter ? mcqQ.contains('year_level', [yearFilter]) : mcqQ,
     yearFilter ? flashQ.contains('year_level', [yearFilter]) : flashQ,
-    yearFilter ? caseQ.contains('year_level', [yearFilter]) : caseQ,
+    yearFilter ? caseRichQ.contains('year_level', [yearFilter]) : caseRichQ,
+    yearFilter ? caseMcqQ.contains('year_level', [yearFilter]) : caseMcqQ,
   ])
+  const caseCount = (richCaseCount ?? 0) + (mcqCaseCount ?? 0)
 
   return (
-    <div>
-      <PracticeLanding
-        mcqCount={mcqCount ?? 0}
-        flashcardCount={flashcardCount ?? 0}
-        caseCount={caseCount ?? 0}
-        studyYear={profile.study_year ?? null}
-        profession={profile.profession}
-      />
-
-    </div>
+    <PracticeLanding
+      mcqCount={mcqCount ?? 0}
+      flashcardCount={flashcardCount ?? 0}
+      caseCount={caseCount ?? 0}
+      studyYear={profile.study_year ?? null}
+      profession={profile.profession}
+    />
   )
 }

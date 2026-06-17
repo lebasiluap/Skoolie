@@ -36,13 +36,13 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
 
   // ── No topic + not random → show topic selector ───────────────────────────
   if (!topic && !isRandom) {
-    const { data: allRows } = await supabase
-      .from('questions')
-      .select('topic, category, subtopic')
-      .contains('professions', [profile.profession as Profession])
-      .eq('question_type', 'flashcard')
+    const { data: rows } = await supabase
+      .rpc('get_question_counts', {
+        p_profession: profile.profession,
+        p_question_type: 'flashcard',
+      })
 
-    if (!allRows || allRows.length === 0) {
+    if (!rows || rows.length === 0) {
       return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
           <p className="text-4xl mb-4">🃏</p>
@@ -52,22 +52,19 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
       )
     }
 
-    const countMap = new Map<string, number>()
-    for (const row of allRows) {
-      if (!row.topic) continue
-      const key = `${row.topic}|||${row.category ?? ''}|||${row.subtopic ?? ''}`
-      countMap.set(key, (countMap.get(key) ?? 0) + 1)
-    }
-    const topicData = Array.from(countMap.entries()).map(([key, count]) => {
-      const [t, c, s] = key.split('|||')
-      return { topic: t, category: c || null, subtopic: s || null, count }
-    })
+    const topicData = rows.map((r: { topic: string; category: string | null; subtopic: string | null; cnt: number }) => ({
+      topic: r.topic,
+      category: r.category,
+      subtopic: r.subtopic,
+      count: Number(r.cnt),
+    }))
+    const totalAvailable = topicData.reduce((sum: number, r: { count: number }) => sum + r.count, 0)
 
     return (
       <TopicSelectorClient
         topicRows={topicData}
         mode="flashcard"
-        totalAvailable={allRows.length}
+        totalAvailable={totalAvailable}
         region={region}
       />
     )

@@ -23,7 +23,7 @@ export default async function CasesPage({ searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('profession, study_year, show_question_tags')
+    .select('profession, study_year, show_question_tags, access_key')
     .eq('id', user.id)
     .single()
 
@@ -36,8 +36,8 @@ export default async function CasesPage({ searchParams }: PageProps) {
   // ── No topic + not random → show topic selector ─────────────────────────────
   if (!topic && !isRandom) {
     const [{ data: richRows }, { data: mcqRows }] = await Promise.all([
-      supabase.rpc('get_case_study_counts', { p_profession: profile.profession }),
-      supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'case_study' }),
+      supabase.rpc('get_case_study_counts', { p_profession: profile.profession, p_access_key: profile.access_key ?? null }),
+      supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'case_study', p_access_key: profile.access_key ?? null }),
     ])
 
     const allRows = [...(richRows ?? []), ...(mcqRows ?? [])]
@@ -83,6 +83,11 @@ export default async function CasesPage({ searchParams }: PageProps) {
   if (region === 'universal') richQuery = richQuery.eq('region', 'universal')
   else if (region === 'ghana') richQuery = richQuery.eq('region', 'ghana')
   if (profile.study_year) richQuery = richQuery.contains('year_level', [profile.study_year])
+  if (profile.access_key) {
+    richQuery = richQuery.or(`access_key.is.null,access_key.eq.${profile.access_key}`)
+  } else {
+    richQuery = richQuery.is('access_key', null)
+  }
 
   const { data: richCases } = await richQuery
 
@@ -116,6 +121,11 @@ export default async function CasesPage({ searchParams }: PageProps) {
   if (region === 'universal') mcqQuery = mcqQuery.eq('region', 'universal')
   else if (region === 'ghana') mcqQuery = mcqQuery.eq('region', 'ghana')
   if (profile.study_year) mcqQuery = mcqQuery.contains('year_level', [profile.study_year])
+  if (profile.access_key) {
+    mcqQuery = mcqQuery.or(`access_key.is.null,access_key.eq.${profile.access_key}`)
+  } else {
+    mcqQuery = mcqQuery.is('access_key', null)
+  }
 
   const [{ data: caseQuestions }, { data: bookmarkRows }] = await Promise.all([
     mcqQuery,

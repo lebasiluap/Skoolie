@@ -10,26 +10,38 @@ export default async function PracticePage() {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('profession, study_year')
+    .select('profession, study_year, access_key')
     .eq('id', user.id)
     .single()
 
   if (!profile) redirect('/onboarding')
 
-  // Fetch counts per mode filtered by profession + year
+  // Fetch counts per mode filtered by profession + year + access_key
   const yearFilter = profile.study_year as string | null
+  const accessKey = profile.access_key as string | null
 
-  const mcqQ = supabase.from('questions').select('id', { count: 'exact', head: true })
+  let mcqQ = supabase.from('questions').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
     .eq('question_type', 'mcq')
-  const flashQ = supabase.from('questions').select('id', { count: 'exact', head: true })
+  if (accessKey) mcqQ = mcqQ.or(`access_key.is.null,access_key.eq.${accessKey}`)
+  else mcqQ = mcqQ.is('access_key', null)
+
+  let flashQ = supabase.from('questions').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
     .eq('question_type', 'flashcard')
-  const caseRichQ = supabase.from('case_studies').select('id', { count: 'exact', head: true })
+  if (accessKey) flashQ = flashQ.or(`access_key.is.null,access_key.eq.${accessKey}`)
+  else flashQ = flashQ.is('access_key', null)
+
+  let caseRichQ = supabase.from('case_studies').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
-  const caseMcqQ = supabase.from('questions').select('id', { count: 'exact', head: true })
+  if (accessKey) caseRichQ = caseRichQ.or(`access_key.is.null,access_key.eq.${accessKey}`)
+  else caseRichQ = caseRichQ.is('access_key', null)
+
+  let caseMcqQ = supabase.from('questions').select('id', { count: 'exact', head: true })
     .contains('professions', [profile.profession as Profession])
     .eq('question_type', 'case_study')
+  if (accessKey) caseMcqQ = caseMcqQ.or(`access_key.is.null,access_key.eq.${accessKey}`)
+  else caseMcqQ = caseMcqQ.is('access_key', null)
 
   const [
     { count: mcqCount },

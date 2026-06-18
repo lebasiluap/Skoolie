@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import MCQClient from './MCQClient'
@@ -23,7 +25,7 @@ export default async function MCQPage({ searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('profession, xp, level, allow_repeat_questions, show_question_tags, study_year')
+    .select('profession, xp, level, allow_repeat_questions, show_question_tags, study_year, access_key')
     .eq('id', user.id)
     .single()
 
@@ -40,6 +42,7 @@ export default async function MCQPage({ searchParams }: PageProps) {
       .rpc('get_question_counts', {
         p_profession: profile.profession,
         p_question_type: 'mcq',
+        p_access_key: profile.access_key ?? null,
       })
 
     const topicData = (rows ?? []).map((r: { topic: string; category: string | null; subtopic: string | null; cnt: number }) => ({
@@ -76,6 +79,13 @@ export default async function MCQPage({ searchParams }: PageProps) {
   if (region === 'universal') query = query.eq('region', 'universal')
   else if (region === 'ghana') query = query.eq('region', 'ghana')
   // 'all' or unset → no filter
+
+  // Access key filter
+  if (profile.access_key) {
+    query = query.or(`access_key.is.null,access_key.eq.${profile.access_key}`)
+  } else {
+    query = query.is('access_key', null)
+  }
 
   // Year filter
   if (profile.study_year) {
@@ -132,6 +142,16 @@ export default async function MCQPage({ searchParams }: PageProps) {
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
 
+  // Build "new set" URL — same filters + random=1 so it skips the topic selector
+  const newSetParams = new URLSearchParams()
+  if (topic) newSetParams.set('topic', topic)
+  if (category) newSetParams.set('category', category)
+  if (subtopic) newSetParams.set('subtopic', subtopic)
+  if (difficulty && difficulty !== 'all') newSetParams.set('difficulty', difficulty)
+  newSetParams.set('limit', String(limit))
+  newSetParams.set('random', '1')
+  const newSetUrl = `/practice/mcq?${newSetParams.toString()}`
+
   return (
     <MCQClient
       questions={shuffled as Question[]}
@@ -139,6 +159,7 @@ export default async function MCQPage({ searchParams }: PageProps) {
       profession={profile.profession}
       bookmarkedIds={(bookmarkRows ?? []).map(b => b.question_id)}
       showTags={profile.show_question_tags ?? true}
+      newSetUrl={newSetUrl}
     />
   )
 }

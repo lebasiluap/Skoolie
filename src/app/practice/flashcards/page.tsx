@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import FlashcardClient from './FlashcardClient'
@@ -23,7 +25,7 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('profession, allow_repeat_questions, show_question_tags, study_year')
+    .select('profession, allow_repeat_questions, show_question_tags, study_year, access_key')
     .eq('id', user.id)
     .single()
 
@@ -40,6 +42,7 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
       .rpc('get_question_counts', {
         p_profession: profile.profession,
         p_question_type: 'flashcard',
+        p_access_key: profile.access_key ?? null,
       })
 
     if (!rows || rows.length === 0) {
@@ -85,6 +88,13 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
   // Region filter
   if (region === 'universal') query = query.eq('region', 'universal')
   else if (region === 'ghana') query = query.eq('region', 'ghana')
+
+  // Access key filter
+  if (profile.access_key) {
+    query = query.or(`access_key.is.null,access_key.eq.${profile.access_key}`)
+  } else {
+    query = query.is('access_key', null)
+  }
 
   // Year filter
   if (profile.study_year) {
@@ -141,12 +151,32 @@ export default async function FlashcardsPage({ searchParams }: PageProps) {
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
 
+  // Build "new set" + back URLs — same filters + random=1 skips the topic selector
+  const newSetParams = new URLSearchParams()
+  if (topic) newSetParams.set('topic', topic)
+  if (category) newSetParams.set('category', category)
+  if (subtopic) newSetParams.set('subtopic', subtopic)
+  if (difficulty && difficulty !== 'all') newSetParams.set('difficulty', difficulty)
+  newSetParams.set('limit', String(limit))
+  newSetParams.set('random', '1')
+  const newSetUrl = `/practice/flashcards?${newSetParams.toString()}`
+
+  // Back URL: if a topic was selected go to that selector page, else just topic selector root
+  const backParams = new URLSearchParams()
+  if (topic) backParams.set('topic', topic)
+  if (category) backParams.set('category', category)
+  const backUrl = topic
+    ? `/practice/flashcards?${backParams.toString()}`
+    : '/practice/flashcards'
+
   return (
     <FlashcardClient
       questions={shuffled as Question[]}
       userId={user.id}
       bookmarkedIds={(bookmarkRows ?? []).map(b => b.question_id)}
       showTags={profile.show_question_tags ?? true}
+      backUrl={backUrl}
+      newSetUrl={newSetUrl}
     />
   )
 }

@@ -3,133 +3,151 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
 
+function DiffBadge({ difficulty }: { difficulty: string }) {
+  const styles: Record<string, { bg: string; color: string }> = {
+    easy:   { bg: 'var(--green-tint)',  color: 'var(--green)' },
+    medium: { bg: 'var(--amber-tint)',  color: 'var(--amber)' },
+    hard:   { bg: 'var(--red-tint)',    color: 'var(--red)' },
+  }
+  const s = styles[difficulty] ?? { bg: 'var(--surface-3)', color: 'var(--text-faint)' }
+  return (
+    <span style={{ fontSize: 11.5, fontWeight: 800, padding: '4px 9px', borderRadius: 999, background: s.bg, color: s.color, flexShrink: 0, textTransform: 'capitalize' }}>
+      {difficulty}
+    </span>
+  )
+}
+
 export default async function BookmarksPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch bookmarks joined with question data
   const { data: bookmarks } = await supabase
     .from('bookmarks')
-    .select(`
-      id,
-      created_at,
-      questions (
-        id,
-        question_text,
-        topic,
-        difficulty,
-        question_type,
-        correct_answer,
-        options,
-        explanation,
-        high_yield
-      )
-    `)
+    .select(`id, created_at, questions (id, question_text, topic, difficulty, question_type, correct_answer, options, explanation, high_yield)`)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   const mcqBookmarks = bookmarks?.filter(b => (b.questions as any)?.question_type === 'mcq') ?? []
   const flashcardBookmarks = bookmarks?.filter(b => (b.questions as any)?.question_type === 'flashcard') ?? []
+  const total = bookmarks?.length ?? 0
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
-      {/* Header */}
-      <div className="bg-[#101010] px-5 pt-12 pb-8">
-        <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-1">Saved</p>
-        <h1 className="text-white text-2xl font-bold">Bookmarks</h1>
-        <p className="text-white/40 text-xs mt-1">{bookmarks?.length ?? 0} questions saved</p>
-      </div>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <BottomNav />
 
-      <div className="px-5 pt-6 space-y-6">
-        {!bookmarks || bookmarks.length === 0 ? (
-          <div className="bg-white rounded-2xl p-10 shadow-sm text-center">
-            <p className="text-4xl mb-4">🔖</p>
-            <p className="text-[#101010] font-semibold mb-1">No bookmarks yet</p>
-            <p className="text-gray-400 text-sm">Tap the bookmark icon while practising to save questions here.</p>
-            <Link
-              href="/practice/mcq"
-              className="mt-6 inline-block px-6 py-2.5 rounded-full bg-[#0D9488] text-white text-sm font-semibold hover:bg-[#0b7a6e] transition-colors"
-            >
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: 'clamp(18px,3.5vw,38px) clamp(16px,3.5vw,28px) 100px' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 'clamp(26px,3vw,32px)', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.025em' }}>Bookmarks</h1>
+            <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>{total} question{total !== 1 ? 's' : ''} saved</p>
+          </div>
+          {total > 0 && (
+            <Link href="/bookmarks/practice?type=mcq"
+              style={{ padding: '11px 18px', borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
+              Practice all →
+            </Link>
+          )}
+        </div>
+
+        {/* Empty state */}
+        {total === 0 ? (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, boxShadow: 'var(--shadow)', padding: '60px 24px', textAlign: 'center' }}>
+            <div style={{ width: 72, height: 72, borderRadius: 22, background: 'var(--surface-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, margin: '0 auto 18px' }}>🔖</div>
+            <p style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>No bookmarks yet</p>
+            <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>Tap the bookmark icon while practising to save questions here.</p>
+            <Link href="/practice/mcq"
+              style={{ display: 'inline-block', padding: '13px 28px', borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
               Start practising
             </Link>
           </div>
         ) : (
-          <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
             {/* MCQ Bookmarks */}
             {mcqBookmarks.length > 0 && (
-              <div>
-                <h2 className="text-sm font-bold text-[#101010] mb-3">MCQ ({mcqBookmarks.length})</h2>
-                <div className="flex flex-col gap-3">
+              <section>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>
+                    MCQs <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)' }}>({mcqBookmarks.length})</span>
+                  </h2>
+                  <Link href="/bookmarks/practice?type=mcq"
+                    style={{ padding: '8px 16px', borderRadius: 999, background: 'var(--teal-tint)', color: 'var(--teal)', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+                    Practice →
+                  </Link>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {mcqBookmarks.map(b => {
                     const q = b.questions as any
                     if (!q) return null
                     return (
-                      <div key={b.id} className="bg-white rounded-2xl p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-2.5 py-0.5 rounded-full font-semibold">{q.topic}</span>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {q.high_yield && <span className="text-yellow-500 text-xs">⭐</span>}
-                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                              q.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
-                              q.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
-                              'bg-red-50 text-red-500'
-                            }`}>{q.difficulty}</span>
+                      <div key={b.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', padding: 18 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--teal)', background: 'var(--teal-tint)', padding: '4px 10px', borderRadius: 999 }}>{q.topic}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                            {q.high_yield && <span style={{ fontSize: 13 }}>⭐</span>}
+                            <DiffBadge difficulty={q.difficulty} />
                           </div>
                         </div>
-                        <p className="text-sm text-[#101010] font-medium leading-snug mb-3">{q.question_text}</p>
-                        <div className="bg-[#f0fdfb] rounded-xl px-3 py-2">
-                          <p className="text-xs font-semibold text-[#0D9488] mb-0.5">Answer: {q.correct_answer}</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">{q.explanation}</p>
+                        <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.55 }}>{q.question_text}</p>
+                        <div style={{ background: 'var(--teal-tint)', borderRadius: 12, padding: '10px 14px' }}>
+                          <p style={{ margin: '0 0 3px', fontSize: 12, fontWeight: 800, color: 'var(--teal)' }}>Answer: {q.correct_answer}</p>
+                          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-soft)', lineHeight: 1.55 }}>{q.explanation}</p>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </div>
+              </section>
             )}
 
             {/* Flashcard Bookmarks */}
             {flashcardBookmarks.length > 0 && (
-              <div>
-                <h2 className="text-sm font-bold text-[#101010] mb-3">Flashcards ({flashcardBookmarks.length})</h2>
-                <div className="flex flex-col gap-3">
+              <section>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>
+                    Flashcards <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)' }}>({flashcardBookmarks.length})</span>
+                  </h2>
+                  <Link href="/bookmarks/practice?type=flashcard"
+                    style={{ padding: '8px 16px', borderRadius: 999, background: 'var(--coral-tint)', color: 'var(--coral)', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+                    Practice →
+                  </Link>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {flashcardBookmarks.map(b => {
                     const q = b.questions as any
                     if (!q) return null
                     const answerOption = (q.options as string[])?.find(
                       (o: string) => o.startsWith(q.correct_answer + '.') || o.startsWith(q.correct_answer + ' ')
                     )
-                    const answerText = answerOption
-                      ? answerOption.replace(/^[A-D][\.\s]\s*/, '')
-                      : q.explanation
+                    const answerText = answerOption ? answerOption.replace(/^[A-D][\.\s]\s*/, '') : q.explanation
                     return (
-                      <div key={b.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                        <div className="px-4 pt-4 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-2.5 py-0.5 rounded-full font-semibold">{q.topic}</span>
-                            {q.high_yield && <span className="text-yellow-500 text-xs">⭐ High Yield</span>}
+                      <div key={b.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+                        <div style={{ padding: '16px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--coral)', background: 'var(--coral-tint)', padding: '4px 10px', borderRadius: 999 }}>{q.topic}</span>
+                            {q.high_yield && <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--gold)' }}>⭐ High Yield</span>}
                           </div>
-                          <p className="text-sm text-[#101010] font-medium leading-snug">{q.question_text}</p>
+                          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.55 }}>{q.question_text}</p>
                         </div>
-                        <div className="bg-[#0D9488] px-4 py-3">
-                          <p className="text-xs font-bold text-white/60 uppercase tracking-wide mb-1">Answer</p>
-                          <p className="text-white font-semibold text-sm">{answerText}</p>
-                          {q.explanation && (
-                            <p className="text-white/70 text-xs mt-1.5 leading-relaxed">{q.explanation}</p>
+                        <div style={{ background: 'var(--teal)', padding: '14px 18px' }}>
+                          <p style={{ margin: '0 0 5px', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Answer</p>
+                          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#fff' }}>{answerText}</p>
+                          {q.explanation && answerText !== q.explanation && (
+                            <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'rgba(255,255,255,.7)', lineHeight: 1.5 }}>{q.explanation}</p>
                           )}
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </div>
+              </section>
             )}
-          </>
+          </div>
         )}
       </div>
-
-      <BottomNav />
     </div>
   )
 }

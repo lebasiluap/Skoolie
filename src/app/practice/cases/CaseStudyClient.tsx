@@ -13,26 +13,6 @@ interface Props {
 
 type Phase = 'vignette' | 'questions' | 'done'
 
-const STYLE_LABEL: Record<string, string> = {
-  multi_question: 'Multi-Question',
-  osce: 'OSCE',
-}
-
-function HistoryTable({ data }: { data: Record<string, string> }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      {Object.entries(data).map(([key, val]) => (
-        <div key={key} className="flex gap-2 text-sm">
-          <span className="text-gray-400 capitalize min-w-[120px] shrink-0">
-            {key.replace(/_/g, ' ')}
-          </span>
-          <span className="text-[#101010] leading-snug">{val}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 const OPTION_LETTERS = ['A', 'B', 'C', 'D']
 
 function shuffleCases(cases: CaseStudy[]): CaseStudy[] {
@@ -56,23 +36,38 @@ function shuffleCases(cases: CaseStudy[]): CaseStudy[] {
   }))
 }
 
+function InfoCard({ label, data }: { label: string; data: Record<string, string> }) {
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', padding: 20 }}>
+      <p style={{ margin: '0 0 14px', fontSize: 11, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.1em' }}>{label}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {Object.entries(data).map(([key, val]) => (
+          <div key={key} style={{ display: 'flex', gap: 14 }}>
+            <span style={{ fontSize: 13, color: 'var(--text-faint)', fontWeight: 700, textTransform: 'capitalize', flexShrink: 0, minWidth: 120 }}>
+              {key.replace(/_/g, ' ')}
+            </span>
+            <span style={{ fontSize: 13.5, color: 'var(--text)', fontWeight: 600, lineHeight: 1.5 }}>{val}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   const [caseIndex, setCaseIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('vignette')
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
-  const [answered, setAnswered] = useState<Record<number, string>>({}) // qIndex → chosen letter
+  const [answered, setAnswered] = useState<Record<number, string>>({})
   const [score, setScore] = useState(0)
   const [totalDone, setTotalDone] = useState(0)
-
-  // Shuffle options once at session start — stable across re-renders
   const [shuffledCases] = useState<CaseStudy[]>(() => shuffleCases(cases))
 
   const cs = shuffledCases[caseIndex]
-
   const currentQ = cs?.questions[qIndex]
-  const isCorrect = selected === currentQ?.correct_answer
   const isReviewing = qIndex in answered
+  const isCorrect = isReviewing && answered[qIndex] === currentQ?.correct_answer
 
   function handleAnswer() {
     if (!selected || isReviewing) return
@@ -88,14 +83,11 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       setSelected(null)
       return
     }
-    // Case complete
     const supabase = createClient()
     const xpEarned = score * 10
     await Promise.allSettled([
       supabase.rpc('update_streak', { user_id: userId }),
-      xpEarned > 0
-        ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned })
-        : Promise.resolve(),
+      xpEarned > 0 ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }) : Promise.resolve(),
     ])
     setPhase('done')
   }
@@ -104,10 +96,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
     if (caseIndex + 1 < cases.length) {
       setCaseIndex(i => i + 1)
       setPhase('vignette')
-      setQIndex(0)
-      setSelected(null)
-      setAnswered({})
-      setScore(0)
+      setQIndex(0); setSelected(null); setAnswered({}); setScore(0)
     } else {
       setPhase('done')
     }
@@ -115,11 +104,11 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
 
   if (!cs) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-center">
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
         <div>
-          <p className="text-4xl mb-4">🔍</p>
-          <p className="font-semibold text-[#101010]">No cases found</p>
-          <Link href="/practice/cases" className="mt-4 inline-block text-[#0D9488] text-sm">← Back</Link>
+          <div style={{ fontSize: 44, marginBottom: 16 }}>🔍</div>
+          <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>No cases found</p>
+          <Link href="/practice/cases" style={{ display: 'inline-block', marginTop: 14, color: 'var(--teal)', fontWeight: 700, textDecoration: 'none' }}>← Back</Link>
         </div>
       </div>
     )
@@ -127,132 +116,112 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
 
   // ── Done screen ────────────────────────────────────────────────────────────
   if (phase === 'done') {
-    const accuracy = Math.round((score / totalDone) * 100) || 0
+    const accuracy = totalDone > 0 ? Math.round((score / totalDone) * 100) : 0
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-24 h-24 rounded-full bg-[#f0fdfb] flex items-center justify-center mb-6">
-          <span className="text-5xl">🎉</span>
-        </div>
-        <h1 className="text-2xl font-bold text-[#101010] mb-1">Case complete!</h1>
-        <p className="text-gray-400 text-sm mb-8">Here&apos;s how you did</p>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px' }}>
+        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <div className="anim-pop" style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--teal-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px auto 18px' }}>
+            <span style={{ fontSize: 44 }}>{accuracy >= 80 ? '🏆' : '🎉'}</span>
+          </div>
+          <h1 style={{ margin: '0 0 5px', fontSize: 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>Case complete!</h1>
+          <p style={{ margin: '0 0 26px', fontSize: 15, color: 'var(--text-soft)', fontWeight: 600 }}>Here&apos;s how you did</p>
 
-        <div className="w-full max-w-xs grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-[#0D9488]">{score}/{totalDone}</p>
-            <p className="text-xs text-gray-400 mt-1">Correct</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, maxWidth: 380, margin: '0 auto 26px' }}>
+            {[
+              { val: `${score}/${totalDone}`, label: 'Correct',   color: 'var(--teal)' },
+              { val: `${accuracy}%`,          label: 'Accuracy',  color: 'var(--green)' },
+              { val: `+${score * 10}`,        label: 'XP earned', color: 'var(--coral)' },
+            ].map(s => (
+              <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '18px 8px' }}>
+                <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: s.color }}>{s.val}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>{s.label}</p>
+              </div>
+            ))}
           </div>
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-500">{accuracy}%</p>
-            <p className="text-xs text-gray-400 mt-1">Accuracy</p>
-          </div>
-          <div className="bg-gray-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-orange-500">+{score * 10}</p>
-            <p className="text-xs text-gray-400 mt-1">XP earned</p>
-          </div>
-        </div>
 
-        <div className="w-full max-w-xs flex flex-col gap-3">
-          {caseIndex + 1 < cases.length && (
-            <button
-              onClick={handleNextCase}
-              className="w-full py-3 rounded-full bg-[#0D9488] text-white font-semibold hover:bg-[#0b7a6e] transition-colors"
-            >
-              Next case →
-            </button>
-          )}
-          <Link
-            href="/practice/cases"
-            className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
-          >
-            ← All cases
-          </Link>
-          <Link
-            href="/dashboard"
-            className="w-full py-3 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
-          >
-            Dashboard
-          </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 11, maxWidth: 340, margin: '0 auto' }}>
+            {caseIndex + 1 < cases.length && (
+              <button onClick={handleNextCase} className="cs-btn-hover"
+                style={{ padding: 15, borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', border: 'none', fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>
+                Next case →
+              </button>
+            )}
+            <Link href="/practice/cases" className="cs-btn-hover"
+              style={{ display: 'block', padding: 15, borderRadius: 999, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-strong)', fontSize: 15, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+              ← All cases
+            </Link>
+            <Link href="/dashboard"
+              style={{ padding: 8, fontSize: 13.5, fontWeight: 700, color: 'var(--text-faint)', textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+              Dashboard
+            </Link>
+          </div>
         </div>
+        <style>{`.cs-btn-hover { transition: transform .18s ease, filter .18s ease; } .cs-btn-hover:hover { transform: translateY(-2px); filter: brightness(1.06); }`}</style>
       </div>
     )
   }
 
   // ── Vignette screen ────────────────────────────────────────────────────────
   if (phase === 'vignette') {
+    const diffColor = cs.difficulty === 'easy' ? 'var(--green)' : cs.difficulty === 'medium' ? 'var(--amber)' : 'var(--red)'
+    const diffBg = cs.difficulty === 'easy' ? 'var(--green-tint)' : cs.difficulty === 'medium' ? 'var(--amber-tint)' : 'var(--red-tint)'
+
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Header */}
-        <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-          <Link href="/practice/cases" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-            ←
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+        {/* Top bar */}
+        <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <Link href="/practice/cases" style={{ width: 42, height: 42, borderRadius: 13, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
           </Link>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-[#101010]">Case {caseIndex + 1} of {cases.length}</p>
-            {showTags && <p className="text-xs text-gray-400">{cs.topic}</p>}
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'var(--text-soft)' }}>Case {caseIndex + 1} of {cases.length}</p>
+            {showTags && <p style={{ margin: '1px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>{cs.topic}</p>}
           </div>
-          <div className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            cs.difficulty === 'easy' ? 'bg-green-50 text-green-600' :
-            cs.difficulty === 'medium' ? 'bg-orange-50 text-orange-500' :
-            'bg-red-50 text-red-500'
-          }`}>
+          <span style={{ fontSize: 12.5, fontWeight: 800, padding: '6px 12px', borderRadius: 999, background: diffBg, color: diffColor, textTransform: 'capitalize' }}>
             {cs.difficulty}
-          </div>
+          </span>
         </div>
 
-        <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
-          {/* Tags */}
-          <div className="flex gap-2 flex-wrap items-center">
+        <div style={{ flex: 1, padding: '20px 20px 120px', maxWidth: 680, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+          {/* Tag chips */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {showTags
-              ? <span className="text-xs bg-[#f0fdfb] text-[#0D9488] px-3 py-1 rounded-full font-semibold">{cs.subtopic}</span>
-              : <span className="text-xs text-gray-400 italic">Enable tags in Settings to see topic</span>
+              ? <span style={{ fontSize: 12, fontWeight: 800, background: 'var(--teal-tint)', color: 'var(--teal)', padding: '5px 12px', borderRadius: 999 }}>{cs.subtopic}</span>
+              : <span style={{ fontSize: 12, color: 'var(--text-faint)', fontStyle: 'italic' }}>Enable tags in Settings to see topic</span>
             }
-            <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-semibold">{STYLE_LABEL[cs.style]}</span>
+            <span style={{ fontSize: 12, fontWeight: 800, background: 'var(--surface-3)', color: 'var(--text-soft)', padding: '5px 12px', borderRadius: 999 }}>
+              {cs.style === 'multi_question' ? 'Multi-Question' : 'OSCE'}
+            </span>
             {cs.high_yield && (
-              <span className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full font-semibold">⭐ High Yield</span>
+              <span style={{ fontSize: 12, fontWeight: 800, background: 'var(--amber-tint)', color: 'var(--amber)', padding: '5px 12px', borderRadius: 999 }}>High Yield</span>
             )}
           </div>
 
-          {/* Title */}
-          <h2 className="text-lg font-bold text-[#101010] leading-snug">{cs.title}</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: 'var(--text)', lineHeight: 1.35, letterSpacing: '-0.015em' }}>{cs.title}</h2>
 
-          {/* Clinical vignette */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Clinical Vignette</p>
-            <p className="text-sm text-[#101010] leading-relaxed">{cs.clinical_vignette}</p>
+          {/* Clinical Vignette */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', padding: 20 }}>
+            <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 800, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Clinical Vignette</p>
+            <p style={{ margin: 0, fontSize: 14.5, color: 'var(--text)', lineHeight: 1.7, fontWeight: 500 }}>{cs.clinical_vignette}</p>
           </div>
 
-          {/* Patient history */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Patient History</p>
-            <HistoryTable data={cs.patient_history} />
-          </div>
+          <InfoCard label="Patient History" data={cs.patient_history} />
+          <InfoCard label="Examination Findings" data={cs.examination_findings} />
+          <InfoCard label="Investigations" data={cs.investigations} />
 
-          {/* Examination */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Examination Findings</p>
-            <HistoryTable data={cs.examination_findings} />
-          </div>
-
-          {/* Investigations */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Investigations</p>
-            <HistoryTable data={cs.investigations} />
-          </div>
-
-          <p className="text-xs text-gray-400 text-center">
+          <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>
             {cs.questions.length} question{cs.questions.length !== 1 ? 's' : ''} follow
           </p>
         </div>
 
-        {/* CTA */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-5">
-          <button
-            onClick={() => setPhase('questions')}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors"
-          >
+        {/* Start questions CTA */}
+        <div className="cs-fixed-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '14px 20px 20px' }}>
+          <button onClick={() => setPhase('questions')} className="cs-start-btn"
+            style={{ width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', padding: 16, borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', border: 'none', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 24px -8px var(--teal)' }}>
             Start questions →
           </button>
         </div>
+        <style>{`.cs-start-btn { transition: transform .18s ease, filter .18s ease; } .cs-start-btn:hover { transform: translateY(-2px); filter: brightness(1.06); } @media (max-width: 979px) { .cs-fixed-bar { bottom: 68px !important; } } @media (min-width: 980px) { .cs-fixed-bar { left: 250px !important; } }`}</style>
       </div>
     )
   }
@@ -261,81 +230,67 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   const progress = ((qIndex + (isReviewing ? 1 : 0)) / cs.questions.length) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-        <button
-          onClick={() => setPhase('vignette')}
-          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
-        >
-          ←
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      {/* Top bar */}
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+        <button onClick={() => setPhase('vignette')}
+          style={{ width: 42, height: 42, borderRadius: 13, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </button>
-        <span className="text-sm font-semibold text-gray-500">
-          Q{qIndex + 1} / {cs.questions.length}
-        </span>
-        <div />
+        <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-soft)' }}>Q{qIndex + 1} / {cs.questions.length}</span>
+        <div style={{ width: 42 }} />
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-gray-100">
-        <div
-          className="h-full bg-[#0D9488] transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
+      <div style={{ padding: '12px 20px 0', maxWidth: 680, margin: '0 auto', width: '100%' }}>
+        <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
+          <div className="progress-bar" style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,var(--teal),var(--teal-deep))', width: `${progress}%` }} />
+        </div>
       </div>
 
-      <div className="flex-1 px-5 py-5 flex flex-col gap-4 pb-32 overflow-y-auto">
-        {/* Question */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-            Question {currentQ.question_number}
-          </p>
-          <p className="text-[#101010] text-base leading-relaxed font-medium">
-            {currentQ.question}
-          </p>
+      <div style={{ flex: 1, padding: '16px 20px 120px', maxWidth: 680, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+
+        {/* Question card */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow)', padding: 22 }}>
+          <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 800, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Question {currentQ.question_number}</p>
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text)', lineHeight: 1.6 }}>{currentQ.question}</p>
         </div>
 
         {/* Options */}
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
           {currentQ.options.map((option, i) => {
             const letter = OPTION_LETTERS[i]
             const isSelected = selected === letter
             const isAnswer = letter === currentQ.correct_answer
             const isChosen = answered[qIndex] === letter
 
-            let style = 'border-gray-200 bg-white'
+            let borderColor = 'var(--border)'
+            let bgColor = 'var(--surface)'
+            let chipBg = 'var(--surface-3)'
+            let chipFg = 'var(--text-soft)'
+            let textColor = 'var(--text)'
+            let opacity = 1
+
             if (isReviewing) {
-              if (isAnswer) style = 'border-[#0D9488] bg-[#f0fdfb]'
-              else if (isChosen && !isAnswer) style = 'border-red-300 bg-red-50'
-              else style = 'border-gray-100 bg-gray-50 opacity-60'
+              if (isAnswer) { borderColor = 'var(--teal)'; bgColor = 'var(--teal-tint)'; chipBg = 'var(--teal)'; chipFg = '#fff'; textColor = 'var(--teal-deep)' }
+              else if (isChosen) { borderColor = 'var(--red)'; bgColor = 'var(--red-tint)'; chipBg = 'var(--red)'; chipFg = '#fff'; textColor = 'var(--red)' }
+              else { opacity = 0.5 }
             } else if (isSelected) {
-              style = 'border-[#0D9488] bg-[#f0fdfb]'
-            } else {
-              style = 'border-gray-200 bg-white hover:border-gray-300'
+              borderColor = 'var(--teal)'; bgColor = 'var(--teal-tint)'; chipBg = 'var(--teal)'; chipFg = 'var(--on-teal)'; textColor = 'var(--teal-deep)'
             }
 
             return (
-              <button
-                key={letter}
-                onClick={() => !isReviewing && setSelected(letter)}
-                disabled={isReviewing}
-                className={`w-full text-left px-4 py-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${style}`}
-              >
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                  isReviewing && isAnswer ? 'bg-[#0D9488] text-white' :
-                  isReviewing && isChosen && !isAnswer ? 'bg-red-400 text-white' :
-                  isSelected ? 'bg-[#0D9488] text-white' :
-                  'bg-gray-100 text-gray-500'
-                }`}>
-                  {isReviewing && isAnswer ? '✓' :
-                   isReviewing && isChosen && !isAnswer ? '✗' :
-                   letter}
-                </div>
-                <span className={`text-sm leading-snug ${
-                  isReviewing && isAnswer ? 'text-[#0D9488] font-semibold' :
-                  isReviewing && isChosen && !isAnswer ? 'text-red-500 font-semibold' :
-                  'text-[#101010]'
-                }`}>
+              <button key={letter} onClick={() => !isReviewing && setSelected(letter)} disabled={isReviewing}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px',
+                  borderRadius: 16, border: `2px solid ${borderColor}`, background: bgColor,
+                  cursor: isReviewing ? 'default' : 'pointer', textAlign: 'left', width: '100%',
+                  transition: 'all .15s ease', opacity, fontFamily: 'inherit',
+                }}>
+                <span style={{ width: 32, height: 32, borderRadius: '50%', background: chipBg, color: chipFg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                  {isReviewing && isAnswer ? '✓' : isReviewing && isChosen ? '✗' : letter}
+                </span>
+                <span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.45, color: textColor }}>
                   {option.replace(/^[A-D]\.\s*/, '')}
                 </span>
               </button>
@@ -343,33 +298,29 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
           })}
         </div>
 
-        {/* Explanation (after answer) */}
+        {/* Explanation bubble after answer */}
         {isReviewing && (
-          <div className="flex flex-col gap-3">
-            <div className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold w-fit ${
-              answered[qIndex] === currentQ.correct_answer
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-600'
-            }`}>
-              {answered[qIndex] === currentQ.correct_answer ? '✓ Correct! +10 XP' : '✗ Incorrect · +0 XP'}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Verdict pill */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 999,
+              fontSize: 13.5, fontWeight: 800, width: 'fit-content',
+              background: isCorrect ? 'var(--green-tint)' : 'var(--red-tint)',
+              color: isCorrect ? 'var(--green)' : 'var(--red)',
+            }}>
+              {isCorrect ? `✓ Correct! +10 XP` : `✗ Incorrect · +0 XP`}
             </div>
 
-            <div className="flex items-start gap-3">
-              <img
-                src="/avatar.png"
-                alt="Tutor"
-                className="w-11 h-11 rounded-full shrink-0 object-cover mt-1 shadow-sm"
-              />
-              <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
-                <div
-                  className="absolute -left-2 top-3 w-0 h-0"
-                  style={{
-                    borderTop: '7px solid transparent',
-                    borderBottom: '7px solid transparent',
-                    borderRight: '8px solid white',
-                  }}
-                />
-                <p className="text-sm text-gray-700 leading-relaxed">{currentQ.explanation}</p>
+            {/* Avatar + bubble */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13 }}>
+              <img src="/avatar.png" alt="Tutor" style={{ width: 44, height: 44, borderRadius: '50%', flexShrink: 0, objectFit: 'cover', boxShadow: 'var(--shadow)', marginTop: 2 }} />
+              <div style={{
+                flex: 1, padding: 16, borderRadius: 18, borderTopLeftRadius: 5,
+                background: isCorrect ? 'var(--surface)' : 'var(--red-tint)',
+                border: `1px solid ${isCorrect ? 'var(--border)' : 'var(--red)'}`,
+                boxShadow: 'var(--shadow)',
+              }}>
+                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: 'var(--text)' }}>{currentQ.explanation}</p>
               </div>
             </div>
           </div>
@@ -377,24 +328,32 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       </div>
 
       {/* Bottom button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-5">
+      <div className="cs-fixed-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '14px 20px 20px' }}>
         {!isReviewing ? (
-          <button
-            onClick={handleAnswer}
-            disabled={!selected}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold text-base hover:bg-[#0b7a6e] transition-colors disabled:opacity-40"
-          >
-            Submit Answer
+          <button onClick={handleAnswer} disabled={!selected}
+            style={{
+              width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', padding: 16, borderRadius: 999, border: 'none',
+              background: selected ? 'var(--teal)' : 'var(--surface-3)',
+              color: selected ? 'var(--on-teal)' : 'var(--text-faint)',
+              fontSize: 16, fontWeight: 800, cursor: selected ? 'pointer' : 'default',
+              fontFamily: 'inherit', transition: 'all .15s ease',
+              boxShadow: selected ? '0 10px 24px -8px var(--teal)' : 'none',
+            }}>
+            Submit answer
           </button>
         ) : (
-          <button
-            onClick={handleNext}
-            className="w-full py-3.5 rounded-full bg-[#101010] text-white font-semibold text-base hover:bg-[#222] transition-colors"
-          >
+          <button onClick={handleNext} className="cs-next-btn"
+            style={{
+              width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', padding: 16, borderRadius: 999, border: 'none',
+              background: 'var(--teal)', color: 'var(--on-teal)',
+              fontSize: 16, fontWeight: 800, cursor: 'pointer',
+              fontFamily: 'inherit', boxShadow: '0 10px 24px -8px var(--teal)',
+            }}>
             {qIndex + 1 >= cs.questions.length ? 'Finish case →' : 'Next question →'}
           </button>
         )}
       </div>
+      <style>{`.cs-next-btn { transition: transform .18s ease, filter .18s ease; } .cs-next-btn:hover { transform: translateY(-2px); filter: brightness(1.06); } @media (max-width: 979px) { .cs-fixed-bar { bottom: 68px !important; } } @media (min-width: 980px) { .cs-fixed-bar { left: 250px !important; } }`}</style>
     </div>
   )
 }

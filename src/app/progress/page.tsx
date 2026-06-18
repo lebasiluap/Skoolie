@@ -3,18 +3,24 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
 
-const LEAGUE_CONFIG = {
-  bronze:  { label: 'Bronze',  emoji: '🥉', color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200',  min: 0    },
-  silver:  { label: 'Silver',  emoji: '🥈', color: 'text-gray-500',   bg: 'bg-gray-50',   border: 'border-gray-200',   min: 500  },
-  gold:    { label: 'Gold',    emoji: '🥇', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', min: 1500 },
-  diamond: { label: 'Diamond', emoji: '💎', color: 'text-cyan-500',   bg: 'bg-cyan-50',   border: 'border-cyan-200',   min: 4000 },
+function getLeague(xp: number) {
+  if (xp >= 4000) return { label: 'Diamond', icon: '💎' }
+  if (xp >= 1500) return { label: 'Gold',    icon: '🏆' }
+  if (xp >= 500)  return { label: 'Silver',  icon: '🥈' }
+  return              { label: 'Bronze',  icon: '🥉' }
 }
 
-function getLeague(xp: number): keyof typeof LEAGUE_CONFIG {
-  if (xp >= 4000) return 'diamond'
-  if (xp >= 1500) return 'gold'
-  if (xp >= 500)  return 'silver'
-  return 'bronze'
+function topicColor(accuracy: number) {
+  if (accuracy >= 70) return 'var(--green)'
+  if (accuracy >= 50) return 'var(--amber)'
+  return 'var(--red)'
+}
+
+function rankBadgeStyle(rank: number) {
+  if (rank === 1) return { bg: 'var(--gold)',    color: '#fff' }
+  if (rank === 2) return { bg: '#A6AEB3',         color: '#fff' }
+  if (rank === 3) return { bg: '#C0835A',         color: '#fff' }
+  return               { bg: 'var(--surface-3)', color: 'var(--text-faint)' }
 }
 
 export default async function ProgressPage() {
@@ -27,116 +33,175 @@ export default async function ProgressPage() {
     .select('*')
     .eq('id', user.id)
     .single()
-
   if (!profile) redirect('/onboarding')
 
-  // Get top 20 users by XP for the leaderboard
   const { data: topUsers } = await supabase
     .from('user_profiles')
-    .select('id, full_name, xp, level, current_streak, profession')
+    .select('id, full_name, xp, level, profession')
     .order('xp', { ascending: false })
     .limit(20)
 
-  const userLeague = getLeague(profile.xp)
-  const leagueConf = LEAGUE_CONFIG[userLeague]
+  // Topic stats for topic mastery
+  const { data: historyRows } = await supabase
+    .from('user_question_history')
+    .select('topic, was_correct')
+    .eq('user_id', user.id)
+    .eq('question_type', 'mcq')
 
-  // Find current user's rank
-  const userRank = topUsers ? topUsers.findIndex(u => u.id === user.id) + 1 : null
+  let topicStats: { topic: string; accuracy: number }[] = []
+  if (historyRows && historyRows.length > 0) {
+    const map = new Map<string, { total: number; correct: number }>()
+    for (const row of historyRows) {
+      if (!row.topic) continue
+      const e = map.get(row.topic) ?? { total: 0, correct: 0 }
+      e.total += 1
+      if (row.was_correct) e.correct += 1
+      map.set(row.topic, e)
+    }
+    topicStats = Array.from(map.entries())
+      .map(([topic, { total, correct }]) => ({ topic, accuracy: Math.round((correct / total) * 100) }))
+      .sort((a, b) => b.accuracy - a.accuracy)
+      .slice(0, 6)
+  }
+
+  const league = getLeague(profile.xp)
+  const userRank = topUsers ? topUsers.findIndex(u => u.id === user.id) + 1 : 0
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+  const lastActiveStr = profile.last_active_date ?? ''
+  const effectiveStreak = (lastActiveStr === todayStr || lastActiveStr === yesterdayStr)
+    ? (profile.current_streak ?? 0) : 0
+
+  const totalAnswered = profile.xp ? Math.floor(profile.xp / 6) : 0 // rough approximation
+  const avgAccuracy = topicStats.length > 0 ? Math.round(topicStats.reduce((s, t) => s + t.accuracy, 0) / topicStats.length) : null
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="bg-[#101010] px-5 pt-12 pb-8 text-center">
-        <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-4">Your League</p>
-        <div className={`inline-flex flex-col items-center gap-2 ${leagueConf.bg} ${leagueConf.border} border rounded-3xl px-10 py-5 mb-4`}>
-          <span className="text-5xl">{leagueConf.emoji}</span>
-          <span className={`text-lg font-bold ${leagueConf.color}`}>{leagueConf.label}</span>
-        </div>
-        <p className="text-white font-bold text-2xl">{profile.xp} XP</p>
-        <p className="text-white/50 text-xs mt-1">
-          {userRank ? `Rank #${userRank} overall` : 'Keep studying to rank up!'}
-        </p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <BottomNav />
 
-        {/* League progress bar */}
-        {userLeague !== 'diamond' && (() => {
-          const leagues = Object.entries(LEAGUE_CONFIG) as [keyof typeof LEAGUE_CONFIG, typeof LEAGUE_CONFIG[keyof typeof LEAGUE_CONFIG]][]
-          const currentIdx = leagues.findIndex(([k]) => k === userLeague)
-          const next = leagues[currentIdx + 1]
-          const progress = Math.min(((profile.xp - leagueConf.min) / (next[1].min - leagueConf.min)) * 100, 100)
-          return (
-            <div className="mt-5 px-2">
-              <div className="flex justify-between text-xs text-white/40 mb-1.5">
-                <span>{leagueConf.label}</span>
-                <span>{next[0].charAt(0).toUpperCase() + next[0].slice(1)} at {next[1].min} XP</span>
-              </div>
-              <div className="h-1.5 bg-white/10 rounded-full">
-                <div className="h-full bg-[#0D9488] rounded-full transition-all" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          )
-        })()}
-      </div>
+      <div style={{ maxWidth: 1140, margin: '0 auto', padding: 'clamp(18px,3.5vw,38px) clamp(16px,3.5vw,38px) 100px' }}>
+        <h1 style={{ margin: '0 0 22px', fontSize: 'clamp(26px,3vw,32px)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.025em' }}>Your progress</h1>
 
-      {/* Stats strip */}
-      <div className="px-5 -mt-0 pt-5">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-[#0D9488]">{profile.level}</p>
-            <p className="text-xs text-gray-400 mt-1">Level</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-orange-500">{profile.current_streak}</p>
-            <p className="text-xs text-gray-400 mt-1">Day streak</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
-            <p className="text-2xl font-bold text-[#0D9488]">{profile.longest_streak}</p>
-            <p className="text-xs text-gray-400 mt-1">Best streak</p>
-          </div>
-        </div>
-      </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
 
-      {/* Leaderboard */}
-      <div className="px-5 mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-[#101010]">Leaderboard</h2>
-          <span className="text-xs text-gray-400">Top 20 all-time</span>
-        </div>
+          {/* ── Left column ─────────────────────────────────────────────── */}
+          <div style={{ flex: '1 1 440px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          {topUsers && topUsers.length > 0 ? topUsers.map((u, i) => {
-            const isMe = u.id === user.id
-            const rank = i + 1
-            const rankDisplay = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`
-            const initials = u.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
-
-            return (
-              <Link
-                key={u.id}
-                href={`/users/${u.id}`}
-                className={`flex items-center gap-3 px-4 py-3.5 ${i < topUsers.length - 1 ? 'border-b border-gray-50' : ''} ${isMe ? 'bg-[#f0fdfb]' : 'hover:bg-gray-50'} transition-colors`}
-              >
-                <span className={`text-base font-bold w-8 text-center ${rank <= 3 ? 'text-xl' : 'text-gray-400'}`}>{rankDisplay}</span>
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isMe ? 'bg-[#0D9488] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                  {initials}
+            {/* Topic mastery */}
+            {topicStats.length > 0 && (
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow)', padding: 22 }}>
+                <h2 style={{ margin: '0 0 17px', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Topic mastery</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {topicStats.map(({ topic, accuracy }) => (
+                    <div key={topic}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{topic}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: topicColor(accuracy), flexShrink: 0, marginLeft: 10 }}>{accuracy}%</span>
+                      </div>
+                      <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
+                        <div className="progress-bar" style={{ height: '100%', borderRadius: 999, width: `${accuracy}%`, background: topicColor(accuracy) }} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold truncate ${isMe ? 'text-[#0D9488]' : 'text-[#101010]'}`}>
-                    {u.full_name}{isMe ? ' (you)' : ''}
+              </div>
+            )}
+          </div>
+
+          {/* ── Right column ─────────────────────────────────────────────── */}
+          <div style={{ flex: '1 1 290px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* League card */}
+            <div className="league-card" style={{
+              background: 'linear-gradient(150deg,var(--teal),var(--teal-deep))',
+              borderRadius: 20, boxShadow: 'var(--shadow)', padding: 24,
+              color: '#fff', position: 'relative', overflow: 'hidden',
+            }}>
+              <div style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,.1)', top: -70, right: -50 }} />
+              <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.75)', textTransform: 'uppercase', letterSpacing: '.06em', position: 'relative' }}>Current league</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 13, position: 'relative', marginTop: 8 }}>
+                <div style={{ width: 54, height: 54, borderRadius: 16, background: 'rgba(255,255,255,.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
+                  {league.icon}
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.02em' }}>{league.label}</p>
+                  <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,.8)', fontWeight: 600 }}>
+                    {userRank > 0 ? `Rank ${userRank} · ` : ''}{profile.xp} XP
                   </p>
-                  <p className="text-xs text-gray-400 capitalize">{u.profession} · Lv.{u.level}</p>
                 </div>
-                <span className={`text-sm font-bold ${isMe ? 'text-[#0D9488]' : 'text-gray-500'}`}>{u.xp} XP</span>
-              </Link>
-            )
-          }) : (
-            <div className="p-8 text-center">
-              <p className="text-gray-400 text-sm">No users yet — be the first!</p>
+              </div>
             </div>
+
+            {/* 2×2 stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>
+              {[
+                { val: totalAnswered, label: 'Total answered', color: 'var(--teal)' },
+                { val: avgAccuracy !== null ? `${avgAccuracy}%` : '—', label: 'Accuracy', color: 'var(--green)' },
+                { val: `${effectiveStreak}d`, label: 'Streak', color: 'var(--coral)' },
+                { val: `L${profile.level}`, label: 'Level', color: 'var(--text)' },
+              ].map(s => (
+                <div key={s.label} className="dash-stat-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', padding: 18 }}>
+                  <p style={{ margin: 0, fontSize: 26, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.val}</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Leaderboard (full width) ───────────────────────────────────── */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow)', padding: '18px 12px', marginTop: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px', marginBottom: 10 }}>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Leaderboard</h2>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-faint)' }}>Top 20 · all-time</span>
+          </div>
+
+          {topUsers && topUsers.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {topUsers.map((u, i) => {
+                const isMe = u.id === user.id
+                const rank = i + 1
+                const badge = rankBadgeStyle(rank)
+                const initials = u.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) ?? '??'
+                return (
+                  <Link key={u.id} href={`/users/${u.id}`} className="leaderboard-row"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px',
+                      borderRadius: 14, textDecoration: 'none',
+                      background: isMe ? 'var(--teal-tint)' : 'transparent',
+                    }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: badge.bg, color: badge.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                      {rank <= 3 ? ['🥇','🥈','🥉'][rank - 1] : rank}
+                    </div>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: isMe ? 'var(--teal)' : 'var(--surface-3)', color: isMe ? 'var(--on-teal)' : 'var(--text-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                      {initials}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: isMe ? 'var(--teal)' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {u.full_name}{isMe ? ' (you)' : ''}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, textTransform: 'capitalize' }}>{u.profession} · Lv.{u.level}</p>
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: isMe ? 'var(--teal)' : 'var(--text-soft)', flexShrink: 0 }}>{u.xp.toLocaleString()} XP</span>
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <p style={{ padding: '20px 12px', textAlign: 'center', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>No users yet — be the first!</p>
           )}
         </div>
       </div>
 
-      <BottomNav />
+      <style>{`
+        .league-card { transition: transform .25s cubic-bezier(.2,.75,.25,1), box-shadow .25s ease; }
+        .league-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: var(--shadow-lg); }
+        .dash-stat-card { transition: transform .22s cubic-bezier(.2,.75,.25,1), box-shadow .22s ease; }
+        .dash-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .leaderboard-row { transition: transform .18s ease; }
+        .leaderboard-row:hover { transform: translateX(5px); }
+      `}</style>
     </div>
   )
 }

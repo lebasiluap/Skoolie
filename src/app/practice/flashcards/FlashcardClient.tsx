@@ -11,259 +11,244 @@ interface Props {
   userId: string
   bookmarkedIds: string[]
   showTags: boolean
+  backUrl?: string
+  newSetUrl?: string
 }
 
-export default function FlashcardClient({ questions, userId, bookmarkedIds, showTags }: Props) {
+export default function FlashcardClient({
+  questions, userId, bookmarkedIds, showTags,
+  backUrl = '/practice/flashcards', newSetUrl,
+}: Props) {
+  const [workingSet, setWorkingSet] = useState<Question[]>(questions)
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState(0)
   const [unknown, setUnknown] = useState(0)
+  const [missedIds, setMissedIds] = useState<string[]>([])
   const [done, setDone] = useState(false)
   const [animating, setAnimating] = useState(false)
+  const [reviewingMissed, setReviewingMissed] = useState(false)
 
-  const question = questions[index]
-  const progress = (index / questions.length) * 100
+  const question = workingSet[index]
+  const progress = (index / workingSet.length) * 100
 
-  // For flashcards options is [], so correct_answer holds the answer text directly.
-  // For MCQ-style flashcards (shouldn't normally appear here), fall back to option lookup.
   const opts = question?.options as string[]
   const isFlashcard = !opts || opts.length === 0
   const answerText = isFlashcard
-    ? question?.correct_answer
+    ? (question?.correct_answer || question?.explanation)
     : (opts.find(o => o.startsWith(question?.correct_answer + '.') || o.startsWith(question?.correct_answer + ' '))
         ?.replace(/^[A-D][\.\s]\s*/, '') ?? question?.explanation)
 
+  // Dynamic card height so long answers don't overflow
+  const answerLen = answerText?.length ?? 0
+  const cardMinHeight = answerLen > 200 ? Math.min(600, 300 + Math.ceil((answerLen - 200) / 4)) : 300
+  const answerFontSize = answerLen > 300 ? 13 : answerLen > 150 ? 15 : 19
+
   async function handleResult(gotIt: boolean) {
+    const newMissedIds = gotIt ? missedIds : [...missedIds, question.id]
     const newKnown = gotIt ? known + 1 : known
     const newUnknown = gotIt ? unknown : unknown + 1
     setKnown(newKnown)
     setUnknown(newUnknown)
+    setMissedIds(newMissedIds)
 
-    if (index + 1 >= questions.length) {
-      const supabase = createClient()
-      const xpEarned = newKnown * 5
-      const now = new Date().toISOString()
-
-      await Promise.allSettled([
-        supabase.rpc('update_streak', { user_id: userId }),
-        xpEarned > 0
-          ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned })
-          : Promise.resolve(),
-        // Record history for no-repeat tracking
-        supabase.from('user_question_history').upsert(
-          questions.map(q => ({
-            user_id: userId,
-            question_id: q.id,
-            question_type: 'flashcard',
-            topic: q.topic,
-            category: (q as unknown as Record<string, unknown>).category as string ?? null,
-            subtopic: q.subtopic ?? null,
-            difficulty: q.difficulty,
-            answered_at: now,
-            was_correct: null, // flashcards don't have definitive correct/incorrect
-          })),
-          { onConflict: 'user_id,question_id' }
-        ),
-      ])
+    if (index + 1 >= workingSet.length) {
+      if (!reviewingMissed) {
+        const supabase = createClient()
+        const xpEarned = newKnown * 5
+        const now = new Date().toISOString()
+        await Promise.allSettled([
+          supabase.rpc('update_streak', { user_id: userId }),
+          xpEarned > 0 ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }) : Promise.resolve(),
+          supabase.from('user_question_history').upsert(
+            workingSet.map(q => ({
+              user_id: userId, question_id: q.id, question_type: 'flashcard',
+              topic: q.topic, category: (q as unknown as Record<string, unknown>).category as string ?? null,
+              subtopic: q.subtopic ?? null, difficulty: q.difficulty, answered_at: now, was_correct: null,
+            })),
+            { onConflict: 'user_id,question_id' }
+          ),
+        ])
+      }
       setDone(true)
       return
     }
 
-    // Flip back then advance
     setAnimating(true)
     setFlipped(false)
-    setTimeout(() => {
-      setIndex(i => i + 1)
-      setAnimating(false)
-    }, 400)
+    setTimeout(() => { setIndex(i => i + 1); setAnimating(false) }, 400)
   }
 
+  function handleReviewMissed() {
+    setWorkingSet(questions.filter(q => missedIds.includes(q.id)))
+    setIndex(0); setFlipped(false); setKnown(0); setUnknown(0)
+    setMissedIds([]); setDone(false); setReviewingMissed(true)
+  }
+
+  function handleStudyAgain() {
+    setWorkingSet(questions)
+    setIndex(0); setFlipped(false); setKnown(0); setUnknown(0)
+    setMissedIds([]); setDone(false); setReviewingMissed(false)
+  }
+
+  // ── Done screen ───────────────────────────────────────────────────────────
   if (done) {
-    const accuracy = Math.round((known / questions.length) * 100)
+    const accuracy = Math.round((known / workingSet.length) * 100)
+    const missedCount = missedIds.length
+
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-24 h-24 rounded-full bg-[#f0fdfb] flex items-center justify-center mb-6">
-          <span className="text-5xl">🎉</span>
-        </div>
-        <h1 className="text-3xl font-bold text-[#101010] mb-1">Deck complete!</h1>
-        <p className="text-gray-400 text-sm mb-10">Here&apos;s how you did</p>
-
-        <div className="w-full max-w-xs grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-green-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-500">{known}</p>
-            <p className="text-xs text-gray-400 mt-1">Got it</p>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px' }}>
+        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <div className="anim-pop" style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--coral-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px auto 18px' }}>
+            <span style={{ fontSize: 44 }}>{accuracy >= 80 ? '🏆' : '🎉'}</span>
           </div>
-          <div className="bg-red-50 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-red-400">{unknown}</p>
-            <p className="text-xs text-gray-400 mt-1">Missed</p>
+          <h1 style={{ margin: '0 0 5px', fontSize: 28, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            {reviewingMissed ? 'Review complete!' : 'Deck complete!'}
+          </h1>
+          <p style={{ margin: '0 0 26px', fontSize: 15, color: 'var(--text-soft)', fontWeight: 600 }}>Keep that momentum going</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, maxWidth: 380, margin: '0 auto 26px' }}>
+            <div style={{ background: 'var(--green-tint)', borderRadius: 18, padding: '18px 8px' }}>
+              <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--green)' }}>{known}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>Got it</p>
+            </div>
+            <div style={{ background: 'var(--red-tint)', borderRadius: 18, padding: '18px 8px' }}>
+              <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--red)' }}>{missedCount}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>Missed</p>
+            </div>
+            <div style={{ background: 'var(--teal-tint)', borderRadius: 18, padding: '18px 8px' }}>
+              <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--teal)' }}>+{known * 5}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>XP</p>
+            </div>
           </div>
-          <div className="bg-[#f0fdfb] rounded-2xl p-4 text-center">
-            <p className="text-2xl font-bold text-[#0D9488]">+{known * 5}</p>
-            <p className="text-xs text-gray-400 mt-1">XP</p>
+
+          <p style={{ margin: 0, fontSize: 40, fontWeight: 900, color: 'var(--teal)', letterSpacing: '-0.02em' }}>{accuracy}%</p>
+          <p style={{ margin: '2px 0 24px', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>accuracy</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 11, maxWidth: 340, margin: '0 auto' }}>
+            {missedCount > 0 && !reviewingMissed && (
+              <button onClick={handleReviewMissed} className="fc-btn-hover"
+                style={{ padding: 15, borderRadius: 999, background: 'var(--red-tint)', color: 'var(--red)', border: 'none', fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>
+                Review missed cards ({missedCount})
+              </button>
+            )}
+            <button onClick={() => { const u = newSetUrl ?? backUrl; window.location.href = u + (u.includes('?') ? '&' : '?') + `t=${Date.now()}` }}
+              className="fc-btn-hover"
+              style={{ padding: 15, borderRadius: 999, background: 'var(--coral)', color: '#fff', border: 'none', fontSize: 15, fontWeight: 800, cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>
+              New deck →
+            </button>
+            <button onClick={handleStudyAgain} className="fc-btn-hover"
+              style={{ padding: 15, borderRadius: 999, background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-strong)', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%', fontFamily: 'inherit' }}>
+              Study full deck again
+            </button>
+            <Link href="/dashboard" style={{ padding: 8, fontSize: 13.5, fontWeight: 700, color: 'var(--text-faint)', textDecoration: 'none', textAlign: 'center' }}>
+              Dashboard
+            </Link>
           </div>
         </div>
-
-        <p className="text-5xl font-bold text-[#0D9488] mb-1">{accuracy}%</p>
-        <p className="text-gray-400 text-sm mb-10">accuracy</p>
-
-        <div className="w-full max-w-xs flex flex-col gap-3">
-          <button
-            onClick={() => { setIndex(0); setFlipped(false); setKnown(0); setUnknown(0); setDone(false) }}
-            className="w-full py-3.5 rounded-full bg-[#0D9488] text-white font-semibold hover:bg-[#0b7a6e] transition-colors"
-          >
-            Study again
-          </button>
-          <Link
-            href="/dashboard"
-            className="w-full py-3.5 rounded-full border border-gray-200 text-[#101010] font-semibold text-center hover:bg-gray-50 transition-colors"
-          >
-            Back to dashboard
-          </Link>
-        </div>
+        <style>{`.fc-btn-hover{transition:transform .18s ease,filter .18s ease}.fc-btn-hover:hover{transform:translateY(-2px);filter:brightness(1.06)}`}</style>
       </div>
     )
   }
 
+  // ── Flashcard screen ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-gray-100">
-        <Link href="/practice/flashcards" className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg">
-          ←
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Top bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, padding: '16px 20px 0', maxWidth: 560, margin: '0 auto', width: '100%' }}>
+        <Link href={backUrl} style={{ width: 42, height: 42, borderRadius: 13, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </Link>
-        <div className="flex flex-col items-center">
-          <span className="text-[#101010] font-semibold text-sm">{index + 1} / {questions.length}</span>
-          {showTags && <span className="text-gray-400 text-xs">{question.topic}</span>}
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-soft)' }}>{index + 1} / {workingSet.length}</span>
+          {reviewingMissed && <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 800, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '.04em' }}>Review mode</p>}
         </div>
-        <BookmarkButton
-          questionId={question.id}
-          userId={userId}
-          initialBookmarked={bookmarkedIds.includes(question.id)}
-        />
+        <BookmarkButton questionId={question.id} userId={userId} initialBookmarked={bookmarkedIds.includes(question.id)} />
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-gray-100">
-        <div
-          className="h-full bg-[#0D9488] rounded-full transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
+      <div style={{ maxWidth: 560, margin: '16px auto 0', padding: '0 20px', width: '100%' }}>
+        <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
+          <div className="progress-bar" style={{ height: '100%', borderRadius: 999, background: reviewingMissed ? 'linear-gradient(90deg,var(--red),var(--coral))' : 'linear-gradient(90deg,var(--coral),var(--coral-deep))', width: `${progress}%` }} />
+        </div>
       </div>
 
       {/* Score pills */}
-      <div className="flex justify-center gap-4 py-4">
-        <span className="text-xs font-semibold text-red-500 bg-red-50 px-3 py-1 rounded-full">✗ {unknown} missed</span>
-        <span className="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">✓ {known} got it</span>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 11, padding: '16px 20px 0' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--red)', background: 'var(--red-tint)', padding: '6px 13px', borderRadius: 999 }}>✗ {unknown} missed</span>
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--green)', background: 'var(--green-tint)', padding: '6px 13px', borderRadius: 999 }}>✓ {known} got it</span>
       </div>
 
-      {/* Scrollable content — pb-44 clears BottomNav + fixed action bar */}
-      <div className="flex-1 overflow-y-auto px-5 pt-2 pb-44">
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 120px', maxWidth: 560, margin: '0 auto', width: '100%' }}>
 
         {/* 3D Flip Card */}
-        <div
-          style={{ perspective: '1200px' }}
-          className="w-full"
-          onClick={() => !animating && setFlipped(f => !f)}
-        >
-          <div
-            style={{
-              transformStyle: 'preserve-3d',
-              transition: 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-              position: 'relative',
-              minHeight: '280px',
-              cursor: 'pointer',
-            }}
-          >
+        <div style={{ perspective: '1400px', cursor: 'pointer', marginBottom: 20 }}
+          onClick={() => !animating && setFlipped(f => !f)}>
+          <div style={{
+            transformStyle: 'preserve-3d',
+            transition: 'transform .6s cubic-bezier(.4,0,.2,1)',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            position: 'relative', minHeight: cardMinHeight,
+          }}>
             {/* Front */}
-            <div
-              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-              className="absolute inset-0 bg-white rounded-3xl p-7 flex flex-col items-center justify-center shadow-2xl"
-            >
-              <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-5">Question</p>
-              <p className="text-[#101010] text-base leading-relaxed font-medium text-center">
-                {question.question_text}
-              </p>
-              <div className="mt-6 flex items-center gap-2 text-gray-300">
-                <span className="text-sm">↕</span>
-                <p className="text-xs">Tap to reveal answer</p>
+            <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, boxShadow: 'var(--shadow-lg)', padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 18px', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.12em' }}>Question</p>
+              <p style={{ margin: 0, fontSize: 18, fontWeight: 700, lineHeight: 1.5, color: 'var(--text)' }}>{question.question_text}</p>
+              <div style={{ marginTop: 22, display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-faint)', fontSize: 13, fontWeight: 600 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18M5 10l7-7 7 7"/></svg>
+                Tap to reveal
               </div>
             </div>
 
-            {/* Back — scrollable text so long answers never overflow the card */}
-            <div
-              style={{
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }}
-              className="absolute inset-0 bg-[#0D9488] rounded-3xl p-7 flex flex-col items-center shadow-2xl overflow-hidden"
-            >
-              <p className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4 shrink-0">Answer</p>
-              <div className="flex-1 overflow-y-auto w-full">
-                <div className="min-h-full flex items-center justify-center py-2">
-                  <p className="text-white text-base leading-relaxed font-bold text-center">
-                    {answerText}
-                  </p>
-                </div>
-              </div>
-              <p className="text-white/50 text-xs mt-4 shrink-0">↓ Scroll for explanation</p>
+            {/* Back */}
+            <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: reviewingMissed ? 'var(--red)' : 'var(--teal)', borderRadius: 24, boxShadow: 'var(--shadow-lg)', padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: answerLen > 150 ? 'flex-start' : 'center', textAlign: 'center', overflowY: 'auto' }}>
+              <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: '.12em', flexShrink: 0 }}>Answer</p>
+              <p style={{ margin: 0, fontSize: answerFontSize, fontWeight: 800, lineHeight: 1.5, color: '#fff' }}>{answerText}</p>
             </div>
           </div>
         </div>
 
-        {/* Hint when not flipped */}
         {!flipped && (
-          <p className="text-center text-xs text-gray-300 mt-4">tap card to flip</p>
+          <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>Tap the card to flip it</p>
         )}
 
-        {/* Avatar explanation — appears after flip */}
-        <div
-          className={`mt-5 transition-all duration-400 ${
-            flipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <img
-              src="/avatar.png"
-              alt="Tutor"
-              className="w-11 h-11 rounded-full shrink-0 object-cover shadow-sm"
-            />
-            <div className="relative bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-gray-100 flex-1">
-              <div
-                className="absolute -left-2 top-3 w-0 h-0"
-                style={{
-                  borderTop: '7px solid transparent',
-                  borderBottom: '7px solid transparent',
-                  borderRight: '8px solid white',
-                }}
-              />
-              <p className="text-sm text-gray-700 leading-relaxed">{question.explanation}</p>
+        {/* Explanation when flipped */}
+        {flipped && (
+          <div style={{ display: 'flex', gap: 13, alignItems: 'flex-start', marginBottom: 18 }}>
+            <div style={{ width: 42, height: 42, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
+              <img src="/avatar.png" alt="Tutor" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+            <div style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, borderTopLeftRadius: 5, boxShadow: 'var(--shadow)', padding: 16 }}>
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: 'var(--text-soft)' }}>{question.explanation}</p>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Action buttons — fixed above BottomNav, always reachable */}
+      {/* Action buttons (after flip) */}
       {flipped && (
-        <div className="fixed bottom-[68px] left-0 right-0 bg-white border-t border-gray-100 px-5 pt-3 pb-3">
-          <p className="text-center text-xs text-gray-400 mb-2">How did you do?</p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleResult(false)}
-              className="flex-1 py-3.5 rounded-2xl border-2 border-red-400/40 text-red-400 font-semibold text-sm hover:bg-red-400/10 transition-colors"
-            >
-              ✗ Didn&apos;t know
-            </button>
-            <button
-              onClick={() => handleResult(true)}
-              className="flex-1 py-3.5 rounded-2xl bg-[#0D9488] text-white font-semibold text-sm hover:bg-[#0b7a6e] transition-colors"
-            >
-              ✓ Got it!
-            </button>
+        <div className="fc-action-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
+          <div style={{ maxWidth: 560, margin: '0 auto' }}>
+            <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, margin: '0 0 10px' }}>How did you do?</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => handleResult(false)}
+                style={{ flex: 1, padding: 15, borderRadius: 16, background: 'var(--red-tint)', color: 'var(--red)', border: '1.5px solid transparent', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+                ✗ Didn&apos;t know
+              </button>
+              <button onClick={() => handleResult(true)}
+                style={{ flex: 1, padding: 15, borderRadius: 16, background: reviewingMissed ? 'var(--red)' : 'var(--green)', color: '#fff', border: 'none', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+                ✓ Got it
+              </button>
+            </div>
           </div>
         </div>
       )}
+      <style>{`
+        @media (max-width: 979px)  { .fc-action-bar { bottom: 68px !important; } }
+        @media (min-width: 980px)  { .fc-action-bar { left: 250px !important; } }
+      `}</style>
     </div>
   )
 }

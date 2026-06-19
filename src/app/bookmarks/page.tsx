@@ -45,7 +45,7 @@ export default async function BookmarksPage() {
             <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>{total} question{total !== 1 ? 's' : ''} saved</p>
           </div>
           {total > 0 && (
-            <Link href="/bookmarks/practice?type=mcq"
+            <Link href={`/bookmarks/practice?type=${mcqBookmarks.length > 0 ? 'mcq' : 'flashcard'}`}
               style={{ padding: '11px 18px', borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
               Practice all →
             </Link>
@@ -119,10 +119,11 @@ export default async function BookmarksPage() {
                   {flashcardBookmarks.map(b => {
                     const q = b.questions as any
                     if (!q) return null
-                    const answerOption = (q.options as string[])?.find(
-                      (o: string) => o.startsWith(q.correct_answer + '.') || o.startsWith(q.correct_answer + ' ')
-                    )
-                    const answerText = answerOption ? answerOption.replace(/^[A-D][\.\s]\s*/, '') : q.explanation
+                    // For flashcards: correct_answer holds the answer when non-empty;
+                    // fall back to explanation for older cards where explanation IS the answer.
+                    const answerText = (q.correct_answer && q.correct_answer.trim())
+                      ? q.correct_answer
+                      : q.explanation
                     return (
                       <div key={b.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
                         <div style={{ padding: '16px 18px' }}>
@@ -134,10 +135,7 @@ export default async function BookmarksPage() {
                         </div>
                         <div style={{ background: 'var(--teal)', padding: '14px 18px' }}>
                           <p style={{ margin: '0 0 5px', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: '.1em' }}>Answer</p>
-                          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#fff' }}>{answerText}</p>
-                          {q.explanation && answerText !== q.explanation && (
-                            <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'rgba(255,255,255,.7)', lineHeight: 1.5 }}>{q.explanation}</p>
-                          )}
+                          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.55 }}>{answerText}</p>
                         </div>
                       </div>
                     )

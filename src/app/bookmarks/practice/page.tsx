@@ -54,18 +54,37 @@ export default async function BookmarksPracticePage({ searchParams }: PageProps)
     .contains('professions', [profile.profession as Profession])
 
   if (!questions || questions.length === 0) {
+    // Check if there are bookmarks of the other type to offer a helpful redirect
+    const otherType = type === 'flashcard' ? 'mcq' : 'flashcard'
+    const { data: otherQuestions } = await supabase
+      .from('questions')
+      .select('id')
+      .in('id', allBookmarkedIds)
+      .eq('question_type', otherType)
+      .limit(1)
+    const hasOtherType = (otherQuestions?.length ?? 0) > 0
+
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-4xl mb-4">🔍</p>
-        <p className="text-[#101010] font-semibold mb-1">
-          No bookmarked {type === 'flashcard' ? 'flashcards' : 'MCQs'} found
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🔖</div>
+        <p style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>
+          No bookmarked {type === 'flashcard' ? 'flashcards' : 'MCQs'} yet
         </p>
-        <p className="text-gray-400 text-sm mb-6">
-          Bookmark some {type === 'flashcard' ? 'flashcards' : 'MCQ questions'} while practising.
+        <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>
+          Bookmark some {type === 'flashcard' ? 'flashcard' : 'MCQ'} questions while practising to see them here.
         </p>
-        <a href="/bookmarks" className="px-6 py-3 rounded-full bg-[#0D9488] text-white font-semibold text-sm">
-          ← Back to bookmarks
-        </a>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280 }}>
+          {hasOtherType && (
+            <a href={`/bookmarks/practice?type=${otherType}`}
+              style={{ display: 'block', padding: '13px 24px', borderRadius: 999, background: 'var(--teal)', color: 'var(--on-teal)', fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
+              Practice bookmarked {otherType === 'flashcard' ? 'flashcards' : 'MCQs'} →
+            </a>
+          )}
+          <a href="/bookmarks"
+            style={{ display: 'block', padding: '13px 24px', borderRadius: 999, background: 'var(--surface-2)', color: 'var(--text-soft)', fontSize: 14, fontWeight: 800, textDecoration: 'none', border: '1px solid var(--border)' }}>
+            ← Back to bookmarks
+          </a>
+        </div>
       </div>
     )
   }

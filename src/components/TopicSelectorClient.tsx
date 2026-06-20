@@ -110,10 +110,15 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
   const initialRowsRef = useRef(initialRows)
 
   useEffect(() => {
-    // Case studies use a different RPC; only filter MCQ + flashcard
-    if (mode === 'case_study' || !profession) return
+    if (!profession) return
 
-    const hasFilter = cognitiveType !== 'all' || highYield || (difficulty !== 'all')
+    const isCaseStudy = mode === 'case_study'
+    // Flashcards: only difficulty matters (no cognitive_type tagging)
+    // Case studies: only difficulty matters
+    // MCQ: all filters apply
+    const hasFilter = isCaseStudy
+      ? difficulty !== 'all'
+      : cognitiveType !== 'all' || highYield || difficulty !== 'all'
 
     if (!hasFilter) {
       setLiveRows(initialRowsRef.current)
@@ -126,14 +131,23 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
     setIsFiltering(true)
 
     const supabase = createClient()
-    supabase.rpc('get_question_counts', {
-      p_profession: profession,
-      p_question_type: mode === 'flashcard' ? 'flashcard' : 'mcq',
-      p_access_key: accessKey ?? null,
-      p_cognitive_type: cognitiveType !== 'all' ? cognitiveType : null,
-      p_high_yield: highYield ? true : null,
-      p_difficulty: difficulty !== 'all' ? difficulty : null,
-    }).then(({ data }) => {
+
+    const rpcCall = isCaseStudy
+      ? supabase.rpc('get_case_study_counts', {
+          p_profession: profession,
+          p_access_key: accessKey ?? null,
+          p_difficulty: difficulty !== 'all' ? difficulty : null,
+        })
+      : supabase.rpc('get_question_counts', {
+          p_profession: profession,
+          p_question_type: mode === 'flashcard' ? 'flashcard' : 'mcq',
+          p_access_key: accessKey ?? null,
+          p_cognitive_type: cognitiveType !== 'all' ? cognitiveType : null,
+          p_high_yield: highYield ? true : null,
+          p_difficulty: difficulty !== 'all' ? difficulty : null,
+        })
+
+    rpcCall.then(({ data }) => {
       if (cancelled) return
       const rows = (data ?? []).map((r: { topic: string; category: string | null; subtopic: string | null; cnt: number }) => ({
         topic: r.topic,
@@ -285,8 +299,8 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
           )}
         </div>
 
-        {/* Cognitive type filter */}
-        {mode !== 'case_study' && (
+        {/* Cognitive type filter — MCQ only */}
+        {mode === 'mcq' && (
           <div>
             <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Question type</p>
             <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
@@ -310,12 +324,12 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
           </div>
         )}
 
-        {/* Focus toggles */}
+        {/* Focus toggles — MCQ only for High Yield; all modes get year filter */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <div>
             <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Focus</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" onClick={() => setHighYield(v => !v)}
+              {mode === 'mcq' && <button type="button" onClick={() => setHighYield(v => !v)}
                 style={{
                   padding: '8px 16px', borderRadius: 999,
                   border: highYield ? 'none' : '1px solid var(--border)',
@@ -328,7 +342,7 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 High Yield
-              </button>
+              </button>}
               {hasYearFilter && (
                 <button type="button" onClick={() => setAllYears(v => !v)}
                   style={{

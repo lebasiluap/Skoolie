@@ -68,6 +68,8 @@ export default async function CasesPage({ searchParams }: PageProps) {
         mode="case_study"
         totalAvailable={totalAvailable}
         region={region}
+        profession={profile.profession}
+        accessKey={profile.access_key ?? null}
       />
     )
   }

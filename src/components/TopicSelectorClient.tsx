@@ -113,7 +113,7 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
     // Case studies use a different RPC; only filter MCQ + flashcard
     if (mode === 'case_study' || !profession) return
 
-    const hasFilter = cognitiveType !== 'all' || highYield
+    const hasFilter = cognitiveType !== 'all' || highYield || (difficulty !== 'all')
 
     if (!hasFilter) {
       setLiveRows(initialRowsRef.current)
@@ -132,6 +132,7 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
       p_access_key: accessKey ?? null,
       p_cognitive_type: cognitiveType !== 'all' ? cognitiveType : null,
       p_high_yield: highYield ? true : null,
+      p_difficulty: difficulty !== 'all' ? difficulty : null,
     }).then(({ data }) => {
       if (cancelled) return
       const rows = (data ?? []).map((r: { topic: string; category: string | null; subtopic: string | null; cnt: number }) => ({
@@ -149,7 +150,7 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
     })
 
     return () => { cancelled = true }
-  }, [cognitiveType, highYield, mode, profession, accessKey])
+  }, [cognitiveType, highYield, difficulty, mode, profession, accessKey])
 
   const filteredTotal = liveRows.reduce((sum, r) => sum + r.count, 0)
 

@@ -1,13 +1,13 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-
+import BottomNav from '@/components/BottomNav'
 
 const LEAGUE_CONFIG = {
-  bronze:  { label: 'Bronze',  emoji: '🥉', color: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200',  min: 0    },
-  silver:  { label: 'Silver',  emoji: '🥈', color: 'text-gray-500',   bg: 'bg-gray-50',   border: 'border-gray-200',   min: 500  },
-  gold:    { label: 'Gold',    emoji: '🥇', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', min: 1500 },
-  diamond: { label: 'Diamond', emoji: '💎', color: 'text-cyan-500',   bg: 'bg-cyan-50',   border: 'border-cyan-200',   min: 4000 },
+  bronze:  { label: 'Bronze League',  icon: '🥉', color: '#b45309', bg: 'rgba(180,83,9,.1)',   border: 'rgba(180,83,9,.25)'  },
+  silver:  { label: 'Silver League',  icon: '🥈', color: '#6b7280', bg: 'rgba(107,114,128,.1)',border: 'rgba(107,114,128,.25)'},
+  gold:    { label: 'Gold League',    icon: '🥇', color: '#d97706', bg: 'rgba(217,119,6,.1)',   border: 'rgba(217,119,6,.25)' },
+  diamond: { label: 'Diamond League', icon: '💎', color: '#0891b2', bg: 'rgba(8,145,178,.1)',   border: 'rgba(8,145,178,.25)' },
 }
 
 function getLeague(xp: number): keyof typeof LEAGUE_CONFIG {
@@ -17,17 +17,17 @@ function getLeague(xp: number): keyof typeof LEAGUE_CONFIG {
   return 'bronze'
 }
 
-const PROF_LABELS: Record<string, string> = {
-  pharmacy: 'Pharmacy',
-  medicine: 'Medicine',
-  nursing: 'Nursing',
-  general: 'General',
+const PROF_META: Record<string, { label: string; color: string; bg: string }> = {
+  pharmacy: { label: 'Pharmacy', color: 'var(--teal)',      bg: 'var(--teal-tint)'  },
+  medicine: { label: 'Medicine', color: 'var(--green)',     bg: 'var(--green-tint)' },
+  nursing:  { label: 'Nursing',  color: 'var(--coral)',     bg: 'var(--coral-tint)' },
+  general:  { label: 'General',  color: 'var(--text-soft)', bg: 'var(--surface-3)'  },
 }
 
-const YEAR_LABELS: Record<string, string> = {
-  year1: 'Year 1', year2: 'Year 2', year3: 'Year 3',
-  year4: 'Year 4', year5: 'Year 5', year6: 'Year 6',
-  practitioner: 'Practitioner',
+function formatStudyYear(year: string | null | undefined): string {
+  if (!year) return ''
+  if (/^\d+$/.test(year)) return ` · Year ${year}`
+  return ` · ${year.charAt(0).toUpperCase() + year.slice(1)}`
 }
 
 interface PageProps {
@@ -43,7 +43,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('id, full_name, xp, level, current_streak, longest_streak, profession, study_year, avatar_url')
+    .select('id, full_name, xp, level, current_streak, longest_streak, profession, study_year, avatar_url, created_at')
     .eq('id', id)
     .single()
 
@@ -59,78 +59,102 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const league = getLeague(profile.xp)
   const leagueConf = LEAGUE_CONFIG[league]
+  const profMeta = PROF_META[profile.profession] ?? { label: profile.profession, color: 'var(--text-soft)', bg: 'var(--surface-3)' }
 
   const XP_PER_LEVEL = 400
-  const xpIntoCurrentLevel = profile.xp % XP_PER_LEVEL
-  const xpToNextLevel = XP_PER_LEVEL - xpIntoCurrentLevel
-  const xpProgress = (xpIntoCurrentLevel / XP_PER_LEVEL) * 100
+  const xpIntoLevel = profile.xp % XP_PER_LEVEL
+  const xpToNext = XP_PER_LEVEL - xpIntoLevel
+  const xpProgress = (xpIntoLevel / XP_PER_LEVEL) * 100
+
+  const joined = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    : null
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
-      {/* Header */}
-      <div className="bg-[#101010] px-5 pt-10 pb-8 flex items-center gap-3">
-        <Link href="/progress" className="text-white/60 text-sm mr-1">←</Link>
-        <h1 className="text-white text-lg font-bold">Profile</h1>
-        {isMe && <span className="ml-auto text-xs bg-[#0D9488]/20 text-[#0D9488] px-2.5 py-0.5 rounded-full font-semibold">You</span>}
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <BottomNav />
+
+      {/* Top bar */}
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Link href="/progress" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)', textDecoration: 'none', color: 'var(--text-soft)', fontSize: 16 }}>←</Link>
+        <h1 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>Profile</h1>
+        {isMe && (
+          <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--teal)', background: 'var(--teal-tint)', padding: '4px 12px', borderRadius: 999 }}>You</span>
+        )}
       </div>
 
-      <div className="px-5 py-6 flex flex-col gap-5">
-        {/* Avatar + name */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col items-center gap-3">
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: 'clamp(16px,3vw,28px) clamp(14px,3vw,24px) 100px' }}>
+
+        {/* ── Avatar + name card ─────────────────────────────────────── */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, boxShadow: 'var(--shadow-lg)', padding: '28px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 14 }}>
+
+          {/* Avatar */}
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt={profile.full_name} className="w-20 h-20 rounded-full object-cover" />
+            <img src={profile.avatar_url} alt={profile.full_name} style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--teal)' }} />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-2xl font-bold">
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--teal)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 900 }}>
               {initials}
             </div>
           )}
-          <div className="text-center">
-            <p className="text-[#101010] font-bold text-lg">{profile.full_name}</p>
-            <p className="text-gray-400 text-sm">
-              {PROF_LABELS[profile.profession] ?? profile.profession}
-              {profile.study_year ? ` · ${YEAR_LABELS[profile.study_year] ?? profile.study_year}` : ''}
-            </p>
+
+          <h1 style={{ margin: '14px 0 3px', fontSize: 22, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>{profile.full_name}</h1>
+          <p style={{ margin: '0 0 14px', fontSize: 14, color: 'var(--text-faint)', fontWeight: 600 }}>
+            {profMeta.label}{formatStudyYear(profile.study_year)}
+          </p>
+
+          {/* Pills */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 16 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: profMeta.color, background: profMeta.bg, padding: '6px 14px', borderRadius: 999 }}>
+              {profMeta.label}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-soft)', background: 'var(--surface-3)', padding: '6px 14px', borderRadius: 999 }}>
+              Level {profile.level}
+            </span>
           </div>
 
           {/* League badge */}
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${leagueConf.bg} border ${leagueConf.border}`}>
-            <span className="text-lg">{leagueConf.emoji}</span>
-            <span className={`text-sm font-semibold ${leagueConf.color}`}>{leagueConf.label} League</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: leagueConf.bg, border: `1.5px solid ${leagueConf.border}` }}>
+            <span style={{ fontSize: 18 }}>{leagueConf.icon}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: leagueConf.color }}>{leagueConf.label}</span>
           </div>
+
+          {joined && (
+            <p style={{ margin: '14px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>Member since {joined}</p>
+          )}
         </div>
 
-        {/* XP + level */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-[#101010]">Level {profile.level}</span>
-            <span className="text-xs text-gray-400">{xpIntoCurrentLevel} / {XP_PER_LEVEL} XP</span>
+        {/* ── XP progress bar ──────────────────────────────────────────── */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow)', padding: '18px 20px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Level {profile.level}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)' }}>{xpIntoLevel} / {XP_PER_LEVEL} XP</span>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#0D9488] rounded-full transition-all"
-              style={{ width: `${xpProgress}%` }}
-            />
+          <div style={{ height: 10, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
+            <div className="progress-bar" style={{ height: '100%', borderRadius: 999, background: 'linear-gradient(90deg,var(--teal),var(--teal-deep))', width: `${xpProgress}%` }} />
           </div>
-          <p className="text-xs text-gray-400 mt-1">{xpToNextLevel} XP to Level {profile.level + 1}</p>
+          <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>{xpToNext} XP to Level {profile.level + 1}</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* ── Stats 2×2 ────────────────────────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 12 }}>
           {[
-            { label: 'Total XP', value: `${profile.xp}`, color: 'text-[#0D9488]' },
-            { label: 'Level', value: `${profile.level}`, color: 'text-[#0D9488]' },
-            { label: 'Day streak', value: `${profile.current_streak}d`, color: 'text-orange-500' },
-            { label: 'Best streak', value: `${profile.longest_streak}d`, color: 'text-[#0D9488]' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-sm">
-              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-              <p className="text-xs text-gray-400 mt-1">{stat.label}</p>
+            { val: profile.xp.toLocaleString(), label: 'Total XP',     color: 'var(--teal)'  },
+            { val: `${profile.level}`,           label: 'Level',        color: 'var(--teal)'  },
+            { val: `${profile.current_streak}d`, label: 'Day streak',   color: 'var(--coral)' },
+            { val: `${profile.longest_streak}d`, label: 'Best streak',  color: 'var(--green)' },
+          ].map(s => (
+            <div key={s.label} className="user-stat-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, boxShadow: 'var(--shadow)', padding: '18px 16px' }}>
+              <p style={{ margin: 0, fontSize: 27, fontWeight: 900, color: s.color, letterSpacing: '-0.02em' }}>{s.val}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>{s.label}</p>
             </div>
           ))}
         </div>
       </div>
 
-
+      <style>{`
+        .user-stat-card { transition: transform .22s ease, box-shadow .22s ease; }
+        .user-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+      `}</style>
     </div>
   )
 }

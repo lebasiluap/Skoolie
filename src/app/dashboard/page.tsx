@@ -114,7 +114,7 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>Level {profile.level}</p>
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>{profile.profession}{profile.study_year ? ` · Year ${profile.study_year}` : ''}</p>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>{profile.profession}{profile.study_year ? ` · ${/^\d+$/.test(profile.study_year) ? `Year ${profile.study_year}` : profile.study_year.charAt(0).toUpperCase() + profile.study_year.slice(1)}` : ''}</p>
               </div>
             </div>
             <span style={{ fontSize: 14, color: 'var(--text-soft)', fontWeight: 700 }}>{xpIntoCurrentLevel} / {XP_PER_LEVEL} XP</span>

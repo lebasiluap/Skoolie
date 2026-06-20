@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
+import GreetingText from '@/components/GreetingText'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -70,9 +71,6 @@ export default async function DashboardPage() {
     ? (profile.current_streak ?? 0) : 0
   const streakDoneToday = lastActiveStr === todayStr
 
-  const greetingHour = new Date().getHours()
-  const greeting = greetingHour < 12 ? 'Good morning' : greetingHour < 17 ? 'Good afternoon' : 'Good evening'
-
   function topicColor(accuracy: number) {
     if (accuracy >= 70) return 'var(--green)'
     if (accuracy >= 50) return 'var(--amber)'
@@ -97,10 +95,7 @@ export default async function DashboardPage() {
         {/* ── Greeting row ─────────────────────────────────────────────── */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
           <div>
-            <p style={{ margin: '0 0 3px', fontSize: 15, color: 'var(--text-soft)', fontWeight: 600 }}>{greeting},</p>
-            <h1 style={{ margin: 0, fontSize: 'clamp(26px,3vw,32px)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.025em' }}>
-              {profile.full_name} 👋
-            </h1>
+            <GreetingText name={profile.full_name} />
           </div>
           {effectiveStreak > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--coral-tint)', color: 'var(--coral-deep)', padding: '9px 15px', borderRadius: 999, fontWeight: 800, fontSize: 14 }}>

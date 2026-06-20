@@ -68,6 +68,7 @@ export default async function DashboardPage() {
   const lastActiveStr = profile.last_active_date ?? ''
   const effectiveStreak = (lastActiveStr === todayStr || lastActiveStr === yesterdayStr)
     ? (profile.current_streak ?? 0) : 0
+  const streakDoneToday = lastActiveStr === todayStr
 
   const greetingHour = new Date().getHours()
   const greeting = greetingHour < 12 ? 'Good morning' : greetingHour < 17 ? 'Good afternoon' : 'Good evening'
@@ -128,6 +129,71 @@ export default async function DashboardPage() {
           </div>
           <p style={{ margin: '9px 0 0', fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>{xpToNextLevel} XP to Level {profile.level + 1}</p>
         </div>
+
+        {/* ── Streak status card ───────────────────────────────────────── */}
+        {streakDoneToday ? (
+          <div style={{
+            background: 'linear-gradient(135deg, #0f4a3a 0%, #0d3d31 100%)',
+            border: '1.5px solid var(--teal)',
+            borderRadius: 20, padding: '18px 22px', marginBottom: 20,
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}>
+            {/* Flame with checkmark */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="#f97316"><path d="M12 2.5c.9 2.8-1.2 4-1.2 6.2A1.4 1.4 0 0 0 12 10a1.3 1.3 0 0 0 1.3-1.3c0-.6.3-1 .3-1 1.6 1.4 3.4 3.3 3.4 6.3a5 5 0 0 1-10 0c0-3.2 2.4-5.4 5-12z"/></svg>
+              <div style={{
+                position: 'absolute', bottom: -2, right: -4,
+                width: 18, height: 18, borderRadius: '50%',
+                background: 'var(--teal)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid #0d3d31',
+              }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 10 17l9-10"/></svg>
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--teal)' }}>
+                Streak secured! {effectiveStreak > 0 ? `${effectiveStreak} days 🔥` : 'Nice work!'}
+              </p>
+              <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--text-soft)', fontWeight: 600 }}>
+                You&apos;ve already studied today — keep it up tomorrow.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            background: 'linear-gradient(135deg, #3d2200 0%, #2e1a00 100%)',
+            border: '1.5px solid var(--amber)',
+            borderRadius: 20, padding: '18px 22px', marginBottom: 20,
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}>
+            {/* Greyed-out flame with X */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="#6b5030"><path d="M12 2.5c.9 2.8-1.2 4-1.2 6.2A1.4 1.4 0 0 0 12 10a1.3 1.3 0 0 0 1.3-1.3c0-.6.3-1 .3-1 1.6 1.4 3.4 3.3 3.4 6.3a5 5 0 0 1-10 0c0-3.2 2.4-5.4 5-12z"/></svg>
+              <div style={{
+                position: 'absolute', bottom: -2, right: -4,
+                width: 18, height: 18, borderRadius: '50%',
+                background: 'var(--amber)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid #2e1a00',
+              }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--amber)' }}>
+                {effectiveStreak > 0 ? `Don't break your ${effectiveStreak}-day streak!` : 'Start your streak today!'}
+              </p>
+              <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--text-soft)', fontWeight: 600 }}>
+                You haven&apos;t studied yet today. One session is all it takes.
+              </p>
+            </div>
+            <Link href="/practice/mcq" style={{
+              flexShrink: 0, textDecoration: 'none',
+              background: 'var(--amber)', color: '#1a0d00',
+              fontWeight: 800, fontSize: 13, padding: '9px 16px',
+              borderRadius: 999, whiteSpace: 'nowrap',
+            }}>Study now →</Link>
+          </div>
+        )}
 
         {/* ── Two-column grid ──────────────────────────────────────────── */}
         <div className="dash-grid">

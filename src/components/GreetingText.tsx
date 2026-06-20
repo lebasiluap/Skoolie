@@ -1,8 +1,15 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 export default function GreetingText({ name }: { name: string }) {
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const [greeting, setGreeting] = useState('')
+
+  useEffect(() => {
+    const hour = new Date().getHours()
+    setGreeting(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening')
+  }, [])
+
   return (
     <>
       <p style={{ margin: '0 0 3px', fontSize: 15, color: 'var(--text-soft)', fontWeight: 600 }}>{greeting},</p>

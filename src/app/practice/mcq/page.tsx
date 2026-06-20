@@ -15,6 +15,9 @@ interface PageProps {
     limit?: string
     region?: string
     random?: string
+    cognitive_type?: string
+    high_yield?: string
+    all_years?: string
   }>
 }
 
@@ -32,7 +35,8 @@ export default async function MCQPage({ searchParams }: PageProps) {
   if (!profile) redirect('/onboarding')
 
   const params = await searchParams
-  const { topic, category, subtopic, difficulty, limit: limitStr, region, random } = params
+  const { topic, category, subtopic, difficulty, limit: limitStr, region, random,
+          cognitive_type, high_yield, all_years } = params
   const limit = Math.min(parseInt(limitStr ?? '10', 10) || 10, 50)
   const isRandom = random === '1'
 
@@ -59,6 +63,9 @@ export default async function MCQPage({ searchParams }: PageProps) {
         mode="mcq"
         totalAvailable={totalAvailable}
         region={region}
+        hasYearFilter={!!profile.study_year}
+        profession={profile.profession}
+        accessKey={profile.access_key ?? null}
       />
     )
   }
@@ -75,6 +82,12 @@ export default async function MCQPage({ searchParams }: PageProps) {
   if (subtopic) query = query.eq('subtopic', subtopic)
   if (difficulty && difficulty !== 'all') query = query.eq('difficulty', difficulty)
 
+  // Cognitive type filter
+  if (cognitive_type && cognitive_type !== 'all') query = query.eq('cognitive_type', cognitive_type)
+
+  // High yield filter
+  if (high_yield === 'true') query = query.eq('high_yield', true)
+
   // Region filter
   if (region === 'universal') query = query.eq('region', 'universal')
   else if (region === 'ghana') query = query.eq('region', 'ghana')
@@ -87,8 +100,8 @@ export default async function MCQPage({ searchParams }: PageProps) {
     query = query.is('access_key', null)
   }
 
-  // Year filter
-  if (profile.study_year) {
+  // Year filter — skip if user toggled "All Years"
+  if (profile.study_year && all_years !== '1') {
     query = query.contains('year_level', [profile.study_year])
   }
 
@@ -148,6 +161,9 @@ export default async function MCQPage({ searchParams }: PageProps) {
   if (category) newSetParams.set('category', category)
   if (subtopic) newSetParams.set('subtopic', subtopic)
   if (difficulty && difficulty !== 'all') newSetParams.set('difficulty', difficulty)
+  if (cognitive_type && cognitive_type !== 'all') newSetParams.set('cognitive_type', cognitive_type)
+  if (high_yield === 'true') newSetParams.set('high_yield', 'true')
+  if (all_years === '1') newSetParams.set('all_years', '1')
   newSetParams.set('limit', String(limit))
   newSetParams.set('random', '1')
   const newSetUrl = `/practice/mcq?${newSetParams.toString()}`

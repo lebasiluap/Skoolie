@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 interface TopicRow {
   topic: string
@@ -16,11 +17,23 @@ interface Props {
   mode: 'mcq' | 'flashcard' | 'case_study'
   totalAvailable: number
   region?: string
+  hasYearFilter?: boolean
+  profession?: string
+  accessKey?: string | null
 }
 
 const DIFFICULTIES = ['all', 'easy', 'medium', 'hard'] as const
 type Difficulty = typeof DIFFICULTIES[number]
 const LIMITS = [5, 10, 20, 40] as const
+
+const COGNITIVE_TYPES = [
+  { value: 'all',            label: 'All',        activeBg: 'var(--text)',  activeFg: 'var(--bg)' },
+  { value: 'recall',         label: 'Recall',     activeBg: '#2563EB',      activeFg: '#fff' },
+  { value: 'mechanism',      label: 'Mechanism',  activeBg: '#7C3AED',      activeFg: '#fff' },
+  { value: 'application',    label: 'Apply',      activeBg: '#D97706',      activeFg: '#fff' },
+  { value: 'calculation',    label: 'Calculate',  activeBg: 'var(--teal)',  activeFg: 'var(--on-teal)' },
+  { value: 'interpretation', label: 'Interpret',  activeBg: '#059669',      activeFg: '#fff' },
+] as const
 
 // SVG icon components for topics and categories
 const IconHeart = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -81,15 +94,66 @@ interface SubtopicEntry { name: string; count: number }
 interface CategoryEntry { total: number; subtopics: SubtopicEntry[] }
 interface TopicEntry { total: number; categories: Map<string, CategoryEntry> }
 
-export default function TopicSelectorClient({ topicRows, mode, totalAvailable, region }: Props) {
+export default function TopicSelectorClient({ topicRows: initialRows, mode, totalAvailable, region, hasYearFilter, profession, accessKey }: Props) {
   const router = useRouter()
   const [difficulty, setDifficulty] = useState<Difficulty>('all')
   const [limit, setLimit] = useState<number>(10)
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [cognitiveType, setCognitiveType] = useState('all')
+  const [highYield, setHighYield] = useState(false)
+  const [allYears, setAllYears] = useState(false)
+
+  // Live topic rows — updated whenever a filter toggle fires
+  const [liveRows, setLiveRows] = useState<TopicRow[]>(initialRows)
+  const [isFiltering, setIsFiltering] = useState(false)
+  const initialRowsRef = useRef(initialRows)
+
+  useEffect(() => {
+    // Case studies use a different RPC; only filter MCQ + flashcard
+    if (mode === 'case_study' || !profession) return
+
+    const hasFilter = cognitiveType !== 'all' || highYield
+
+    if (!hasFilter) {
+      setLiveRows(initialRowsRef.current)
+      setExpandedTopic(null)
+      setExpandedCategory(null)
+      return
+    }
+
+    let cancelled = false
+    setIsFiltering(true)
+
+    const supabase = createClient()
+    supabase.rpc('get_question_counts', {
+      p_profession: profession,
+      p_question_type: mode === 'flashcard' ? 'flashcard' : 'mcq',
+      p_access_key: accessKey ?? null,
+      p_cognitive_type: cognitiveType !== 'all' ? cognitiveType : null,
+      p_high_yield: highYield ? true : null,
+    }).then(({ data }) => {
+      if (cancelled) return
+      const rows = (data ?? []).map((r: { topic: string; category: string | null; subtopic: string | null; cnt: number }) => ({
+        topic: r.topic,
+        category: r.category,
+        subtopic: r.subtopic,
+        count: Number(r.cnt),
+      }))
+      setLiveRows(rows)
+      setExpandedTopic(null)
+      setExpandedCategory(null)
+    }).finally(() => {
+      if (!cancelled) setIsFiltering(false)
+    })
+
+    return () => { cancelled = true }
+  }, [cognitiveType, highYield, mode, profession, accessKey])
+
+  const filteredTotal = liveRows.reduce((sum, r) => sum + r.count, 0)
 
   const grouped = new Map<string, TopicEntry>()
-  for (const row of topicRows) {
+  for (const row of liveRows) {
     if (!row.topic) continue
     if (!grouped.has(row.topic)) grouped.set(row.topic, { total: 0, categories: new Map() })
     const topicEntry = grouped.get(row.topic)!
@@ -107,11 +171,15 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
   function buildUrl(topic?: string, category?: string, subtopic?: string) {
     const params = new URLSearchParams()
     if (topic) params.set('topic', topic)
-    if (category) params.set('category', category)
+    // 'General' is a display alias for null category — don't pass it as a URL param
+    if (category && category !== 'General') params.set('category', category)
     if (subtopic) params.set('subtopic', subtopic)
     if (difficulty !== 'all') params.set('difficulty', difficulty)
     if (mode !== 'case_study') params.set('limit', String(limit))
     if (region && region !== 'all') params.set('region', region)
+    if (cognitiveType !== 'all') params.set('cognitive_type', cognitiveType)
+    if (highYield) params.set('high_yield', 'true')
+    if (allYears) params.set('all_years', '1')
     const path = mode === 'case_study' ? '/practice/cases' : mode === 'flashcard' ? '/practice/flashcards' : '/practice/mcq'
     return `${path}?${params.toString()}`
   }
@@ -148,8 +216,19 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
           <h1 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>
             {mode === 'mcq' ? 'MCQ Practice' : mode === 'flashcard' ? 'Flashcards' : 'Case Studies'}
           </h1>
-          <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-faint)', fontWeight: 600, marginTop: 2 }}>
-            {totalAvailable.toLocaleString()} {mode === 'case_study' ? 'cases' : 'questions'} available
+          <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-faint)', fontWeight: 600, marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+            {isFiltering ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', border: '2px solid var(--teal)', borderTopColor: 'transparent', display: 'inline-block', animation: 'spin .7s linear infinite' }} />
+                Filtering…
+              </span>
+            ) : (
+              <>
+                {filteredTotal.toLocaleString()}
+                {filteredTotal !== totalAvailable && <span style={{ color: 'var(--text-faint)' }}> / {totalAvailable.toLocaleString()}</span>}
+                {' '}{mode === 'case_study' ? 'cases' : 'questions'} available
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -202,6 +281,70 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
               </div>
             </div>
           )}
+        </div>
+
+        {/* Cognitive type filter */}
+        {mode !== 'case_study' && (
+          <div>
+            <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Question type</p>
+            <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 2, scrollbarWidth: 'none' }}>
+              {COGNITIVE_TYPES.map(ct => {
+                const active = cognitiveType === ct.value
+                return (
+                  <button key={ct.value} type="button" onClick={() => setCognitiveType(ct.value)}
+                    style={{
+                      padding: '8px 14px', borderRadius: 999, flexShrink: 0,
+                      border: active ? 'none' : '1px solid var(--border)',
+                      background: active ? ct.activeBg : 'var(--surface)',
+                      color: active ? ct.activeFg : 'var(--text-soft)',
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                      transition: 'all .15s ease',
+                    }}>
+                    {ct.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Focus toggles */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Focus</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={() => setHighYield(v => !v)}
+                style={{
+                  padding: '8px 16px', borderRadius: 999,
+                  border: highYield ? 'none' : '1px solid var(--border)',
+                  background: highYield ? '#F59E0B' : 'var(--surface)',
+                  color: highYield ? '#fff' : 'var(--text-soft)',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all .15s ease', display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={highYield ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                High Yield
+              </button>
+              {hasYearFilter && (
+                <button type="button" onClick={() => setAllYears(v => !v)}
+                  style={{
+                    padding: '8px 16px', borderRadius: 999,
+                    border: allYears ? 'none' : '1px solid var(--border)',
+                    background: allYears ? 'var(--text)' : 'var(--surface)',
+                    color: allYears ? 'var(--bg)' : 'var(--text-soft)',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'all .15s ease', display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  All Years
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Surprise me button */}
@@ -347,6 +490,7 @@ export default function TopicSelectorClient({ topicRows, mode, totalAvailable, r
         .topic-start-btn:hover { background: var(--teal) !important; color: var(--on-teal) !important; }
         .subtopic-row { transition: background .12s ease; }
         .subtopic-row:hover { background: var(--surface-2) !important; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   )

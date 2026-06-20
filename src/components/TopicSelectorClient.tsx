@@ -143,7 +143,8 @@ export default function TopicSelectorClient({ topicRows: initialRows, mode, tota
       setLiveRows(rows)
       setExpandedTopic(null)
       setExpandedCategory(null)
-    }).finally(() => {
+      if (!cancelled) setIsFiltering(false)
+    }, () => {
       if (!cancelled) setIsFiltering(false)
     })
 

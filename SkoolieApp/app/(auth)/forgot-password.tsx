@@ -32,6 +32,12 @@ export default function ForgotPasswordScreen() {
   }, [cooldown])
 
   function friendly(msg: string): string {
+    if (/security purposes|only request this/i.test(msg)) {
+      const secs = msg.match(/after (\d+) seconds/)?.[1]
+      return secs
+        ? `Codes can only be sent once a minute — try again in ${secs} seconds.`
+        : 'Codes can only be sent once a minute — give it a moment and try again.'
+    }
     if (/rate limit/i.test(msg)) return 'Too many requests — wait a little while before requesting another code.'
     if (/network|fetch/i.test(msg)) return 'Connection problem — check your internet and try again.'
     if (/expired|invalid/i.test(msg)) return 'That code is invalid or has expired — request a new one.'
@@ -45,13 +51,13 @@ export default function ForgotPasswordScreen() {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
     setLoading(false)
     if (error) setFormError(friendly(error.message))
-    else { setCooldown(30); setStep('verify') }
+    else { setCooldown(60); setStep('verify') }
   }
 
   async function resendCode() {
     if (cooldown > 0) return
     setFormError(null); setNotice(null)
-    setCooldown(30)
+    setCooldown(60)
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
     if (error) { setFormError(friendly(error.message)); setCooldown(0) }
     else setNotice('New code sent — check your email.')

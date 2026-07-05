@@ -1,15 +1,17 @@
 /**
- * Native Sign in with Apple button (App Store guideline 4.8 — required
- * alongside the Google option). Renders Apple's own button component so
- * review can't fault the styling; theme-aware black/white variants.
+ * Sign in with Apple button (App Store guideline 4.8 — required alongside the
+ * Google option). Custom-styled to match the app's design system (Apple's HIG
+ * permits custom buttons that keep the  logo and standard wording — their
+ * native component is locked to the system font and clashed with Nunito).
  *
  * Renders nothing on Android, on iOS builds without the native module
  * (stale dev client), or while availability is being checked.
  */
 import { useEffect, useState } from 'react'
-import { View } from 'react-native'
-import { useThemeMode } from '@/contexts/ThemeContext'
-import { getAppleModule, appleAuthAvailable, signInWithApple } from '@/lib/appleAuth'
+import { Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useTheme } from '@/hooks/useTheme'
+import { appleAuthAvailable, signInWithApple } from '@/lib/appleAuth'
 
 interface Props {
   /** Receives a user-facing error message, or nothing on cancel. */
@@ -19,7 +21,7 @@ interface Props {
 }
 
 export function AppleSignInButton({ onError, disabled }: Props) {
-  const { isDark } = useThemeMode()
+  const C = useTheme()
   const [available, setAvailable] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -27,8 +29,7 @@ export function AppleSignInButton({ onError, disabled }: Props) {
     appleAuthAvailable().then(setAvailable)
   }, [])
 
-  const Apple = getAppleModule()
-  if (!available || !Apple) return null
+  if (!available) return null
 
   async function handlePress() {
     if (busy || disabled) return
@@ -43,16 +44,31 @@ export function AppleSignInButton({ onError, disabled }: Props) {
   }
 
   return (
-    <View style={{ marginTop: 12, opacity: disabled || busy ? 0.6 : 1 }}>
-      <Apple.AppleAuthenticationButton
-        buttonType={Apple.AppleAuthenticationButtonType.CONTINUE}
-        buttonStyle={isDark
-          ? Apple.AppleAuthenticationButtonStyle.WHITE
-          : Apple.AppleAuthenticationButtonStyle.BLACK}
-        cornerRadius={16}
-        style={{ width: '100%', height: 54 }}
-        onPress={handlePress}
-      />
-    </View>
+    <TouchableOpacity
+      onPress={handlePress}
+      disabled={disabled || busy}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      style={[s.btn, {
+        backgroundColor: C.surface,
+        borderColor: C.border,
+        opacity: disabled || busy ? 0.6 : 1,
+        ...C.shadow,
+      }]}
+    >
+      <Ionicons name="logo-apple" size={22} color={C.text} style={{ marginTop: -2 }} />
+      <Text style={[s.label, { color: C.text }]}>
+        {busy ? 'Signing in…' : 'Continue with Apple'}
+      </Text>
+    </TouchableOpacity>
   )
 }
+
+// Mirrors the Google button (googleBtn/googleText in login & signup) exactly.
+const s = StyleSheet.create({
+  btn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    borderRadius: 16, borderWidth: 1.5, paddingVertical: 16, marginTop: 12,
+  },
+  label: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
+})

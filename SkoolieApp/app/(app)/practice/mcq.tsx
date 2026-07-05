@@ -878,11 +878,15 @@ export default function MCQScreen() {
               the CTA stay pulled toward the thumb. */}
           <View style={s.stemRow}>
             <MascotAnimator expr={inReview && reviewSnap ? (reviewSnap.isCorrect ? 'happy' : 'wrong') : 'idle'}>
-              <CappyHead expr={inReview && reviewSnap ? (reviewSnap.isCorrect ? 'happy' : 'wrong') : 'idle'} size={60} />
+              <CappyHead expr={inReview && reviewSnap ? (reviewSnap.isCorrect ? 'happy' : 'wrong') : 'idle'} size={110} />
             </MascotAnimator>
             <View style={[s.stemBubble, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-              <View style={[s.bubbleTailBorder, { borderRightColor: C.border }]} />
-              <View style={[s.bubbleTail, { borderRightColor: C.surface }]} />
+              {/* Tail wrapper spans the bubble's full height and centers the
+                  triangle, so it always points at Cappy regardless of how
+                  tall the question text makes the bubble. */}
+              <View style={s.tailWrap} pointerEvents="none">
+                <View style={[s.bubbleTail, { borderRightColor: C.surface }]} />
+              </View>
               <Text style={[s.stem, { color: C.text }]}>{q.question_text}</Text>
             </View>
           </View>
@@ -1166,11 +1170,11 @@ const s = StyleSheet.create({
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   tagChip: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
   tagText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold' },
-  stemRow: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
+  stemRow: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 18 },
   stemBubble: { flex: 1, borderRadius: 20, borderWidth: 1, padding: 18 },
-  // Two stacked triangles fake a bordered speech-bubble tail pointing at Cappy
-  bubbleTailBorder: { position: 'absolute', left: -11, top: '50%', marginTop: -9, width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
-  bubbleTail: { position: 'absolute', left: -9, top: '50%', marginTop: -8, width: 0, height: 0, borderTopWidth: 8, borderBottomWidth: 8, borderRightWidth: 10, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
+  // Full-height wrapper vertically centers the tail on the bubble (and Cappy)
+  tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
+  bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
   stem: { fontSize: 18, fontFamily: 'Nunito_700Bold', lineHeight: 28 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, padding: 14, marginBottom: 12 },
   optChip: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },

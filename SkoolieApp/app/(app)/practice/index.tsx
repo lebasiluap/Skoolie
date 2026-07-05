@@ -187,6 +187,7 @@ export default function PracticeHubScreen() {
                 <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
                   {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
                 </Text>
+                <View style={{ flex: 1 }} />
                 <View style={s.tileActions}>
                   <TouchableOpacity
                     onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
@@ -257,10 +258,9 @@ const s = StyleSheet.create({
   tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
   tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },
   tileBtnText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
-  // icon sits alone at tile top
-  modeIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' , marginBottom: 10 },
-  modeTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
-  modeSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
+  modeIconBox: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 10 },
+  modeTitle: { fontSize: 16, fontFamily: 'Nunito_800ExtraBold', textAlign: 'center', marginBottom: 2 },
+  modeSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', textAlign: 'center', fontVariant: ['tabular-nums'] },
 
 
   // Bookmarks

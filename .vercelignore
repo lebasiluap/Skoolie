@@ -1,0 +1,7 @@
+# Mobile app — not part of the web deployment
+SkoolieApp
+# Docs / assets that don't belong in web builds
+email-templates
+skoolie_context_handoff.docx
+question_bank_audit.md
+medicine_curriculum_map.md

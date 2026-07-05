@@ -37,8 +37,6 @@ function getDisplayName(profile: UserProfile): string {
   return first
 }
 
-const XP_PER_LEVEL = 400
-
 function formatSessionTime(iso: string): string {
   const d = new Date(iso)
   const today = new Date()
@@ -74,7 +72,7 @@ export default function DashboardScreen() {
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [statTotals, setStatTotals] = useState({ answered: 0, attempts: 0, correct: 0 })
   const [todayCount, setTodayCount] = useState(0)   // questions answered today — feeds the daily goal ring
-  const [topicActivity, setTopicActivity] = useState<{ topic: string; count: number }[]>([])
+  const [topicActivity, setTopicActivity] = useState<{ topic: string; count: number; accuracy: number }[]>([])
   const [weekXp, setWeekXp] = useState(0)
   // Surprise Barrage — deterministic daily window; claimed defaults true to avoid banner flash
   const [claimedSlots, setClaimedSlots] = useState<Set<number>>(new Set([0, 1]))  // default full to avoid banner flash
@@ -174,17 +172,24 @@ export default function DashboardScreen() {
       .filter((r: any) => r.started_at && new Date(r.started_at).toDateString() === todayStr)
       .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
 
-    const allIds: string[] = (allSess ?? []).flatMap((s: any) => s.question_ids ?? [])
-    if (allIds.length > 0) {
-      const { data: qs } = await supabase.rpc('get_question_meta', { p_ids: allIds.slice(0, 500) })
-      const counts: Record<string, number> = {}
-      for (const q of (qs ?? [])) counts[q.topic] = (counts[q.topic] ?? 0) + 1
-      const sorted = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([topic, count]) => ({ topic, count }))
-      setTopicActivity(sorted)
+    // TOPIC PERFORMANCE — real accuracy per topic from the answer history
+    // (was_correct per attempt), not just volume. Top 5 by attempts.
+    const { data: hist } = await supabase
+      .from('user_question_history')
+      .select('topic, was_correct')
+      .eq('user_id', user.id)
+      .limit(5000)
+    const agg: Record<string, { n: number; ok: number }> = {}
+    for (const h of (hist ?? []) as { topic: string | null; was_correct: boolean }[]) {
+      if (!h.topic) continue
+      const a = (agg[h.topic] ??= { n: 0, ok: 0 })
+      a.n += 1
+      if (h.was_correct) a.ok += 1
     }
+    setTopicActivity(Object.entries(agg)
+      .sort((a, b) => b[1].n - a[1].n)
+      .slice(0, 5)
+      .map(([topic, a]) => ({ topic, count: a.n, accuracy: Math.round((a.ok / a.n) * 100) })))
     } catch (e) {
       console.warn('dashboard load failed', e)
     } finally {
@@ -263,6 +268,8 @@ export default function DashboardScreen() {
             <TouchableOpacity
               onPress={() => router.push({ pathname: '/(app)/practice/mcq', params: { smartStart: '1', from: 'dashboard' } } as any)}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={met ? "Today's goal complete — keep practicing" : `${GOAL - todayCount} questions to today's goal — start practicing`}
               style={[s.goalCard, {
                 backgroundColor: met ? C.greenTint : C.tealTint,
                 borderColor: met ? C.green : C.teal,
@@ -288,11 +295,11 @@ export default function DashboardScreen() {
                   {met ? "Today's goal hit! 🎉" : `${GOAL - todayCount} more to today's goal`}
                 </Text>
                 <Text style={[s.goalSub, { color: C.textSoft }]}>
-                  {met ? 'Streak is safe — everything extra is bonus XP.' : '10 questions a day keeps the streak alive.'}
+                  {met ? 'Everything extra is bonus XP.' : '10 a day builds the habit.'}
                 </Text>
               </View>
-              <View style={[s.goalBtn, { backgroundColor: met ? C.greenTint : C.teal }]}>
-                <Text style={[s.goalBtnText, { color: met ? C.green : C.onTeal }]}>{met ? 'Keep going' : 'Start'}</Text>
+              <View style={[s.goalBtn, { backgroundColor: met ? C.success : C.teal }]}>
+                <Text style={[s.goalBtnText, { color: C.onTeal }]}>{met ? 'Keep going' : 'Start'}</Text>
               </View>
             </TouchableOpacity>
           )
@@ -344,6 +351,8 @@ export default function DashboardScreen() {
             <TouchableOpacity
               onPress={() => router.push('/(app)/progress' as any)}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="View your rank and league"
               style={[s.levelCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
             >
               <View style={s.levelRow}>
@@ -376,11 +385,19 @@ export default function DashboardScreen() {
             <SkeletonList rows={3} />
           </>
         )}
+        {booted && sessions.length === 0 && (
+          <>
+            <Text style={[s.eyebrow, { color: C.textFaint }]}>RECENT ACTIVITY</Text>
+            <Text style={[s.activityMeta, { color: C.textFaint, marginBottom: 22 }]}>
+              No sessions yet — hit Start above and your history will grow here.
+            </Text>
+          </>
+        )}
         {sessions.length > 0 && (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <Text style={[s.eyebrow, { color: C.textFaint, marginBottom: 0 }]}>RECENT ACTIVITY</Text>
-              <TouchableOpacity onPress={() => router.push('/(app)/history' as any)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity onPress={() => router.push('/(app)/history' as any)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button">
                 <Text style={{ fontSize: 12, fontFamily: 'Nunito_700Bold', color: C.teal }}>Time Capsule →</Text>
               </TouchableOpacity>
             </View>
@@ -410,13 +427,20 @@ export default function DashboardScreen() {
         <Text style={[s.eyebrow, { color: C.textFaint }]}>YOUR STATS</Text>
         <View style={[s.statStrip, { backgroundColor: C.surface, borderColor: C.border }]}>
           {[
-            { val: `${totalAnswered}`,    label: 'Questions' },
-            { val: `${avgAccuracy}%`,     label: 'Accuracy' },
-            { val: `Lv ${profile.level}`, label: 'Level' },
-            { val: `${profile.longest_streak ?? 0}d`, label: 'Best streak' },
+            // Color = meaning: volume is brand teal, accuracy is semantic by
+            // value, level is the quiet odometer, streak wears the flame.
+            { val: `${totalAnswered}`, label: 'Questions', color: C.teal },
+            {
+              val: `${avgAccuracy}%`, label: 'Accuracy',
+              color: statTotals.attempts === 0 ? C.textFaint
+                : avgAccuracy >= 75 ? C.success : avgAccuracy >= 50 ? C.teal
+                : avgAccuracy >= 30 ? C.warning : C.danger,
+            },
+            { val: `Lv ${profile.level}`, label: 'Level', color: C.text },
+            { val: `${profile.longest_streak ?? 0}d`, label: 'Best streak', color: (profile.longest_streak ?? 0) > 0 ? C.coral : C.textFaint },
           ].map((stat, i) => (
             <View key={stat.label} style={[s.statCell, i > 0 && { borderLeftWidth: 1, borderLeftColor: C.border }]}>
-              <Text style={[s.statVal, { color: C.text }]}>{stat.val}</Text>
+              <Text style={[s.statVal, { color: stat.color }]}>{stat.val}</Text>
               <Text style={[s.statLabel, { color: C.textFaint }]}>{stat.label}</Text>
             </View>
           ))}
@@ -428,8 +452,10 @@ export default function DashboardScreen() {
             <Text style={[s.eyebrow, { color: C.textFaint }]}>TOPIC PERFORMANCE</Text>
             <View style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
               {topicActivity.map((t, i) => {
-                const pct = t.count / topicActivity[0].count
                 const { color: tColor, bgLight: tBg } = topicColor(t.topic)
+                // Bar shows ACCURACY (it says "performance", so it must mean it);
+                // color is semantic — success/teal/warning/danger by score.
+                const accColor = t.accuracy >= 75 ? C.success : t.accuracy >= 50 ? C.teal : t.accuracy >= 30 ? C.warning : C.danger
                 return (
                   <View
                     key={t.topic}
@@ -441,10 +467,10 @@ export default function DashboardScreen() {
                     <View style={{ flex: 1 }}>
                       <View style={s.topicLabelRow}>
                         <Text style={[s.topicName, { color: C.text }]} numberOfLines={1}>{t.topic}</Text>
-                        <Text style={[s.topicPct, { color: tColor }]}>{t.count}q</Text>
+                        <Text style={[s.topicPct, { color: accColor }]}>{t.accuracy}% · {t.count}q</Text>
                       </View>
                       <View style={[s.topicTrack, { backgroundColor: C.surface3 }]}>
-                        <View style={[s.topicFill, { backgroundColor: tColor, width: `${pct * 100}%` as any }]} />
+                        <View style={[s.topicFill, { backgroundColor: accColor, width: `${t.accuracy}%` as any }]} />
                       </View>
                     </View>
                   </View>
@@ -484,7 +510,6 @@ const s = StyleSheet.create({
   levelIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   levelTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
   levelSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
-  xpLabel: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
   xpCaption: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', marginTop: 8 },
   barrageBanner: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, padding: 16, marginBottom: 14 },
   barrageIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
@@ -495,19 +520,8 @@ const s = StyleSheet.create({
   weekChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999 },
   weekChipText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
 
-  // Streak card
-  streakCard: { borderRadius: 20, borderWidth: 1.5, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 22 },
-  streakCheck: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  streakCheckBadge: { position: 'absolute', bottom: -3, right: -3, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  streakTitle: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
-  streakSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', lineHeight: 17 },
-  streakCta: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999 },
-  streakCtaText: { color: '#fff', fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
-
   // Eyebrow labels
   eyebrow: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7, marginBottom: 12 },
-
-  // Mode grid — icon + label ONLY
 
   // Recent activity
   activityRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 11, gap: 12 },

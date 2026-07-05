@@ -5,8 +5,8 @@
  *  - onPick: hands the choice back to the caller (onboarding, before a profile exists)
  * Country drives content visibility server-side (region_visible).
  */
-import { useMemo, useState } from 'react'
-import { Modal, View, Text, TextInput, TouchableOpacity, Pressable, FlatList, StyleSheet } from 'react-native'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Animated, Modal, View, Text, TextInput, TouchableOpacity, Pressable, FlatList, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
@@ -23,6 +23,16 @@ interface Props {
 
 export function CountrySheet({ visible, onClose, onPick, selected }: Props) {
   const C = useTheme()
+  // Sheet slides up on open; the scrim fades in place (Modal fade). Keeping
+  // the translate on the sheet ONLY — animating the whole modal layer made the
+  // dim overlay itself visibly ride up from the bottom.
+  const slide = useRef(new Animated.Value(600)).current
+  useEffect(() => {
+    if (visible) {
+      slide.setValue(600)
+      Animated.spring(slide, { toValue: 0, friction: 10, tension: 70, useNativeDriver: true }).start()
+    }
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
   const { user, profile, refreshProfile } = useAuth()
   const [query, setQuery] = useState('')
   const [saving, setSaving] = useState(false)
@@ -51,8 +61,9 @@ export function CountrySheet({ visible, onClose, onPick, selected }: Props) {
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.overlay} onPress={onClose}>
+        <Animated.View style={{ transform: [{ translateY: slide }] }}>
         <Pressable style={[s.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
           <View style={[s.handle, { backgroundColor: C.surface3 }]} />
           <View style={s.headerRow}>
@@ -107,6 +118,7 @@ export function CountrySheet({ visible, onClose, onPick, selected }: Props) {
             }}
           />
         </Pressable>
+        </Animated.View>
       </Pressable>
     </Modal>
   )

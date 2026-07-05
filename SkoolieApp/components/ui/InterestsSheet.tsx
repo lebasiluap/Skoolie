@@ -3,8 +3,8 @@
  * Multi-select topic chips for the user's profession; "Decide for me" clears
  * the selection (empty = no biasing). Mirrors the onboarding step.
  */
-import { useEffect, useState } from 'react'
-import { Modal, View, Text, TouchableOpacity, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Modal, View, Text, TouchableOpacity, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
@@ -17,6 +17,16 @@ interface Props {
 
 export function InterestsSheet({ visible, onClose }: Props) {
   const C = useTheme()
+  // Sheet slides up on open; the scrim fades in place (Modal fade). Keeping
+  // the translate on the sheet ONLY — animating the whole modal layer made the
+  // dim overlay itself visibly ride up from the bottom.
+  const slide = useRef(new Animated.Value(600)).current
+  useEffect(() => {
+    if (visible) {
+      slide.setValue(600)
+      Animated.spring(slide, { toValue: 0, friction: 10, tension: 70, useNativeDriver: true }).start()
+    }
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
   const { user, profile, refreshProfile } = useAuth()
   const [topics, setTopics] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -50,8 +60,9 @@ export function InterestsSheet({ visible, onClose }: Props) {
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.overlay} onPress={onClose}>
+        <Animated.View style={{ transform: [{ translateY: slide }] }}>
         <Pressable style={[s.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
           <View style={[s.handle, { backgroundColor: C.surface3 }]} />
           <View style={s.headerRow}>
@@ -86,6 +97,7 @@ export function InterestsSheet({ visible, onClose }: Props) {
             <Text style={[s.decideText, { color: C.textSoft }]}>🎲 Decide for me</Text>
           </TouchableOpacity>
         </Pressable>
+        </Animated.View>
       </Pressable>
     </Modal>
   )

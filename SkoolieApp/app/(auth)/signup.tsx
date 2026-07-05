@@ -34,7 +34,8 @@ const EMAIL_RE = /^\S+@\S+\.\S+$/
 export default function SignupScreen() {
   const C = useTheme()
   const insets = useSafeAreaInsets()
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -43,6 +44,7 @@ export default function SignupScreen() {
   const [formError, setFormError] = useState<string | null>(null)
   // Post-signup "confirm your email" state — replaces the old dead-end Alert.
   const [awaitingConfirm, setAwaitingConfirm] = useState(false)
+  const lastNameRef = useRef<TextInput>(null)
   const emailRef = useRef<TextInput>(null)
   const passwordFocusHack = useRef<TextInput>(null)
 
@@ -55,9 +57,11 @@ export default function SignupScreen() {
   }
 
   async function handleSignup() {
-    const cleanName = name.trim()
+    // Last name is optional — plenty of people go by one name.
+    const cleanName = `${firstName.trim()} ${lastName.trim()}`.trim().replace(/\s+/g, ' ')
     const cleanEmail = email.trim()
-    if (!cleanName || !cleanEmail || !password) { setFormError('Please fill in all fields.'); return }
+    if (!firstName.trim()) { setFormError('Please enter your first name.'); return }
+    if (!cleanEmail || !password) { setFormError('Please fill in all fields.'); return }
     if (!EMAIL_RE.test(cleanEmail)) { setFormError('That email address doesn’t look right — double-check it.'); return }
     if (password.length < 6) { setFormError('Password must be at least 6 characters.'); return }
     setFormError(null)
@@ -185,20 +189,40 @@ export default function SignupScreen() {
         <Text style={[s.sub, { color: C.textFaint }]}>Join thousands of healthcare students</Text>
 
         <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-          <View style={s.field}>
-            <Text style={[s.fieldLabel, { color: C.textSoft }]}>Full name</Text>
-            <TextInput
-              style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
-              value={name}
-              onChangeText={t => { setName(t); if (formError) setFormError(null) }}
-              placeholder="Your name"
-              placeholderTextColor={C.textFaint}
-              autoCapitalize="words"
-              autoComplete="name"
-              textContentType="name"
-              returnKeyType="next"
-              onSubmitEditing={() => emailRef.current?.focus()}
-            />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={[s.field, { flex: 1 }]}>
+              <Text style={[s.fieldLabel, { color: C.textSoft }]}>First name</Text>
+              <TextInput
+                style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
+                value={firstName}
+                onChangeText={t => { setFirstName(t); if (formError) setFormError(null) }}
+                placeholder="Ama"
+                placeholderTextColor={C.textFaint}
+                autoCapitalize="words"
+                autoComplete="given-name"
+                textContentType="givenName"
+                maxLength={40}
+                returnKeyType="next"
+                onSubmitEditing={() => lastNameRef.current?.focus()}
+              />
+            </View>
+            <View style={[s.field, { flex: 1 }]}>
+              <Text style={[s.fieldLabel, { color: C.textSoft }]}>Last name <Text style={{ color: C.textFaint }}>· optional</Text></Text>
+              <TextInput
+                ref={lastNameRef}
+                style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
+                value={lastName}
+                onChangeText={t => { setLastName(t); if (formError) setFormError(null) }}
+                placeholder="Mensah"
+                placeholderTextColor={C.textFaint}
+                autoCapitalize="words"
+                autoComplete="family-name"
+                textContentType="familyName"
+                maxLength={40}
+                returnKeyType="next"
+                onSubmitEditing={() => emailRef.current?.focus()}
+              />
+            </View>
           </View>
           <View style={s.field}>
             <Text style={[s.fieldLabel, { color: C.textSoft }]}>Email</Text>

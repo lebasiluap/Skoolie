@@ -26,12 +26,15 @@ import { preloadSounds } from '@/lib/sounds'
 import { IntroGate } from '@/components/ui/IntroGate'
 import type { UserProfile } from '@/types'
 
+// Greeting uses the FIRST name only — warmer, and a five-word name can never
+// wrap the hero. (Profile keeps the full name; this is just the hello.)
 function getDisplayName(profile: UserProfile): string {
+  const first = profile.full_name.trim().split(/\s+/)[0] || profile.full_name
   if (profile.study_year === 'practitioner') {
     const title = PRACTITIONER_TITLES[profile.profession]
-    if (title) return `${title} ${profile.full_name}`
+    if (title) return `${title} ${first}`
   }
-  return profile.full_name
+  return first
 }
 
 const XP_PER_LEVEL = 400
@@ -237,7 +240,7 @@ export default function DashboardScreen() {
               </MascotAnimator>
               <View style={{ flex: 1 }}>
                 <Text style={[s.greetingHi, { color: C.textSoft }]}>{greeting},</Text>
-                <Text style={[s.greetingName, { color: C.text }]}>{getDisplayName(profile)}</Text>
+                <Text style={[s.greetingName, { color: C.text }]} numberOfLines={1}>{getDisplayName(profile)}</Text>
               </View>
               {effectiveStreak > 0 && (
                 <View style={[s.streakBadge, { backgroundColor: sc.fill + '22' }]}>

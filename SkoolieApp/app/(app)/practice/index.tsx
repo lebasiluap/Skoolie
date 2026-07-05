@@ -130,8 +130,7 @@ export default function PracticeHubScreen() {
 
       <Animated.View style={[{ flex: 1 }, entrance]}>
       <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: 32 }]} showsVerticalScrollIndicator={false}>
-        {/* Title + subtitle */}
-        <Text style={[s.pageTitle, { color: C.text }]}>Practice</Text>
+        {/* TopBar already says "Practice" — just the context line here */}
         {profLabel ? <Text style={[s.pageSub, { color: C.textSoft }]}>{profLabel}</Text> : null}
 
         {/* Search — looks like an input, acts as a door. Tapping opens the
@@ -281,10 +280,9 @@ export default function PracticeHubScreen() {
 const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18, paddingTop: 20 },
 
-  pageTitle: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.3, marginBottom: 4 },
   searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 13, marginTop: 14, marginBottom: 4 },
   searchBarText: { fontSize: 14.5, fontFamily: 'Nunito_600SemiBold' },
-  pageSub: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', marginBottom: 20 },
+  pageSub: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', marginBottom: 2 },
 
   // Eyebrow
   eyebrow: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7, marginBottom: 10 },

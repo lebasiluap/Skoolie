@@ -62,8 +62,10 @@ export default function SearchScreen() {
   const entrance = useScreenEntrance()
 
   function goBack() {
-    if (router.canGoBack()) router.back()
-    else router.navigate('/(app)/practice' as any)
+    // Search is a hidden TAB route, not a stacked screen — router.back() inside
+    // a tab navigator falls back to the initial tab (Dashboard). Its only entry
+    // point is the Practice hub's search bar, so back always returns there.
+    router.navigate('/(app)/practice' as any)
   }
 
   useEffect(() => { loadSystems() }, [profile?.profession])

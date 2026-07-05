@@ -72,6 +72,9 @@ export default function LoginScreen() {
         options: {
           redirectTo,
           skipBrowserRedirect: true,
+          // Always show Google's account chooser — the browser session caches
+          // the last account and would otherwise silently reuse it.
+          queryParams: { prompt: 'select_account' },
         },
       })
       if (error) {

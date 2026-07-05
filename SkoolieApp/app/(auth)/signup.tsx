@@ -96,7 +96,13 @@ export default function SignupScreen() {
       const redirectTo = Linking.createURL('auth/callback')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo, skipBrowserRedirect: true },
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          // Always show Google's account chooser — the browser session caches
+          // the last account and would otherwise silently reuse it.
+          queryParams: { prompt: 'select_account' },
+        },
       })
       if (error) { setFormError(friendlyAuthError(error.message)); return }
       if (data?.url) {

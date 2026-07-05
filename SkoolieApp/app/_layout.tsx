@@ -30,6 +30,8 @@ function RootNavigator() {
 
   useEffect(() => {
     if (loading) return
+    // Legal docs are readable by anyone, signed in or not — never redirect away.
+    if (segments[0] === 'legal') return
     const inAuth = segments[0] === '(auth)'
     const authScreen = (segments as string[])[1] as string | undefined
     // Screens that manage their own session transitions. Password recovery
@@ -56,6 +58,7 @@ function RootNavigator() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="legal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="users" options={{ presentation: 'card' }} />
       </Stack>
     </>

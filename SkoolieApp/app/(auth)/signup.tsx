@@ -14,9 +14,6 @@ import { AppleSignInButton } from '@/components/ui/AppleSignInButton'
 
 WebBrowser.maybeCompleteAuthSession()
 
-const TERMS_URL = 'https://skoolie.vercel.app/terms'
-const PRIVACY_URL = 'https://skoolie.vercel.app/privacy'
-
 // Google "G" logo in brand colours
 function GoogleG() {
   return (
@@ -196,11 +193,9 @@ export default function SignupScreen() {
                 style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
                 value={firstName}
                 onChangeText={t => { setFirstName(t); if (formError) setFormError(null) }}
-                placeholder="Ama"
+                placeholder="Your first name"
                 placeholderTextColor={C.textFaint}
                 autoCapitalize="words"
-                autoComplete="given-name"
-                textContentType="givenName"
                 maxLength={40}
                 returnKeyType="next"
                 onSubmitEditing={() => lastNameRef.current?.focus()}
@@ -213,11 +208,9 @@ export default function SignupScreen() {
                 style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
                 value={lastName}
                 onChangeText={t => { setLastName(t); if (formError) setFormError(null) }}
-                placeholder="Mensah"
+                placeholder="Your last name"
                 placeholderTextColor={C.textFaint}
                 autoCapitalize="words"
-                autoComplete="family-name"
-                textContentType="familyName"
                 maxLength={40}
                 returnKeyType="next"
                 onSubmitEditing={() => emailRef.current?.focus()}
@@ -268,9 +261,9 @@ export default function SignupScreen() {
 
           <Text style={[s.terms, { color: C.textFaint }]}>
             By creating an account you agree to our{' '}
-            <Text style={{ color: C.teal }} onPress={() => WebBrowser.openBrowserAsync(TERMS_URL)}>Terms</Text>
+            <Text style={{ color: C.teal }} onPress={() => router.push({ pathname: '/legal', params: { doc: 'terms' } } as any)}>Terms</Text>
             {' '}and{' '}
-            <Text style={{ color: C.teal }} onPress={() => WebBrowser.openBrowserAsync(PRIVACY_URL)}>Privacy Policy</Text>.
+            <Text style={{ color: C.teal }} onPress={() => router.push({ pathname: '/legal', params: { doc: 'privacy' } } as any)}>Privacy Policy</Text>.
           </Text>
         </View>
 

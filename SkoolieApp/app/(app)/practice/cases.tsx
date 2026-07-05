@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
+import { useFocusSessionWhile } from '@/hooks/useFocusSession'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -142,6 +143,8 @@ export default function CasesScreen() {
   const isPracticeOnlyRef = useRef(false)  // single case opened from Search: never counts toward sessions/XP/streak
 
   const [screen, setScreen] = useState<Screen>('topics')
+  // Focused session — hide app chrome (tab bar) while a case is active
+  useFocusSessionWhile(screen === 'vignette' || screen === 'case')
   const [topicRows, setTopicRows] = useState<TopicRow[]>([])
   const [cases, setCases] = useState<CaseStudy[]>([])
   const [originalCases, setOriginalCases] = useState<CaseStudy[]>([])     // full set, for "Retake"
@@ -655,10 +658,8 @@ export default function CasesScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
-
-        {/* Header */}
-        <View style={[s.quizHeader, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Focused session: no TopBar/tab bar — header owns the safe area */}
+        <View style={[s.quizHeader, { paddingTop: insets.top + 10, backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <TouchableOpacity onPress={() => confirmAbandon(() => (fromBookmarks ? backToBookmarks() : (smartStart === '1' || startCaseId || caseIds) ? goBack() : setScreen('topics')))} style={[s.backBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>
             <Ionicons name="arrow-back" size={20} color={C.textSoft} />
           </TouchableOpacity>
@@ -742,10 +743,8 @@ export default function CasesScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
-
-        {/* Header */}
-        <View style={[s.quizHeader, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Focused session: no TopBar/tab bar — header owns the safe area */}
+        <View style={[s.quizHeader, { paddingTop: insets.top + 10, backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <TouchableOpacity onPress={() => setScreen('vignette')} accessibilityLabel="Back to case details" accessibilityRole="button" hitSlop={{ top: 6, right: 6, bottom: 6, left: 6 }} style={[s.backBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>
             <Ionicons name="arrow-back" size={20} color={C.textSoft} />
           </TouchableOpacity>

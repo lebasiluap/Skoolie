@@ -15,10 +15,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, Alert, AppState } from 'react-native'
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
+import { useFocusSessionWhile } from '@/hooks/useFocusSession'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode } from '@/contexts/ThemeContext'
 import { TopBar } from '@/components/ui/TopBar'
@@ -64,7 +66,10 @@ export default function RapidFireScreen() {
   const barrageSlotRef = useRef(Number(slot ?? 0))
   const [isBarrageRun, setIsBarrageRun] = useState(false)
 
+  const insets = useSafeAreaInsets()
   const [screen, setScreen] = useState<Screen>('topics')
+  // Focused session — hide app chrome (tab bar) while a run is live
+  useFocusSessionWhile(screen === 'run')
   const [topics, setTopics] = useState<{ topic: string; count: number }[]>([])
   const [loadingTopics, setLoadingTopics] = useState(true)
   const [loadingQs, setLoadingQs] = useState(false)
@@ -366,8 +371,7 @@ export default function RapidFireScreen() {
     const q = questions[qIndex]
     if (!q) return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
-        <ActivityIndicator size="large" color={P} style={{ marginTop: 60 }} />
+        <ActivityIndicator size="large" color={P} style={{ marginTop: insets.top + 80 }} />
       </View>
     )
     const shuffled = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
@@ -380,9 +384,8 @@ export default function RapidFireScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
-        {/* Run header: close · counter · combo */}
-        <View style={[s.runHeader, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Focused session: no TopBar/tab bar — header owns the safe area */}
+        <View style={[s.runHeader, { paddingTop: insets.top + 10, backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <TouchableOpacity onPress={confirmAbandon} accessibilityLabel="Exit run" accessibilityRole="button" style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>
             <Ionicons name="close" size={20} color={C.textSoft} />
           </TouchableOpacity>

@@ -4,6 +4,7 @@ import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path, Circle, Rect } from 'react-native-svg'
 import { useTheme } from '@/hooks/useTheme'
+import { useFocusSession } from '@/hooks/useFocusSession'
 
 // ── SVG icons — exact paths from skoolie.vercel.app BottomNav ────────────────
 
@@ -79,6 +80,11 @@ const VISIBLE = ['dashboard', 'practice', 'bookmarks', 'progress', 'profile']
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const C = useTheme()
   const insets = useSafeAreaInsets()
+  const focusSession = useFocusSession()
+
+  // Mid-question the tab bar is an invitation to bail — hide it entirely
+  // while a run is active (MCQ quiz, flashcard deck, case, rapid fire).
+  if (focusSession) return null
 
   // Hidden sub-screens still belong to a tab — keep that tab highlighted.
   const REPRESENT: Record<string, string> = { search: 'practice' }

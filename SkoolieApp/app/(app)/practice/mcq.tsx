@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
+import { useFocusSessionWhile } from '@/hooks/useFocusSession'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -110,6 +111,9 @@ export default function MCQScreen() {
   // Per-topic coverage (distinct questions answered) + seen set for the in-quiz tag
   const [answeredByTopic, setAnsweredByTopic] = useState<Record<string, number>>({})
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
+
+  // Focused session — hide app chrome (tab bar) while a run is active
+  useFocusSessionWhile(screen === 'quiz')
 
   // Quiz state
   const [qIndex, setQIndex] = useState(0)
@@ -781,8 +785,7 @@ export default function MCQScreen() {
     if (!q) {
       return (
         <View style={{ flex: 1, backgroundColor: C.bg }}>
-          <TopBar title="Practice" />
-          <ActivityIndicator size="large" color={C.teal} style={{ marginTop: 60 }} />
+          <ActivityIndicator size="large" color={C.teal} style={{ marginTop: insets.top + 80 }} />
         </View>
       )
     }
@@ -798,18 +801,34 @@ export default function MCQScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
         <Animated.View style={[{ flex: 1 }, animStyle]}>
-        {/* Quiz sub-header */}
-        <View style={[s.quizHeader, { paddingTop: 12, backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Quiz sub-header — fullscreen focused session: no TopBar, no tab bar.
+            The segmented bar replaces both the dead "1 / 10" text and the old
+            continuous strip: answered = filled, current = tinted, rest = track. */}
+        <View style={[s.quizHeader, { paddingTop: insets.top + 10, backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <TouchableOpacity
             onPress={() => confirmAbandon(() => (questionIds ? backToBookmarks() : smartStart === '1' ? goBack() : animateToScreen('topics')))}
             accessibilityLabel="Exit quiz" accessibilityRole="button" hitSlop={{ top: 6, right: 6, bottom: 6, left: 6 }}
             style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>
             <Ionicons name="close" size={20} color={C.textSoft} />
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[s.qCounter, { color: C.textSoft }]}>{qIndex + 1} / {questions.length}</Text>
+          <View style={s.progressCluster} accessible accessibilityLabel={`Question ${qIndex + 1} of ${questions.length}`}>
+            {questions.length <= 25 ? (
+              <View style={s.segRow}>
+                {questions.map((_, i) => {
+                  const done = i < qIndex || (i === qIndex && inReview)
+                  const curr = i === qIndex && !inReview
+                  return (
+                    <View key={i} style={[s.seg, { backgroundColor: done || curr ? C.teal : C.surface3, opacity: curr ? 0.35 : 1 }]} />
+                  )
+                })}
+              </View>
+            ) : (
+              <View style={[s.segRow, { backgroundColor: C.surface3, borderRadius: 3, overflow: 'hidden' }]}>
+                <View style={{ width: `${Math.round(((qIndex + (inReview ? 1 : 0)) / questions.length) * 100)}%`, height: '100%', backgroundColor: C.teal }} />
+              </View>
+            )}
+            <Text style={[s.qCounter, { color: C.textSoft }]}>{qIndex + 1}/{questions.length}</Text>
             {timedOn && timeLeft != null && (
               <View style={[s.timerPill, { backgroundColor: timeLeft <= URGENT_AT_SEC ? C.redTint : C.tealTint }]}>
                 <Ionicons name="timer-outline" size={13} color={timeLeft <= URGENT_AT_SEC ? C.red : C.teal} />
@@ -822,11 +841,6 @@ export default function MCQScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Progress bar */}
-        <View style={[s.progressWrap, { backgroundColor: C.surface3 }]}>
-          <View style={[s.progressFill, { width: `${Math.round(((qIndex + (inReview ? 1 : 0)) / questions.length) * 100)}%`, backgroundColor: C.teal }]} />
-        </View>
-
         <ScrollView contentContainerStyle={[s.quizScroll, { paddingBottom: 180, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
@@ -837,8 +851,9 @@ export default function MCQScreen() {
               </View>
             )}
             {q.difficulty && (
-              <View style={[s.tagChip, { backgroundColor: C.amberTint }]}>
-                <Text style={[s.tagText, { color: C.amber }]}>{q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</Text>
+              // Semantic difficulty (matches flashcards/cases): easy=green, medium=amber, hard=red
+              <View style={[s.tagChip, { backgroundColor: q.difficulty === 'easy' ? C.greenTint : q.difficulty === 'hard' ? C.redTint : C.amberTint }]}>
+                <Text style={[s.tagText, { color: q.difficulty === 'easy' ? C.green : q.difficulty === 'hard' ? C.red : C.amber }]}>{q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</Text>
               </View>
             )}
             {q.high_yield && (
@@ -901,9 +916,16 @@ export default function MCQScreen() {
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={!selected}
-              style={[s.submitBtn, { backgroundColor: selected ? C.teal : C.surface3 }]}
+              accessibilityState={{ disabled: !selected }}
+              // Disabled state gets a visible border so it reads as a waiting
+              // button, not an empty card blending into the background.
+              style={[s.submitBtn, selected
+                ? { backgroundColor: C.teal }
+                : { backgroundColor: C.surface2, borderWidth: 1.5, borderColor: C.border }]}
             >
-              <Text style={[s.submitBtnText, { color: selected ? C.onTeal : C.textFaint }]}>Submit answer</Text>
+              <Text style={[s.submitBtnText, { color: selected ? C.onTeal : C.textFaint }]}>
+                {selected ? 'Submit answer' : 'Pick an answer'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -1125,10 +1147,11 @@ const s = StyleSheet.create({
   quizHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   timerPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, paddingHorizontal: 9, borderRadius: 999 },
   timerText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
-  qCounter: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
+  qCounter: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
+  progressCluster: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 14 },
+  segRow: { flex: 1, flexDirection: 'row', gap: 3, height: 6 },
+  seg: { flex: 1, height: 6, borderRadius: 3 },
   // Progress bar
-  progressWrap: { height: 8, overflow: 'hidden' },
-  progressFill: { height: 8, borderRadius: 0 },
   // Quiz body
   quizScroll: { paddingHorizontal: 18, paddingTop: 18 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },

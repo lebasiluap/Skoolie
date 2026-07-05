@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
+import { useFocusSessionWhile } from '@/hooks/useFocusSession'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -80,6 +81,8 @@ export default function FlashcardsScreen() {
   const isReviewMissedRef = useRef(false)  // "Review missed" re-drill: practice only — no session, XP, or streak
 
   const [screen, setScreen] = useState<Screen>('topics')
+  // Focused session — hide app chrome (tab bar) while the deck is running
+  useFocusSessionWhile(screen === 'quiz')
   const [topicRows, setTopicRows] = useState<TopicRow[]>([])
   const [cards, setCards] = useState<Flashcard[]>([])
   const [originalCards, setOriginalCards] = useState<Flashcard[]>([])  // full deck, for "Study again"
@@ -630,10 +633,8 @@ export default function FlashcardsScreen() {
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
-        <TopBar title="Practice" />
-
-        {/* Header: back | X / Y | bookmark */}
-        <View style={[s.quizHeader, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Focused session: no TopBar/tab bar — header owns the safe area */}
+        <View style={[s.quizHeader, { paddingTop: insets.top + 10, backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <TouchableOpacity
             onPress={() => cardIds ? backToBookmarks() : smartStart === '1' ? goBack() : setScreen('topics')}
             style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>

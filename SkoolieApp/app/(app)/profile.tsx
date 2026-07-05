@@ -91,6 +91,10 @@ export default function ProfileScreen() {
 
   const [allowRepeat, setAllowRepeat] = useState(profile?.allow_repeat_questions ?? true)
   const [showTags, setShowTags]       = useState(profile?.show_question_tags ?? true)
+  // Notification category switches — missing key means enabled. MUST live with
+  // the other hooks, above the !profile early return (sign-out sets profile
+  // null and a hook below the guard crashes with "fewer hooks than expected").
+  const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(profile?.notif_prefs ?? {})
   const [timedOn, setTimedOn]         = useState(profile?.timed_mode ?? false)
   const [timedSecs, setTimedSecs]     = useState(profile?.timed_seconds ?? 30)
   const [showYearModal, setShowYearModal] = useState(false)
@@ -133,8 +137,6 @@ export default function ProfileScreen() {
     themeMode === 'system' ? 'Follows your device setting' :
     themeMode === 'dark'   ? 'Dark mode' : 'Light mode'
 
-  // Notification category switches — missing key means enabled.
-  const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(profile?.notif_prefs ?? {})
   function toggleNotif(key: keyof NotifPrefs, val: boolean) {
     const next = { ...notifPrefs, [key]: val }
     setNotifPrefs(next)

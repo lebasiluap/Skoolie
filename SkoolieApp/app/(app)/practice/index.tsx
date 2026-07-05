@@ -110,6 +110,12 @@ export default function PracticeHubScreen() {
     },
   ]
 
+  /** 2,662 → "2,600+", 300 → "300+", 47 → "47" (small banks show honest counts) */
+  function roughCount(n: number): string {
+    if (n >= 100) return `${(Math.floor(n / 100) * 100).toLocaleString()}+`
+    return `${n}`
+  }
+
   type ModeKey = 'teal' | 'coral' | 'amber'
   const colorMap: Record<ModeKey, { tint: string; fg: string; deep: string; onFg: string }> = {
     teal:  { tint: C.tealTint,  fg: C.teal,  deep: C.tealDeep,  onFg: C.onTeal  },
@@ -181,17 +187,10 @@ export default function PracticeHubScreen() {
                 </View>
                 <View style={{ flex: 1, marginLeft: 14 }}>
                   <Text style={[s.modeTitle, { color: C.text }]}>{mode.label}</Text>
-                  <Text style={[s.modeSub, { color: C.textFaint }]}>{mode.subtitle}</Text>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  {loading ? (
-                    <ActivityIndicator size="small" color={clr.fg} />
-                  ) : (
-                    <>
-                      <Text style={[s.modeCount, { color: clr.fg }]}>{mode.count.toLocaleString()}</Text>
-                      <Text style={[s.modeUnit, { color: C.textFaint }]}>{mode.unit}</Text>
-                    </>
-                  )}
+                  <Text style={[s.modeSub, { color: C.textFaint }]}>
+                    {mode.subtitle}
+                    {!loading && mode.count > 0 ? `  ·  ${roughCount(mode.count)} ${mode.unit}` : ''}
+                  </Text>
                 </View>
               </View>
 
@@ -299,8 +298,6 @@ const s = StyleSheet.create({
   modeIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   modeTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
   modeSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
-  modeCount: { fontSize: 22, fontFamily: 'Nunito_900Black', letterSpacing: -0.5 },
-  modeUnit: { fontSize: 12, fontFamily: 'Nunito_600SemiBold' },
 
   modeButtons: { flexDirection: 'row', gap: 10 },
   btnPrimary: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: 100 },

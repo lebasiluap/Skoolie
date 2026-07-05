@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { normalizeOptions, resolveCorrectLetter, LETTERS } from '@/lib/answers'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { TopicIcon } from '@/components/ui/TopicIcon'
 import { topicColor } from '@/constants/topics'
@@ -285,7 +286,7 @@ export default function SearchScreen() {
 
       {/* Browse mode */}
       {showBrowse && (
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           <Text style={[s.sectionLabel, { color: C.textFaint }]}>QUICK PICKS</Text>
           <View style={s.quickPicks}>
             {loadingSystems ? (
@@ -339,7 +340,7 @@ export default function SearchScreen() {
           data={loading ? [] : shownResults}
           keyExtractor={item => item.id}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+          contentContainerStyle={{ paddingBottom: 100, flexGrow: 1, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}

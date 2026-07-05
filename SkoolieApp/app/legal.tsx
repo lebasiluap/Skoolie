@@ -9,6 +9,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { router, useLocalSearchParams } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { TERMS, PRIVACY } from '@/lib/legal'
 
@@ -32,7 +33,7 @@ export default function LegalScreen() {
         <Text style={[s.headerTitle, { color: C.text }]} numberOfLines={1}>{d.title}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: insets.bottom + 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
         <Text style={[s.updated, { color: C.textFaint }]}>Last updated: {d.updated}</Text>
         <Text style={[s.body, { color: C.textSoft }]}>{d.intro}</Text>
         {d.sections.map(sec => (

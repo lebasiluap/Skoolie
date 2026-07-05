@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -452,7 +453,7 @@ export default function FlashcardsScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="fc" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
         {/* Filters */}
         <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
@@ -670,7 +671,7 @@ export default function FlashcardsScreen() {
 
         {/* Card + explanation in a scroll view */}
         <ScrollView
-          contentContainerStyle={[s.quizScroll, { paddingBottom: revealed ? 130 : 40 }]}
+          contentContainerStyle={[s.quizScroll, { paddingBottom: revealed ? 130 : 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
           showsVerticalScrollIndicator={false}
         >
           {/* Dynamic top offset — keeps the card position stable across flip */}
@@ -803,7 +804,7 @@ export default function FlashcardsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Practice" />
-      <ScrollView contentContainerStyle={[s.resultScroll, { paddingTop: 32, paddingBottom: 100 }]}>
+      <ScrollView contentContainerStyle={[s.resultScroll, { paddingTop: 32, paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}>
         {/* Mascot */}
         <View style={s.resultMascot}>
           <MascotAnimator expr={pct >= 70 ? 'happy' : 'thinking'}>

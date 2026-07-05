@@ -529,7 +529,7 @@ const s = StyleSheet.create({
   subList: { borderTopWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 10 },
   subRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   subName: { flex: 1, fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
-  subRight: { flexDirection: 'row', alignItems: 'center', gap: 8, width: 120 },
+  subRight: { flexDirection: 'row', alignItems: 'center', gap: 8, width: '34%', maxWidth: 120 },
   subBarTrack: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden' },
   subBarFill: { height: 6, borderRadius: 3 },
   subPct: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', width: 36, textAlign: 'right' },

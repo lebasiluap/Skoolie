@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -98,7 +99,7 @@ const ic = StyleSheet.create({
   card: { borderRadius: 18, borderWidth: 1, padding: 18, marginBottom: 12 },
   label: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1, marginBottom: 12 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 8 },
-  key: { fontSize: 13, fontFamily: 'Nunito_700Bold', textTransform: 'capitalize', flexShrink: 0, width: 110, lineHeight: 20 },
+  key: { fontSize: 13, fontFamily: 'Nunito_700Bold', textTransform: 'capitalize', flexShrink: 0, width: '32%', maxWidth: 110, lineHeight: 20 },
   val: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 20 },
 })
 
@@ -534,7 +535,7 @@ export default function CasesScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="case" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
         <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
           <View style={s.chipRow}>
@@ -676,7 +677,7 @@ export default function CasesScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18, paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18, paddingBottom: insets.bottom + 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
           showsVerticalScrollIndicator={false}
         >
           {/* Tag chips */}
@@ -768,7 +769,7 @@ export default function CasesScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: insets.bottom + 130 }}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: insets.bottom + 130, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
           showsVerticalScrollIndicator={false}
         >
           {/* Question card */}
@@ -945,7 +946,7 @@ export default function CasesScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Practice" />
-      <ScrollView contentContainerStyle={[s.resultScroll, { paddingTop: 32, paddingBottom: insets.bottom + 80 }]}>
+      <ScrollView contentContainerStyle={[s.resultScroll, { paddingTop: 32, paddingBottom: insets.bottom + 80, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}>
         <View style={s.resultMascot}>
           <MascotAnimator expr={pct >= 70 ? 'happy' : 'thinking'}>
             <BuddyHead size={88} expr={pct >= 70 ? 'happy' : 'thinking'} />

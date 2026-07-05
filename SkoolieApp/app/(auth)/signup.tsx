@@ -364,7 +364,7 @@ export default function SignupScreen() {
 }
 
 const s = StyleSheet.create({
-  scroll: { flexGrow: 1, paddingHorizontal: 24 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24 , width: '100%', maxWidth: 480, alignSelf: 'center' },
   backBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
   backArrow: { fontSize: 18, fontFamily: 'Nunito_700Bold' },
   title: { fontSize: 28, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, marginBottom: 6 },

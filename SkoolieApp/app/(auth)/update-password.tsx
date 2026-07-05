@@ -95,7 +95,7 @@ export default function UpdatePasswordScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 24 },
+  container: { flex: 1, paddingHorizontal: 24 , width: '100%', maxWidth: 480, alignSelf: 'center' },
   title: { fontSize: 28, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, marginBottom: 8 },
   sub: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', marginBottom: 28, lineHeight: 20 },
   card: { borderRadius: 24, borderWidth: 1, padding: 24 },

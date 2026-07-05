@@ -13,7 +13,7 @@ import { TopicIcon } from '@/components/ui/TopicIcon'
 import { topicColor } from '@/constants/topics'
 import { useFilters, type QSet } from '@/contexts/FiltersContext'
 import { withFilterAnim } from '@/lib/anim'
-import { useResponsive } from '@/hooks/useResponsive'
+import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
 import { TimedModeSheet } from '@/components/ui/TimedModeSheet'
 import { formatSecs } from '@/lib/timing'
 import { effectiveStreak as computeEffectiveStreak, streakColors } from '@/lib/streak'
@@ -145,7 +145,7 @@ export default function PracticeHubScreen() {
       <TopBar title="Practice" />
 
       <Animated.View style={[{ flex: 1 }, entrance]}>
-      <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: 32 }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.scroll, { paddingBottom: 32, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
         {/* TopBar already says "Practice" — just the context line here */}
         {profLabel ? <Text style={[s.pageSub, { color: C.textSoft }]}>{profLabel}</Text> : null}
 

@@ -125,11 +125,17 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             <View style={s.iconWrap}>
               {ICONS[route.name]?.(iconColor)}
             </View>
-            <Text style={[
-              s.label,
-              { color: iconColor },
-              isFocused && { fontFamily: 'Nunito_800ExtraBold' },
-            ]}>
+            <Text
+              style={[
+                s.label,
+                { color: iconColor },
+                isFocused && { fontFamily: 'Nunito_800ExtraBold' },
+              ]}
+              numberOfLines={1}
+              // Five labels share the bar — at the global 1.4x cap "Bookmarks"
+              // overflows its cell on small phones, so tab labels cap lower.
+              maxFontSizeMultiplier={1.1}
+            >
               {label}
             </Text>
             {isFocused && <View style={[s.dot, { backgroundColor: C.teal }]} />}

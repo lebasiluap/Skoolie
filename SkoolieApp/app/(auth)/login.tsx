@@ -285,7 +285,7 @@ export default function LoginScreen() {
 }
 
 const s = StyleSheet.create({
-  scroll: { flexGrow: 1, paddingHorizontal: 24, justifyContent: 'center' },
+  scroll: { flexGrow: 1, paddingHorizontal: 24, justifyContent: 'center' , width: '100%', maxWidth: 480, alignSelf: 'center' },
 
   brand: { alignItems: 'center', marginBottom: 28 },
   appName: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, marginTop: 10 },

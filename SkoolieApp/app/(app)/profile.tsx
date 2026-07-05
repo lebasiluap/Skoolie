@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode, ThemeMode } from '@/contexts/ThemeContext'
 import { Avatar } from '@/components/ui/Avatar'
@@ -228,7 +229,7 @@ export default function ProfileScreen() {
       <TopBar title="Profile" />
       <Animated.View style={[{ flex: 1 }, entrance]}>
       <ScrollView
-        contentContainerStyle={[s.scroll, { paddingTop: 16, paddingBottom: 100 }]}
+        contentContainerStyle={[s.scroll, { paddingTop: 16, paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
         showsVerticalScrollIndicator={false}
       >
 

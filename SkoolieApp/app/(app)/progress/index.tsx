@@ -8,6 +8,7 @@ import { effectiveStreak as computeEffectiveStreak, streakStatus } from '@/lib/s
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { Avatar } from '@/components/ui/Avatar'
 import { TierBadge } from '@/components/ui/TierBadge'
@@ -182,7 +183,7 @@ export default function ProgressScreen() {
         data={loading ? [] : filteredUsers}
         keyExtractor={u => u.id}
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100, flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' }}
+        contentContainerStyle={{ paddingBottom: 100, flexGrow: 1, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.teal} />}
         ListEmptyComponent={

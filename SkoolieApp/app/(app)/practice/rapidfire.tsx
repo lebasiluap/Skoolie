@@ -18,6 +18,7 @@ import { router, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode } from '@/contexts/ThemeContext'
 import { TopBar } from '@/components/ui/TopBar'
@@ -331,7 +332,7 @@ export default function RapidFireScreen() {
 
         {loadingQs && <ActivityIndicator style={{ marginTop: 30 }} size="large" color={P} />}
         {!loadingQs && (
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           <TouchableOpacity onPress={() => startRun(null)} activeOpacity={0.85}
             style={[s.surpriseBanner, { backgroundColor: P }]}>
             <Text style={[s.surpriseLeft, { color: onP }]}>🎲 Surprise me</Text>
@@ -408,7 +409,7 @@ export default function RapidFireScreen() {
           <Animated.View style={[s.barFill, { width: barWidth, backgroundColor: barColor }]} />
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 60, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           {/* Question — tinted + labelled so it can't be mistaken for an option */}
           <View style={[s.stemCard, { backgroundColor: PTint, borderColor: P }]}>
             <View style={s.stemLabelRow}>
@@ -457,7 +458,7 @@ export default function RapidFireScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Practice" />
-      <ScrollView contentContainerStyle={[s.resultScroll, { flexGrow: 1, justifyContent: 'center' }]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[s.resultScroll, { flexGrow: 1, justifyContent: 'center', width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
         <View style={{ alignItems: 'center', marginBottom: 16 }}>
           <MascotAnimator expr={isBarrageRun ? 'happy' : pct >= 60 ? 'happy' : 'wrong'}>
             <CappyHead expr={isBarrageRun ? 'happy' : pct >= 60 ? 'happy' : 'wrong'} size={88} />

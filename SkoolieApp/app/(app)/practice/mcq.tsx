@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -579,7 +580,7 @@ export default function MCQScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="mcq" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 32, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           {/* Filter sections */}
           <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
             {/* DIFFICULTY */}
@@ -826,7 +827,7 @@ export default function MCQScreen() {
           <View style={[s.progressFill, { width: `${Math.round(((qIndex + (inReview ? 1 : 0)) / questions.length) * 100)}%`, backgroundColor: C.teal }]} />
         </View>
 
-        <ScrollView contentContainerStyle={[s.quizScroll, { paddingBottom: 180 }]} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.quizScroll, { paddingBottom: 180, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
           <View style={s.badgeRow}>
@@ -1027,7 +1028,7 @@ export default function MCQScreen() {
       <IntroGate introKey="xp" when={true} />
       <Animated.View style={[{ flex: 1 }, animStyle]}>
       <ScrollView
-        contentContainerStyle={[s.resultScroll, { paddingTop: 24, paddingBottom: 40, flexGrow: 1, justifyContent: 'center' }]}
+        contentContainerStyle={[s.resultScroll, { paddingTop: 24, paddingBottom: 40, flexGrow: 1, justifyContent: 'center', width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={s.resultMascot}>

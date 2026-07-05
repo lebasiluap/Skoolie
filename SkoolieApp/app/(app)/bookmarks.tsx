@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { normalizeOptions, resolveCorrectLetter, LETTERS } from '@/lib/answers'
 import { useAuth } from '@/hooks/useAuth'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { TopBar } from '@/components/ui/TopBar'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
@@ -205,7 +206,7 @@ export default function BookmarksScreen() {
       <FlatList
         data={sections}
         keyExtractor={sec => sec.key}
-        contentContainerStyle={{ padding: 16, paddingBottom: 100, gap: 28 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100, gap: 28, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.teal} />}
         renderItem={({ item: sec }) => (
           <View>

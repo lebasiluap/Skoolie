@@ -322,7 +322,7 @@ export default function OnboardingScreen() {
 }
 
 const s = StyleSheet.create({
-  scroll: { flexGrow: 1, paddingHorizontal: 24 },
+  scroll: { flexGrow: 1, paddingHorizontal: 24 , width: '100%', maxWidth: 560, alignSelf: 'center' },
   dots: { flexDirection: 'row', gap: 8, marginBottom: 28 },
   dot: { width: 28, height: 6, borderRadius: 3 },
   title: { fontSize: 28, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, marginBottom: 6 },

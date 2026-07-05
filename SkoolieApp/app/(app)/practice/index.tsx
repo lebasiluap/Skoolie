@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '@/hooks/useTheme'
@@ -8,6 +8,8 @@ import { useThemeMode } from '@/contexts/ThemeContext'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { TopBar } from '@/components/ui/TopBar'
+import { TopicIcon } from '@/components/ui/TopicIcon'
+import { topicColor } from '@/constants/topics'
 import { useFilters, type QSet } from '@/contexts/FiltersContext'
 import { withFilterAnim } from '@/lib/anim'
 import { useResponsive } from '@/hooks/useResponsive'
@@ -23,11 +25,26 @@ interface Counts {
 export default function PracticeHubScreen() {
   const C = useTheme()
   const { isDark } = useThemeMode()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const { qSet, setQSet } = useFilters()
   const entrance = useScreenEntrance()
   const [counts, setCounts] = useState<Counts>({ mcq: 0, flashcard: 0, case_study: 0 })
   const [loading, setLoading] = useState(true)
+  // "Jump back in" — the most recent topic-specific session, one tap to relaunch.
+  const [lastTopic, setLastTopic] = useState<{ topic: string; mode: string } | null>(null)
+  useFocusEffect(useCallback(() => {
+    if (!user) return
+    supabase
+      .from('quiz_sessions')
+      .select('topic, mode')
+      .eq('user_id', user.id)
+      .not('topic', 'is', null)
+      .in('mode', ['mcq', 'flashcard', 'case_study'])
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.mode } : null))
+  }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
   const [timedSheet, setTimedSheet] = useState(false)
   const timedOn = profile?.timed_mode ?? false
   const timedSecs = profile?.timed_seconds ?? 30
@@ -222,6 +239,37 @@ export default function PracticeHubScreen() {
           })}
         </View>
 
+        {/* JUMP BACK IN — fills the below-grid space with something personal */}
+        {lastTopic && (() => {
+          const { color: tColor, bgLight: tBg } = topicColor(lastTopic.topic)
+          const modeHref = lastTopic.mode === 'flashcard' ? '/(app)/practice/flashcards'
+            : lastTopic.mode === 'case_study' ? '/(app)/practice/cases'
+            : '/(app)/practice/mcq'
+          const modeLabel = lastTopic.mode === 'flashcard' ? 'Flashcards'
+            : lastTopic.mode === 'case_study' ? 'Cases' : 'MCQs'
+          return (
+            <>
+              <Text style={[s.eyebrow, { color: C.textFaint }]}>JUMP BACK IN</Text>
+              <TouchableOpacity
+                onPress={() => router.push({ pathname: modeHref, params: { startTopic: lastTopic.topic } } as any)}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel={`Continue ${lastTopic.topic} ${modeLabel}`}
+                style={[s.resumeRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
+              >
+                <View style={[s.resumeIcon, { backgroundColor: tBg }]}>
+                  <TopicIcon topic={lastTopic.topic} size={18} color={tColor} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.resumeTitle, { color: C.text }]} numberOfLines={1}>{lastTopic.topic}</Text>
+                  <Text style={[s.resumeSub, { color: C.textFaint }]}>Continue with {modeLabel}</Text>
+                </View>
+                <Ionicons name="arrow-forward" size={18} color={tColor} />
+              </TouchableOpacity>
+            </>
+          )
+        })()}
+
       </ScrollView>
       </Animated.View>
       <TimedModeSheet visible={timedSheet} onClose={() => setTimedSheet(false)} />
@@ -259,6 +307,11 @@ const s = StyleSheet.create({
   modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
   modeTile: { borderRadius: 20, borderWidth: 1, padding: 14 },
   tileHeader: { flexDirection: 'row', alignItems: 'center' },
+  eyebrow: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7, marginTop: 22, marginBottom: 12 },
+  resumeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
+  resumeIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  resumeTitle: { fontSize: 14.5, fontFamily: 'Nunito_700Bold', marginBottom: 1 },
+  resumeSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold' },
   tileActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
   tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },

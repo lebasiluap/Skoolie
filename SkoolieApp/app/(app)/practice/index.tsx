@@ -169,49 +169,50 @@ export default function PracticeHubScreen() {
           ))}
         </View>
 
-        {/* Mode grid — all four in one viewport, no scrolling.
-            Tile tap = Smart start (the primary action); the corner list
-            button opens Browse topics. Both targets are 44pt+. */}
+        {/* Mode grid — all four in one viewport, no scrolling. Two explicit
+            single-tap actions per tile: Start (filled) and Browse (ghost). */}
         <View style={s.modeGrid}>
           {MODES.map(mode => {
             const clr = colorMap[mode.key]
             const isRF = mode.key === 'rf'
             return (
-              <TouchableOpacity
+              <View
                 key={mode.label}
-                onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
-                activeOpacity={0.85}
-                accessibilityRole="button"
-                accessibilityLabel={`${mode.label} — smart start`}
                 style={[s.modeTile, { width: TILE_W, backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
               >
-                <View style={s.tileHeader}>
-                  <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
-                    <Ionicons name={mode.icon} size={22} color={clr.fg} />
-                  </View>
+                <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
+                  <Ionicons name={mode.icon} size={22} color={clr.fg} />
+                </View>
+                <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
+                <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
+                  {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
+                </Text>
+                <View style={s.tileActions}>
+                  <TouchableOpacity
+                    onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${mode.label} — smart start`}
+                    style={[s.tileBtn, { backgroundColor: clr.fg }]}
+                  >
+                    <Ionicons name="flash" size={12} color={clr.onFg} />
+                    <Text style={[s.tileBtnText, { color: clr.onFg }]}>Start</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => router.push(
                       isRF
                         ? mode.href as any
                         : { pathname: mode.href, params: { browseMode: '1' } } as any
                     )}
-                    hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                    activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityLabel={`Browse ${mode.label} topics`}
-                    style={[s.browseBtn, { backgroundColor: C.surface2, borderColor: C.border }]}
+                    style={[s.tileBtn, s.tileBtnGhost, { borderColor: C.border }]}
                   >
-                    <Ionicons name="list-outline" size={16} color={C.textSoft} />
+                    <Text style={[s.tileBtnText, { color: C.text }]}>Browse</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
-                <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
-                  {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
-                </Text>
-                <View style={[s.tileCta, { backgroundColor: clr.tint }]}>
-                  <Ionicons name="flash" size={12} color={clr.fg} />
-                  <Text style={[s.tileCtaText, { color: clr.fg }]}>Smart start</Text>
-                </View>
-              </TouchableOpacity>
+              </View>
             )
           })}
         </View>
@@ -252,11 +253,12 @@ const s = StyleSheet.create({
   // Mode cards
   modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
   modeTile: { borderRadius: 20, borderWidth: 1, padding: 14 },
-  tileHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
-  browseBtn: { width: 30, height: 30, borderRadius: 9, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  tileCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 9, borderRadius: 999, marginTop: 12 },
-  tileCtaText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
-  modeIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  tileActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
+  tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },
+  tileBtnText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
+  // icon sits alone at tile top
+  modeIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' , marginBottom: 10 },
   modeTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
   modeSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
 

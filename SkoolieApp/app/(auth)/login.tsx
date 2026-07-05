@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   KeyboardAvoidingView, Platform, StyleSheet
@@ -40,11 +40,23 @@ export default function LoginScreen() {
   // Inline error instead of native Alerts — calmer, in-context, and never shows
   // raw technical messages to the user.
   const [formError, setFormError] = useState<string | null>(null)
+  // "Email not confirmed" recovery: offer to resend the confirmation email
+  // right here — otherwise an unconfirmed user with a lost/expired link has
+  // no discoverable way back in.
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null)
+  const [resendNotice, setResendNotice] = useState<string | null>(null)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const t = setTimeout(() => setResendCooldown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [resendCooldown])
   const passwordRef = useRef<TextInput>(null)
 
   function friendlyAuthError(msg: string): string {
     if (/invalid login credentials/i.test(msg)) return 'Incorrect email or password. Try again or reset your password.'
     if (/email not confirmed/i.test(msg)) return 'Please confirm your email first — check your inbox for the link.'
+    if (/security purposes|only request this/i.test(msg)) return 'Emails can only be sent once a minute — give it a moment and try again.'
     if (/rate limit/i.test(msg)) return 'Too many attempts — wait a moment and try again.'
     if (/network|fetch/i.test(msg)) return 'Connection problem — check your internet and try again.'
     return 'Something went wrong signing you in. Please try again.'
@@ -53,10 +65,32 @@ export default function LoginScreen() {
   async function handleLogin() {
     if (!email.trim() || !password) { setFormError('Enter your email and password.'); return }
     setFormError(null)
+    setUnconfirmedEmail(null)
+    setResendNotice(null)
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     setLoading(false)
-    if (error) setFormError(friendlyAuthError(error.message))
+    if (error) {
+      setFormError(friendlyAuthError(error.message))
+      if (/email not confirmed/i.test(error.message)) setUnconfirmedEmail(email.trim())
+    }
+  }
+
+  async function resendConfirmation() {
+    if (!unconfirmedEmail || resendCooldown > 0) return
+    setResendCooldown(60)   // matches the server's per-user email interval
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: unconfirmedEmail,
+      options: { emailRedirectTo: 'https://skoolieapp.com/confirmed' },
+    })
+    if (error) {
+      setResendCooldown(0)
+      setFormError(friendlyAuthError(error.message))
+    } else {
+      setFormError(null)
+      setResendNotice('Confirmation email sent — check your inbox, then sign in.')
+    }
   }
 
   async function handleGoogleLogin() {
@@ -141,7 +175,7 @@ export default function LoginScreen() {
         <TextInput
           style={[s.input, { backgroundColor: C.surface, borderColor: C.border, color: C.text }]}
           value={email}
-          onChangeText={t => { setEmail(t); if (formError) setFormError(null) }}
+          onChangeText={t => { setEmail(t); if (formError) setFormError(null); setUnconfirmedEmail(null); setResendNotice(null) }}
           placeholder="you@email.com"
           placeholderTextColor={C.textFaint}
           autoCapitalize="none"
@@ -183,6 +217,24 @@ export default function LoginScreen() {
             <Text style={[s.errorText, { color: C.red }]}>{formError}</Text>
           </View>
         )}
+        {resendNotice && (
+          <View style={[s.errorBox, { backgroundColor: C.tealTint, borderColor: C.teal }]}>
+            <Text style={[s.errorText, { color: C.tealDeep }]}>{resendNotice}</Text>
+          </View>
+        )}
+        {unconfirmedEmail && !resendNotice && (
+          <TouchableOpacity
+            onPress={resendConfirmation}
+            disabled={resendCooldown > 0}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            style={{ marginTop: 10, alignItems: 'center' }}
+          >
+            <Text style={[s.forgotLink, { color: resendCooldown > 0 ? C.textFaint : C.teal }]}>
+              {resendCooldown > 0 ? `Resend confirmation email (${resendCooldown}s)` : 'Resend confirmation email'}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Sign in */}
         <View style={{ marginTop: 24 }}>
@@ -199,7 +251,7 @@ export default function LoginScreen() {
         {/* Google */}
         <TouchableOpacity
           onPress={handleGoogleLogin}
-          disabled={googleLoading}
+          disabled={googleLoading || loading}
           activeOpacity={0.8}
           accessibilityRole="button"
           style={[s.googleBtn, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}

@@ -89,11 +89,12 @@ export async function signInWithApple(): Promise<AppleSignInResult> {
     }
 
     // First-authorization-only name — persist it before it's gone forever.
+    // Awaited so onboarding (which reads user_metadata) can never race it.
     const given = cred.fullName?.givenName ?? ''
     const family = cred.fullName?.familyName ?? ''
     const fullName = `${given} ${family}`.trim()
     if (fullName) {
-      supabase.auth.updateUser({ data: { full_name: fullName } }).then(() => {})
+      try { await supabase.auth.updateUser({ data: { full_name: fullName } }) } catch {}
     }
 
     return { ok: true }

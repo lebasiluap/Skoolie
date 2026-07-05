@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -25,6 +25,7 @@ export default function ForgotPasswordScreen() {
   const [notice, setNotice] = useState<string | null>(null)
   // Resend cooldown — prevents spam-tapping five emails into a rate limit.
   const [cooldown, setCooldown] = useState(0)
+  const newPasswordRef = useRef<TextInput>(null)
   useEffect(() => {
     if (cooldown <= 0) return
     const t = setTimeout(() => setCooldown(c => c - 1), 1000)
@@ -146,7 +147,7 @@ export default function ForgotPasswordScreen() {
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
             <Text style={[s.label, { color: C.textSoft }]}>Code from your email</Text>
             <TextInput
-              style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text, letterSpacing: 6, textAlign: 'center', fontSize: 20 }]}
+              style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text, letterSpacing: 4, textAlign: 'center', fontSize: 20 }]}
               value={code}
               onChangeText={setCode}
               placeholder="------"
@@ -155,10 +156,13 @@ export default function ForgotPasswordScreen() {
               maxLength={10}
               autoComplete="one-time-code"
               textContentType="oneTimeCode"
+              returnKeyType="next"
+              onSubmitEditing={() => newPasswordRef.current?.focus()}
             />
 
             <Text style={[s.label, { color: C.textSoft, marginTop: 16 }]}>New password</Text>
             <PasswordInput
+              ref={newPasswordRef}
               inputStyle={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
               value={password}
               onChangeText={setPassword}
@@ -213,7 +217,7 @@ export default function ForgotPasswordScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 24 },
-  backBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  backBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   title: { fontSize: 28, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, marginBottom: 8 },
   sub: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', marginBottom: 28, lineHeight: 20 },
   card: { borderRadius: 24, borderWidth: 1, padding: 24 },

@@ -42,6 +42,7 @@ export default function SignupScreen() {
   // Post-signup "confirm your email" state — replaces the old dead-end Alert.
   const [awaitingConfirm, setAwaitingConfirm] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const [pollTimedOut, setPollTimedOut] = useState(false)
 
   // While the "confirm your email" card is up, quietly retry sign-in every few
   // seconds. The moment the email is confirmed (on ANY device — phone, laptop),
@@ -51,7 +52,7 @@ export default function SignupScreen() {
     if (!awaitingConfirm || confirmed) return
     let attempts = 0
     const iv = setInterval(async () => {
-      if (++attempts > 60) { clearInterval(iv); return }   // give up after ~5 min
+      if (++attempts > 60) { clearInterval(iv); setPollTimedOut(true); return }   // ~5 min: stop polling, tell the user
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -114,6 +115,7 @@ export default function SignupScreen() {
       setFormError('An account with this email may already exist — try signing in, or reset your password.')
       return
     }
+    setPollTimedOut(false)
     setAwaitingConfirm(true)
   }
 
@@ -188,6 +190,12 @@ export default function SignupScreen() {
             <Text style={[s.confirmBody, { color: C.textSoft }]}>
               {confirmed ? (
                 'Welcome to Skoolie — setting things up…'
+              ) : pollTimedOut ? (
+                <>
+                  Still waiting on{' '}
+                  <Text style={{ fontFamily: 'Nunito_800ExtraBold', color: C.text }}>{email.trim()}</Text>
+                  {'\n\n'}Once you've tapped the link in the email, sign in below with your new password.
+                </>
               ) : (
                 <>
                   We sent a confirmation link to{'\n'}
@@ -196,15 +204,20 @@ export default function SignupScreen() {
                 </>
               )}
             </Text>
-            <Button label="Go to sign in" onPress={() => router.replace('/(auth)/login')} fullWidth style={{ marginTop: 20 }} />
-            <TouchableOpacity
-              onPress={() => setAwaitingConfirm(false)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              accessibilityRole="button"
-              style={{ marginTop: 16 }}
-            >
-              <Text style={[s.link, { color: C.teal }]}>Wrong email? Go back</Text>
-            </TouchableOpacity>
+            {/* Once confirmed, routing is already happening — no buttons needed */}
+            {!confirmed && (
+              <>
+                <Button label="Go to sign in" onPress={() => router.replace('/(auth)/login')} fullWidth style={{ marginTop: 20 }} />
+                <TouchableOpacity
+                  onPress={() => { setAwaitingConfirm(false); setPollTimedOut(false) }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  accessibilityRole="button"
+                  style={{ marginTop: 16 }}
+                >
+                  <Text style={[s.link, { color: C.teal }]}>Wrong email? Go back</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -318,7 +331,7 @@ export default function SignupScreen() {
         {/* Google */}
         <TouchableOpacity
           onPress={handleGoogleLogin}
-          disabled={googleLoading}
+          disabled={googleLoading || loading}
           activeOpacity={0.8}
           accessibilityRole="button"
           style={[s.googleBtn, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}

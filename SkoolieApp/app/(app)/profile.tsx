@@ -539,6 +539,37 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* ── ABOUT ─────────────────────────────────────────── */}
+        <Text style={[s.sectionHeader, { color: C.textFaint }]}>ABOUT</Text>
+        <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/legal', params: { doc: 'terms' } } as any)}
+            activeOpacity={0.75}
+            style={s.row}
+          >
+            <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+              <Ionicons name="document-text-outline" size={19} color={C.textSoft} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Terms of Service</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/legal', params: { doc: 'privacy' } } as any)}
+            activeOpacity={0.75}
+            style={[s.row, s.rowBorder, { borderColor: C.border }]}
+          >
+            <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+              <Ionicons name="shield-checkmark-outline" size={19} color={C.textSoft} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Privacy Policy</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
+          </TouchableOpacity>
+        </View>
+
         {/* Sign out */}
         <TouchableOpacity
           onPress={handleSignOut}

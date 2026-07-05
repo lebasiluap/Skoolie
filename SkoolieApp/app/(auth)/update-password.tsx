@@ -7,6 +7,9 @@ import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 
+// NOTE: Reachable only via legacy deep links (auth/callback with type=recovery).
+// The primary reset flow is fully in-app OTP (forgot-password.tsx). Kept as a
+// safe landing for any old recovery links still in inboxes.
 export default function UpdatePasswordScreen() {
   const C = useTheme()
   const insets = useSafeAreaInsets()

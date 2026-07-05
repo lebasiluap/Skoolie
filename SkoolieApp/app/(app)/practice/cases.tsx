@@ -150,6 +150,7 @@ export default function CasesScreen() {
   const [originalCases, setOriginalCases] = useState<CaseStudy[]>([])     // full set, for "Retake"
   const [wrongCaseIds, setWrongCaseIds] = useState<Set<string>>(new Set()) // cases with ≥1 missed question, for "Review wrong"
   const [overlayVisible, setOverlayVisible] = useState(false)             // answer-review overlay (matches MCQ)
+  const [detailsVisible, setDetailsVisible] = useState(false)             // vignette cross-check sheet on the question screen
   const [bookmarkedCases, setBookmarkedCases] = useState<Set<string>>(new Set())
   const [caseIdx, setCaseIdx] = useState(0)
   const [qIdx, setQIdx] = useState(0)
@@ -678,7 +679,8 @@ export default function CasesScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18, paddingBottom: insets.bottom + 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18, paddingBottom: 16, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
           showsVerticalScrollIndicator={false}
         >
           {/* Tag chips */}
@@ -768,17 +770,39 @@ export default function CasesScreen() {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: insets.bottom + 130, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Question card */}
-          <View style={[s.questionCard, { backgroundColor: C.surface, borderColor: C.border }]}>
-            <Text style={[s.questionLabel, { color: C.teal }]}>QUESTION {q.question_number ?? qIdx + 1}</Text>
-            <Text style={[s.stem, { color: C.text }]}>{q.question}</Text>
+          {/* Ask block — Buddy asks the question (matches MCQ's Cappy bubble);
+              the "Case details" chip lets the user cross-check the vignette
+              without abandoning the question. */}
+          <View style={s.askBlock}>
+            <View style={s.stemRow}>
+              <MascotAnimator expr={revealed ? (isCorrect ? 'happy' : 'wrong') : 'idle'}>
+                <BuddyHead expr={revealed ? (isCorrect ? 'happy' : 'thinking') : 'idle'} size={110} />
+              </MascotAnimator>
+              <View style={[s.stemBubble, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+                <View style={s.tailWrap} pointerEvents="none">
+                  <View style={[s.bubbleTail, { borderRightColor: C.surface }]} />
+                </View>
+                <Text style={[s.questionLabel, { color: C.teal }]}>QUESTION {q.question_number ?? qIdx + 1}</Text>
+                <Text style={[s.stem, { color: C.text }]}>{q.question}</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              onPress={() => setDetailsVisible(true)}
+              style={[s.detailsChip, { backgroundColor: C.surface2, borderColor: C.border }]}
+              accessibilityRole="button"
+              accessibilityLabel="Review case details"
+            >
+              <Ionicons name="document-text-outline" size={15} color={C.teal} />
+              <Text style={[s.detailsChipText, { color: C.teal }]}>Case details</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Options */}
-          <View style={{ gap: 10, marginTop: 4 }}>
+          {/* Options — flexGrow swallows the leftover height (matches MCQ) */}
+          <View style={{ gap: 10, marginTop: 4, flexGrow: 1 }}>
             {shuffled.options.map((opt, i) => {
               const letter = LETTERS[i]
               const isSelected = selected === letter
@@ -819,6 +843,36 @@ export default function CasesScreen() {
           </View>
 
         </ScrollView>
+
+        {/* Case-details sheet — the vignette, history, exams and investigations,
+            available mid-question for cross-checking */}
+        {detailsVisible && (
+          <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+            <Pressable style={s.sheetScrim} onPress={() => setDetailsVisible(false)} />
+            <View style={[s.sheet, { backgroundColor: C.surface, borderColor: C.border, paddingBottom: insets.bottom + 10, ...C.shadowLg }]}>
+              <View style={s.sheetHandleWrap}>
+                <View style={[s.sheetHandle, { backgroundColor: C.surface3 }]} />
+              </View>
+              <View style={s.sheetHeadRow}>
+                <Text style={[s.questionLabel, { color: C.teal, marginBottom: 0 }]}>CASE DETAILS</Text>
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity onPress={() => setDetailsVisible(false)} hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }} accessibilityRole="button" accessibilityLabel="Hide case details">
+                  <Ionicons name="chevron-down" size={24} color={C.textFaint} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={{ flexGrow: 0 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 8 }}>
+                <Text style={[s.caseTitle, { color: C.text, fontSize: 17, marginBottom: 10 }]}>{cs.title}</Text>
+                <View style={[s.vignetteCard, { backgroundColor: C.surface2, borderColor: C.border, marginBottom: 12 }]}>
+                  <Text style={[s.vignetteLabel, { color: C.teal }]}>CLINICAL VIGNETTE</Text>
+                  <Text style={[s.vignetteText, { color: C.text }]}>{cs.clinical_vignette}</Text>
+                </View>
+                {cs.patient_history && <InfoCard label="Patient History" data={cs.patient_history} C={C} />}
+                {cs.examination_findings && <InfoCard label="Examination Findings" data={cs.examination_findings} C={C} />}
+                {cs.investigations && <InfoCard label="Investigations" data={cs.investigations} C={C} />}
+              </ScrollView>
+            </View>
+          </View>
+        )}
 
         {/* Fixed bottom bar — submit (grayed until selection) → next after reveal */}
         <View style={[s.bottomBar, { backgroundColor: C.surface, borderTopColor: C.border, paddingBottom: insets.bottom + 12 }]}>
@@ -870,13 +924,9 @@ export default function CasesScreen() {
                 <View style={[s.sheetHandle, { backgroundColor: C.surface3 }]} />
               </View>
 
-              {/* Header: Buddy + verdict + collapse */}
+              {/* Header: verdict + collapse — the stem-row Buddy carries the
+                  reaction now, so no second mascot in the sheet */}
               <View style={s.sheetHeadRow}>
-                <View style={[s.sheetMascot, { backgroundColor: isCorrect ? C.greenTint : C.redTint }]}>
-                  <MascotAnimator expr={isCorrect ? 'happy' : 'wrong'}>
-                    <BuddyHead expr={isCorrect ? 'happy' : 'thinking'} size={40} />
-                  </MascotAnimator>
-                </View>
                 <View style={[s.verdictBadge, { backgroundColor: isCorrect ? C.greenTint : C.redTint, marginBottom: 0 }]}>
                   <Text style={[s.verdictText, { color: isCorrect ? C.green : C.red }]}>
                     {isCorrect ? '✓ Correct' : timedOut ? '⏰ Time’s up' : '✗ Not quite'}
@@ -1046,10 +1096,18 @@ const s = StyleSheet.create({
   vignetteText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', lineHeight: 23 },
   qCountNote: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', textAlign: 'center', marginTop: 4 },
   // Case questions screen
-  questionCard: { borderRadius: 18, borderWidth: 1, padding: 18, marginBottom: 14 },
+  // Ask block (matches MCQ): mascot + speech bubble tight at the top,
+  // options below flexGrow to swallow leftover height
+  askBlock: { marginBottom: 12 },
+  stemRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  stemBubble: { flex: 1, borderRadius: 20, borderWidth: 1, padding: 18 },
+  tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
+  bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
+  detailsChip: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6, marginTop: 10, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1 },
+  detailsChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   questionLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1, marginBottom: 8 },
   stem: { fontSize: 16, fontFamily: 'Nunito_700Bold', lineHeight: 25 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1.5, padding: 14 },
+  option: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1.5, paddingVertical: 16, paddingHorizontal: 14 },
   optKey: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   optKeyText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 21 },
@@ -1057,10 +1115,10 @@ const s = StyleSheet.create({
   verdictText: { fontSize: 13.5, fontFamily: 'Nunito_800ExtraBold' },
   buddyRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   speechBubble: { flex: 1, borderRadius: 18, borderTopLeftRadius: 4, padding: 14 },
-  explainText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', lineHeight: 22 },
+  explainText: { fontSize: 16, fontFamily: 'Nunito_600SemiBold', lineHeight: 26 },
   // Review bottom sheet (mirrors MCQ — vignette + stem stay visible above)
   sheetScrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.18)' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderBottomWidth: 0, paddingHorizontal: 18, paddingTop: 4, maxHeight: '62%' },
+  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderBottomWidth: 0, paddingHorizontal: 18, paddingTop: 4, maxHeight: '80%' },
   sheetHandleWrap: { alignItems: 'center', paddingVertical: 7 },
   sheetHandle: { width: 42, height: 4.5, borderRadius: 999 },
   sheetHeadRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
@@ -1075,7 +1133,9 @@ const s = StyleSheet.create({
   nextBtn: { marginTop: 18, width: '100%', maxWidth: 340, padding: 16, borderRadius: 999, alignItems: 'center' },
   nextBtnText: { fontSize: 16, fontFamily: 'Nunito_800ExtraBold' },
   // Shared bottom bar
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, borderTopWidth: 1, paddingTop: 12, paddingHorizontal: 16 },
+  // In normal flow (matches MCQ): follows content on short questions,
+  // sits at the screen edge when content fills the viewport.
+  bottomBar: { borderTopWidth: 1, paddingTop: 12, paddingHorizontal: 16 },
   ctaBtn: { width: '100%', padding: 16, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   ctaBtnText: { fontSize: 16, fontFamily: 'Nunito_800ExtraBold' },
   // Results

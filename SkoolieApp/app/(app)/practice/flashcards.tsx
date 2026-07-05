@@ -422,8 +422,11 @@ export default function FlashcardsScreen() {
   // Dynamic card top offset — adapts to card height so Noggin always fits below
   // Header (~104px) + action bar (~88px) + safe area = fixed chrome
   // Remaining space split: 30% above card, 70% below (card + noggin + breathing room)
-  const cardH = Math.max(148, frontH, backH)
+  // Card fills the focused-session screen (same principle as MCQ's stretch
+  // layout): at least ~45% of the free height, growing further for long text.
   const availableH = Math.max(200, screenH - 104 - 88 - insets.bottom)
+  const minCardH = Math.round(availableH * 0.45)
+  const cardH = Math.max(minCardH, frontH, backH)
   const cardTopOffset = Math.max(12, (availableH - cardH - 88) * 0.30)
 
   // ── Topics screen ──────────────────────────────────────────────────────────
@@ -731,7 +734,7 @@ export default function FlashcardsScreen() {
             <Animated.View style={[
               s.card,
               C.shadowLg,
-              { height: Math.max(148, frontH, backH) },
+              { height: cardH },
               flipped
                 ? { backgroundColor: C.teal, borderColor: C.teal }
                 : { backgroundColor: C.surface, borderColor: C.border },
@@ -739,7 +742,8 @@ export default function FlashcardsScreen() {
             ]}>
               {!flipped ? (
                 <>
-                  <View style={{ alignSelf: 'stretch', alignItems: 'center' }}>
+                  {/* Centered vertically now the card is taller */}
+                  <View style={{ alignSelf: 'stretch', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
                     <Text style={[s.cardLabel, { color: C.textFaint }]}>QUESTION</Text>
                     <Text style={[s.cardText, { color: C.text }]}>{cleanFront(card.front)}</Text>
                   </View>

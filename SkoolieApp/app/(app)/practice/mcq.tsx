@@ -1175,14 +1175,16 @@ const s = StyleSheet.create({
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   tagChip: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
   tagText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold' },
-  askBlock: { flexGrow: 1, justifyContent: 'center', marginBottom: 18 },
+  // Ask block stays tight at the top; the option cards below flexGrow to
+  // swallow ALL leftover height (Duolingo/Kahoot style) — no dead zones.
+  askBlock: { marginBottom: 16 },
   stemRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stemBubble: { flex: 1, borderRadius: 20, borderWidth: 1, padding: 18 },
   // Full-height wrapper vertically centers the tail on the bubble (and Cappy)
   tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
   bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
   stem: { fontSize: 18, fontFamily: 'Nunito_700Bold', lineHeight: 28 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, paddingVertical: 19, paddingHorizontal: 14, marginBottom: 12 },
+  option: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, paddingVertical: 16, paddingHorizontal: 14, marginBottom: 12 },
   optChip: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   optChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 22 },

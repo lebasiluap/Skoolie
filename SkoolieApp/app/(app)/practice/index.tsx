@@ -30,20 +30,21 @@ export default function PracticeHubScreen() {
   const entrance = useScreenEntrance()
   const [counts, setCounts] = useState<Counts>({ mcq: 0, flashcard: 0, case_study: 0 })
   const [loading, setLoading] = useState(true)
-  // "Jump back in" — the most recent topic-specific session, one tap to relaunch.
+  // "Jump back in" — the topic of the LAST QUESTION answered (answer history
+  // carries a topic even when the session was a Random smart start, so anyone
+  // who has practiced at all gets a resume row).
   const [lastTopic, setLastTopic] = useState<{ topic: string; mode: string } | null>(null)
   useFocusEffect(useCallback(() => {
     if (!user) return
     supabase
-      .from('quiz_sessions')
-      .select('topic, mode')
+      .from('user_question_history')
+      .select('topic, question_type')
       .eq('user_id', user.id)
       .not('topic', 'is', null)
-      .in('mode', ['mcq', 'flashcard', 'case_study'])
-      .order('started_at', { ascending: false })
+      .order('answered_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.mode } : null))
+      .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.question_type ?? 'mcq' } : null))
   }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
   const [timedSheet, setTimedSheet] = useState(false)
   const timedOn = profile?.timed_mode ?? false

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native'
 import { router } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { Ionicons } from '@expo/vector-icons'

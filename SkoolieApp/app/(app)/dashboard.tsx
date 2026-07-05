@@ -166,11 +166,18 @@ export default function DashboardScreen() {
       correct: statsRows.reduce((sum: number, s: any) => sum + (s.score ?? 0), 0),
     })
 
-    // Daily goal — questions answered today (any mode; repeats count: effort is effort)
-    const todayStr = new Date().toDateString()
-    setTodayCount(statsRows
-      .filter((r: any) => r.started_at && new Date(r.started_at).toDateString() === todayStr)
-      .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
+    // Daily goal — server-side since-midnight filter, identical to the
+    // Practice hub's TODAY strip (no session-window divergence between tabs).
+    const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
+    supabase
+      .from('quiz_sessions')
+      .select('question_ids')
+      .eq('user_id', user.id)
+      .gte('started_at', dayStart.toISOString())
+      .then(({ data: todayRows }) => {
+        setTodayCount((todayRows ?? [])
+          .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
+      })
 
     // TOPIC PERFORMANCE — real accuracy per topic from the answer history
     // (was_correct per attempt), not just volume. Top 5 by attempts.

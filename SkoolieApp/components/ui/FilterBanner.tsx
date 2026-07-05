@@ -16,10 +16,11 @@ const cap = (v: string) => v.charAt(0).toUpperCase() + v.slice(1)
 
 export function FilterBanner({ kind }: { kind: 'mcq' | 'fc' | 'case' }) {
   const C = useTheme()
-  const { qSet, setQSet, mcqFilter, setMcqFilter, fcFilter, setFcFilter, caseFilter, setCaseFilter } = useFilters()
+  // NOTE: qSet (the hub's bank-breakdown control) is deliberately NOT shown
+  // here — it previews counts and does not filter practice content.
+  const { mcqFilter, setMcqFilter, fcFilter, setFcFilter, caseFilter, setCaseFilter } = useFilters()
 
   const parts: string[] = []
-  if (qSet !== 'All') parts.push(`${qSet} only`)
   if (kind === 'mcq') {
     if (mcqFilter.difficulty !== 'all') parts.push(cap(mcqFilter.difficulty))
     if (mcqFilter.cognitiveType !== 'all') parts.push(cap(mcqFilter.cognitiveType))
@@ -33,7 +34,6 @@ export function FilterBanner({ kind }: { kind: 'mcq' | 'fc' | 'case' }) {
   if (parts.length === 0) return null
 
   function clearAll() {
-    setQSet('All')
     if (kind === 'mcq') setMcqFilter(f => ({ ...f, difficulty: 'all', cognitiveType: 'all', highYield: false }))
     else if (kind === 'fc') setFcFilter(f => ({ ...f, difficulty: 'all', allYears: false }))
     else setCaseFilter(f => ({ ...f, difficulty: 'all' }))

@@ -48,21 +48,28 @@ export default function PracticeHubScreen() {
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.question_type ?? 'mcq' } : null))
-    // Today's answered count — same definition as the dashboard goal ring.
+    // Today's answered count — server-side since-midnight filter, exact and
+    // identical to the dashboard's definition (no limit-window divergence).
+    const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
     supabase
       .from('quiz_sessions')
-      .select('question_ids, started_at')
+      .select('question_ids')
       .eq('user_id', user.id)
-      .order('started_at', { ascending: false })
-      .limit(50)
+      .gte('started_at', dayStart.toISOString())
       .then(({ data }) => {
-        const todayStr = new Date().toDateString()
         setTodayCount((data ?? [])
-          .filter((r: any) => r.started_at && new Date(r.started_at).toDateString() === todayStr)
           .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
       })
   }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
   const [timedSheet, setTimedSheet] = useState(false)
+  // Double-tap guard: two fast taps on Start otherwise push two stacked runners.
+  const navLock = useRef(0)
+  function go(fn: () => void) {
+    const now = Date.now()
+    if (now - navLock.current < 700) return
+    navLock.current = now
+    fn()
+  }
   const timedOn = profile?.timed_mode ?? false
   const timedSecs = profile?.timed_seconds ?? 30
 
@@ -91,14 +98,23 @@ export default function PracticeHubScreen() {
 
   useEffect(() => {
     if (profile) loadCounts(qSet)
-  }, [profile, qSet])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.profession, profile?.access_key, qSet])
+
+  // Region slug for the user's country — only Ghana has regional content today.
+  // Users from countries with no regional bank don't see the breakdown control
+  // at all (their Global IS their All).
+  const regionSlug = profile?.country?.trim().toLowerCase() === 'ghana' ? 'ghana' : null
 
   async function loadCounts(set: QSet) {
+    if (!profile) return
     setLoading(true)
-    const prof = profile!.profession
-    const ak = profile!.access_key ?? null
-    // 'Global' = region:'universal', 'Regional' = region:'ghana', 'All' = no filter
-    const regionVal = set === 'Global' ? 'universal' : set === 'Regional' ? 'ghana' : null
+    const prof = profile.profession
+    const ak = profile.access_key ?? null
+    // NOTE: this control is a COUNT BREAKDOWN, not a content filter — practice
+    // always draws from the user's full visible bank (region gating happens
+    // server-side by country). The caption below the control says so.
+    const regionVal = set === 'Global' ? 'universal' : set === 'Regional' ? regionSlug : null
 
     const { data } = await supabase.rpc('get_practice_counts', { p_profession: prof, p_region: regionVal, p_access_key: ak })
     const row = Array.isArray(data) ? data[0] : data
@@ -152,7 +168,7 @@ export default function PracticeHubScreen() {
         {/* Search — looks like an input, acts as a door. Tapping opens the
             real search screen with the keyboard already up. */}
         <TouchableOpacity
-          onPress={() => router.push({ pathname: '/(app)/search', params: { from: 'practice' } } as any)}
+          onPress={() => go(() => router.push({ pathname: '/(app)/search', params: { from: 'practice' } } as any))}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Search questions, cards, and cases"
@@ -167,6 +183,8 @@ export default function PracticeHubScreen() {
           <TouchableOpacity
             onPress={() => setTimedSheet(true)}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={`Timed mode is on, ${formatSecs(timedSecs)} per question. Change settings`}
             style={[s.timedBanner, { backgroundColor: C.tealTint, borderColor: C.teal }]}
           >
             <View style={[s.timedBannerIcon, { backgroundColor: C.teal }]}>
@@ -180,27 +198,43 @@ export default function PracticeHubScreen() {
           </TouchableOpacity>
         )}
 
-        {/* QUESTION SET segmented control */}
-        <Text style={[s.eyebrow, { color: C.textFaint }]}>QUESTION SET</Text>
-        <View style={[s.segmentContainer, { backgroundColor: C.surface, borderColor: C.border }]}>
-          <Animated.View
-            style={[s.segmentIndicator, { backgroundColor: C.teal, transform: [{ translateX: indicatorX }], width: indicatorW }]}
-          />
-          {Q_SET_OPTS.map(opt => (
-            <TouchableOpacity
-              key={opt}
-              onPress={() => setQSet(opt)}
-              onLayout={e => {
-                const { x, width } = e.nativeEvent.layout
-                setSegLayouts(p => (p[opt] && p[opt].x === x && p[opt].w === width ? p : { ...p, [opt]: { x, w: width } }))
-              }}
-              activeOpacity={0.8}
-              style={s.segmentBtn}
-            >
-              <Text style={[s.segmentLabel, { color: qSet === opt ? C.onTeal : C.textSoft }]}>{opt}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* BANK BREAKDOWN — a count previewer, NOT a filter (practice always
+            draws from the full visible bank). Hidden when the user's country
+            has no regional content: Global would equal All. */}
+        {regionSlug && (
+          <>
+            <Text style={[s.eyebrow, { color: C.textFaint }]}>QUESTION BANK</Text>
+            <View style={[s.segmentContainer, { backgroundColor: C.surface, borderColor: C.border, marginBottom: qSet === 'All' ? 22 : 8 }]}>
+              <Animated.View
+                style={[s.segmentIndicator, { backgroundColor: C.teal, transform: [{ translateX: indicatorX }], width: indicatorW }]}
+              />
+              {Q_SET_OPTS.map(opt => (
+                <TouchableOpacity
+                  key={opt}
+                  onPress={() => setQSet(opt)}
+                  onLayout={e => {
+                    const { x, width } = e.nativeEvent.layout
+                    setSegLayouts(p => (p[opt] && p[opt].x === x && p[opt].w === width ? p : { ...p, [opt]: { x, w: width } }))
+                  }}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: qSet === opt }}
+                  accessibilityLabel={`Show ${opt === 'Regional' ? profile?.country ?? 'regional' : opt.toLowerCase()} counts`}
+                  style={s.segmentBtn}
+                >
+                  <Text style={[s.segmentLabel, { color: qSet === opt ? C.onTeal : C.textSoft }]}>
+                    {opt === 'Regional' ? (profile?.country ?? 'Regional') : opt}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {qSet !== 'All' && (
+              <Text style={[s.segmentCaption, { color: C.textFaint }]}>
+                Counts only — practice always draws from your full bank.
+              </Text>
+            )}
+          </>
+        )}
 
         {/* Mode grid — all four in one viewport, no scrolling. Two explicit
             single-tap actions per tile: Start (filled) and Browse (ghost). */}
@@ -227,27 +261,27 @@ export default function PracticeHubScreen() {
                 <View style={{ flex: 1 }} />
                 <View style={s.tileActions}>
                   <TouchableOpacity
-                    onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
+                    onPress={() => go(() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } }))}
                     activeOpacity={0.85}
                     accessibilityRole="button"
                     accessibilityLabel={`${mode.label} — smart start`}
                     style={[s.tileBtn, { backgroundColor: clr.fg }]}
                   >
                     <Ionicons name="flash" size={12} color={clr.onFg} />
-                    <Text style={[s.tileBtnText, { color: clr.onFg }]}>Start</Text>
+                    <Text style={[s.tileBtnText, { color: clr.onFg }]} numberOfLines={1} maxFontSizeMultiplier={1.1}>Start</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => router.push(
+                    onPress={() => go(() => router.push(
                       isRF
                         ? mode.href as any
                         : { pathname: mode.href, params: { browseMode: '1' } } as any
-                    )}
+                    ))}
                     activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityLabel={`Browse ${mode.label} topics`}
                     style={[s.tileBtn, s.tileBtnGhost, { borderColor: C.border }]}
                   >
-                    <Text style={[s.tileBtnText, { color: C.text }]}>Browse</Text>
+                    <Text style={[s.tileBtnText, { color: C.text }]} numberOfLines={1} maxFontSizeMultiplier={1.1}>Browse</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -258,6 +292,9 @@ export default function PracticeHubScreen() {
         {/* JUMP BACK IN — fills the below-grid space with something personal */}
         {lastTopic && (() => {
           const { color: tColor, bgLight: tBg } = topicColor(lastTopic.topic)
+          // NOTE: history rows are only ever 'mcq' or 'flashcard' today — cases
+          // don't write user_question_history (FK to questions). The case branch
+          // is future-proofing for when that changes, not a live path.
           const modeHref = lastTopic.mode === 'flashcard' ? '/(app)/practice/flashcards'
             : lastTopic.mode === 'case_study' ? '/(app)/practice/cases'
             : '/(app)/practice/mcq'
@@ -267,7 +304,7 @@ export default function PracticeHubScreen() {
             <>
               <Text style={[s.eyebrow, { color: C.textFaint, marginTop: 22 }]}>JUMP BACK IN</Text>
               <TouchableOpacity
-                onPress={() => router.push({ pathname: modeHref, params: { startTopic: lastTopic.topic } } as any)}
+                onPress={() => go(() => router.push({ pathname: modeHref, params: { startTopic: lastTopic.topic } } as any))}
                 activeOpacity={0.75}
                 accessibilityRole="button"
                 accessibilityLabel={`Continue ${lastTopic.topic} ${modeLabel}`}
@@ -337,7 +374,7 @@ export default function PracticeHubScreen() {
 const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18, paddingTop: 20 },
 
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 13, marginTop: 14, marginBottom: 4 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 13, marginTop: 10, marginBottom: 4 },
   searchBarText: { fontSize: 14.5, fontFamily: 'Nunito_600SemiBold' },
   pageSub: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', marginBottom: 2 },
 
@@ -353,11 +390,12 @@ const s = StyleSheet.create({
   // Segmented control
   segmentContainer: {
     flexDirection: 'row', borderRadius: 14, borderWidth: 1,
-    padding: 5, marginBottom: 22, alignSelf: 'flex-start', position: 'relative',
+    padding: 5, alignSelf: 'flex-start', position: 'relative',
   },
   segmentIndicator: { position: 'absolute', top: 5, bottom: 5, left: 0, borderRadius: 10 },
   segmentBtn: { paddingVertical: 9, paddingHorizontal: 18, borderRadius: 10, alignItems: 'center' },
   segmentLabel: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
+  segmentCaption: { fontSize: 11.5, fontFamily: 'Nunito_600SemiBold', marginBottom: 22 },
 
   // Mode cards
   modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },

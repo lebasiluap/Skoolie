@@ -877,8 +877,8 @@ export default function MCQScreen() {
               speech bubble. The row absorbs the vertical slack so options and
               the CTA stay pulled toward the thumb. */}
           <View style={s.stemRow}>
-            <MascotAnimator expr="idle">
-              <CappyHead expr="idle" size={60} />
+            <MascotAnimator expr={inReview && reviewSnap ? (reviewSnap.isCorrect ? 'happy' : 'wrong') : 'idle'}>
+              <CappyHead expr={inReview && reviewSnap ? (reviewSnap.isCorrect ? 'happy' : 'wrong') : 'idle'} size={60} />
             </MascotAnimator>
             <View style={[s.stemBubble, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
               <View style={[s.bubbleTailBorder, { borderRightColor: C.border }]} />
@@ -978,13 +978,9 @@ export default function MCQScreen() {
                 <View style={[s.sheetHandle, { backgroundColor: C.surface3 }]} />
               </View>
 
-              {/* Header: mascot + verdict + collapse */}
+              {/* Header: verdict + collapse — the stem-row Cappy carries the
+                  reaction now, so no second mascot in the sheet */}
               <View style={s.sheetHeadRow}>
-                <View style={[s.sheetMascot, { backgroundColor: reviewSnap.isCorrect ? C.greenTint : C.redTint }]}>
-                  <MascotAnimator expr={reviewSnap.isCorrect ? 'happy' : 'wrong'}>
-                    <CappyHead expr={reviewSnap.isCorrect ? 'happy' : 'wrong'} size={40} />
-                  </MascotAnimator>
-                </View>
                 <View style={[s.verdictBadge, { backgroundColor: reviewSnap.isCorrect ? C.greenTint : C.redTint, marginBottom: 0 }]}>
                   <Text style={[s.verdictText, { color: reviewSnap.isCorrect ? C.green : C.red }]}>
                     {reviewSnap.isCorrect ? '✓ Correct' : reviewSnap.timedOut ? '⏰ Time’s up' : '✗ Not quite'}
@@ -1192,7 +1188,6 @@ const s = StyleSheet.create({
   sheetHandleWrap: { alignItems: 'center', paddingVertical: 7 },
   sheetHandle: { width: 42, height: 4.5, borderRadius: 999 },
   sheetHeadRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
-  sheetMascot: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   whyChip: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 18, borderRadius: 999, borderWidth: 1.5 },
   whyChipText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
   verdictBadge: { paddingVertical: 9, paddingHorizontal: 18, borderRadius: 999, marginBottom: 16 },

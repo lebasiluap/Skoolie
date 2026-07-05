@@ -58,7 +58,7 @@ export default function ForgotPasswordScreen() {
   }
 
   async function submitNewPassword() {
-    if (!code.trim()) { setFormError('Enter the 6-digit code from your email.'); return }
+    if (code.trim().length < 6) { setFormError('Enter the code from your email.'); return }
     if (!password || !confirm) { setFormError('Enter and confirm your new password.'); return }
     if (password.length < 6) { setFormError('Password must be at least 6 characters.'); return }
     if (password !== confirm) { setFormError('Passwords do not match.'); return }
@@ -102,7 +102,7 @@ export default function ForgotPasswordScreen() {
         <Text style={[s.title, { color: C.text }]}>Reset password</Text>
         <Text style={[s.sub, { color: C.textFaint }]}>
           {step === 'request'
-            ? "Enter your email and we'll send you a 6-digit code."
+            ? "Enter your email and we'll send you a reset code."
             : `Enter the code sent to ${email}, then choose a new password.`}
         </Text>
 
@@ -138,7 +138,7 @@ export default function ForgotPasswordScreen() {
           </View>
         ) : (
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-            <Text style={[s.label, { color: C.textSoft }]}>6-digit code</Text>
+            <Text style={[s.label, { color: C.textSoft }]}>Code from your email</Text>
             <TextInput
               style={[s.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text, letterSpacing: 6, textAlign: 'center', fontSize: 20 }]}
               value={code}
@@ -146,7 +146,7 @@ export default function ForgotPasswordScreen() {
               placeholder="------"
               placeholderTextColor={C.textFaint}
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={10}
               autoComplete="one-time-code"
               textContentType="oneTimeCode"
             />

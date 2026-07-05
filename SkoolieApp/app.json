@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow Skoolie to access your photo library to set a profile picture.",
         "NSCameraUsageDescription": "Allow Skoolie to use your camera to take a profile photo."
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -46,7 +47,8 @@
           "photosPermission": "Allow Skoolie to access your photos."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "expo-apple-authentication"
     ],
     "scheme": "skoolie",
     "experiments": {

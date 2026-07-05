@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
+import { AppleSignInButton } from '@/components/ui/AppleSignInButton'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -263,6 +264,12 @@ export default function SignupScreen() {
             {googleLoading ? 'Opening…' : 'Continue with Google'}
           </Text>
         </TouchableOpacity>
+
+        {/* Apple — native button, iOS only (guideline 4.8) */}
+        <AppleSignInButton
+          disabled={loading || googleLoading}
+          onError={msg => { if (msg) setFormError(msg) }}
+        />
 
         <View style={[s.footer, { marginTop: 24 }]}>
           <Text style={[s.footerText, { color: C.textFaint }]}>Already have an account? </Text>

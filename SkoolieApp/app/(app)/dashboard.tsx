@@ -449,7 +449,16 @@ export default function DashboardScreen() {
         {/* TOPIC PERFORMANCE */}
         {topicActivity.length > 0 && (
           <>
-            <Text style={[s.eyebrow, { color: C.textFaint }]}>TOPIC PERFORMANCE</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={[s.eyebrow, { color: C.textFaint, marginBottom: 0 }]}>TOPIC PERFORMANCE</Text>
+              <TouchableOpacity
+                onPress={() => router.push({ pathname: '/(app)/progress/analytics', params: { from: 'dashboard' } } as any)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+              >
+                <Text style={{ fontSize: 12, fontFamily: 'Nunito_700Bold', color: C.teal }}>Insights →</Text>
+              </TouchableOpacity>
+            </View>
             <View style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
               {topicActivity.map((t, i) => {
                 const { color: tColor, bgLight: tBg } = topicColor(t.topic)
@@ -496,16 +505,16 @@ const s = StyleSheet.create({
   streakBadgeText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
 
   // Daily goal hero
-  goalCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, borderWidth: 1.5, padding: 14, paddingRight: 16, marginBottom: 14 },
+  goalCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, borderWidth: 1.5, padding: 16, marginBottom: 14 },
   goalRingWrap: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center' },
   goalRingNum: { position: 'absolute', fontSize: 19, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
-  goalTitle: { fontSize: 15.5, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
+  goalTitle: { fontSize: 16.5, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
   goalSub: { fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', lineHeight: 17 },
   goalBtn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999 },
   goalBtnText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
 
   // Level card (surface, not teal)
-  levelCard: { borderRadius: 20, borderWidth: 1, padding: 20, marginBottom: 14 },
+  levelCard: { borderRadius: 20, borderWidth: 1, padding: 20, marginTop: 10, marginBottom: 14 },
   levelRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   levelIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   levelTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
@@ -544,7 +553,7 @@ const s = StyleSheet.create({
   topicIconBox: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   topicLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   topicName: { fontSize: 13, fontFamily: 'Nunito_700Bold', flex: 1 },
-  topicPct: { fontSize: 12, fontFamily: 'Nunito_700Bold', marginLeft: 6 },
+  topicPct: { fontSize: 12, fontFamily: 'Nunito_700Bold', marginLeft: 6, fontVariant: ['tabular-nums'] },
   topicTrack: { height: 5, borderRadius: 3, overflow: 'hidden' },
   topicFill: { height: 5, borderRadius: 3 },
 })

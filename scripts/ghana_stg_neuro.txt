@@ -1,0 +1,4995 @@
+
+--- Page 141 ---
+— Deep Vein Thrombosis (DVT) —
+Chapter 7: Disorders of the Cardiovascular System
+123
+yy
+ECG 
+yy
+Pulse oximetry 
+yy
+Peak flow rate measurement
+yy
+Cardiac enzymes, Troponin T, CK-MB if ischaemic heart disease is 
+suspected
+yy
+Echocardiogram 
+yy
+Lung Function Tests (spirometry) 
+yy
+CT pulmonary angiogram useful for confirming PE
+Treatment 
+Treatment objectives
+yy
+Treat underlying cause - see relevant chapters
+yy
+Maintain oxygen saturation above 95% - caution if there is underlying 
+COPD, as these patients are dependent on hypoxic drive
+Non-pharmacological treatment 
+yy
+Based on underlying cause. (See relevant sections)
+Pharmacological treatment 
+yy
+Based on underlying cause. (See relevant sections)
+Referral Criteria 
+Refer to the next level of care if cause cannot be identified
+44.	 Deep Vein Thrombosis (DVT)
+Deep Vein Thrombosis (DVT) is a common disease although often 
+asymptomatic. The deep veins of the lower limbs are affected most 
+commonly, but thrombosis may affect other sites, including the upper 
+limbs, intracranial and splanchnic veins. Complications include pulmonary 
+thromboembolism, which can be life-threatening. It is therefore essential 
+to have a reliable method for establishing the DVT risk of patients and to 
+take active steps to provide prophylactic treatment as necessary. Common 
+risk factors for DVT include obesity, smoking, prolonged immobility (e.g. 
+bed rest, long haul flights), major surgery e.g. orthopaedic, abdominal 
+and pelvic surgery, pregnancy and the puerperium, after caesarean 
+section, malignancies, inherited blood disorders, oestrogen therapy  and 
+medical conditions, e.g. congestive cardiac failure, myocardial infarction, 
+nephrotic syndrome, stroke, systemic lupus erythematosus. 
+In cases of confirmed DVT, treatment with anticoagulants must not 
+be delayed unnecessarily unless there are significant contraindications to 
+their use such as recent intracerebral bleed, severe liver disease, active 
+peptic ulcer, bleeding disorders, and severe hypertension.
+ 
+Causes 
+yy
+Stagnation of blood in the vein
+yy
+Increased viscosity of blood 
+yy
+Inflammation of the blood vessel causing damage
+
+--- Page 147 ---
+— Stroke —
+Chapter 7: Disorders of the Cardiovascular System
+129
+yy
+Warfarin, oral, simultaneously (NOT in pregnancy)
+Adults 
+Loading Dose
+DAY
+DOSE
+INR
+1
+10 mg
+-
+2
+10 mg
+-
+3
+5 mg
+Check INR
+Note 7-5
+Continue 5 mg daily INR until a target INR of 2 to 3 is achieved. After this the 
+low molecular weight heparin is stopped and a maintenance warfarin dose of 
+2.5 mg to 5 mg (some patients may require 7.5 mg) is continued guided at all 
+times by a target INR of 2 to 3.
+Long-term treatment requires continuation of warfarin for three to six months if 
+the risk factor is temporary or unknown. Recurrent embolisms and permanent 
+risk factors such as thrombophilia requires long term anticoagulation.
+Referral Criteria 
+Refer all patients with suspected pulmonary embolism, where 
+facilities are unavailable for confirmation, to a physician specialist or 
+cardiologist for expert management after stabilisation.
+46.	 Stroke
+A stroke can be defined as a sudden global or focal neurological 
+deficit resulting from spontaneous haemorrhage or infarction of the 
+central nervous system, with objective evidence of an infarction or 
+haemorrhage, irrespective of the duration of clinical symptoms. A CT or 
+MRI scan is required to make the diagnosis and exclude other intracranial 
+lesions that could present similarly.
+A Transient Ischaemic Attack (TIA), on the other hand, is a transient 
+episode of neurologic dysfunction caused by focal brain, spinal cord, or 
+retinal ischemia. There is no objective evidence of acute infarction in the 
+affected region of brain or retina. 
+In adults, hypertension, diabetes, dyslipidaemia, atrial fibrillation 
+and smoking, increase the risk for strokes. In children sickle cell disease 
+and cyanotic heart disease are important risk factors for strokes.
+Patients should ideally have multidisciplinary care.
+Causes 
+yy
+Cerebral infarction 
+yy
+Thrombosis of a cerebral vessel 
+yy
+Embolism from a distant site (e.g. atrial fibrillation)
+yy
+Intracerebral haemorrhage
+yy
+Subarachnoid haemorrhage
+
+--- Page 148 ---
+— Stroke —
+Standard Treatment Guidelines, 7th Edition, 2017
+130
+Symptoms
+yy
+Weakness of one side of the body including the face
+yy
+Inability to rise up from a sitting or lying position
+yy
+Sudden fall/collapse
+yy
+Loss of speech
+yy
+Loss of vision
+yy
+Severe headache and/or neck pain (subarachnoid haemorrhage)
+yy
+Unconsciousness in some patients
+yy
+Seizures 
+Signs
+yy
+Paralysis of a limb 
+yy
+Facial paralysis (lower half)
+yy
+Initial flaccidity of limbs, but later spasticity and exaggerated reflexes 
+yy
+Hemianopia (loss of one-half of visual field)
+yy
+Hemi-anaesthesia (loss of sensation of one-half of body) 
+yy
+Extensor plantar response
+yy
+Dysarthria/dysphasia (alteration of speech)
+yy
+Neck stiffness (in subarachnoid haemorrhage)
+Investigations
+yy
+FBC, ESR
+yy
+Blood glucose
+yy
+Serum lipid profile
+yy
+Blood urea, electrolytes and creatinine
+yy
+Uric acid
+yy
+ECG
+yy
+CT scan/MRI of the head 
+yy
+Chest X-ray
+Treatment 
+Treatment objectives
+yy
+To limit the area of brain damage
+yy
+To protect patients from the dangers of unconsciousness and 
+immobility
+yy
+To prevent aspiration
+yy
+To treat the underlying cause if possible
+yy
+To identify and manage modifiable risk factors (hypertension, high 
+cholesterol, diabetes mellitus etc.)
+yy
+To institute measures to improve functional recovery
+yy
+To support and rehabilitate patients who survive with residual 
+disability
+yy
+To minimise adverse effects of drug therapy
+Non-pharmacological treatment
+yy
+Admit and monitor patient`s vital signs and neurological signs 
+frequently (4 hourly)
+
+--- Page 149 ---
+— Stroke —
+Chapter 7: Disorders of the Cardiovascular System
+131
+yy
+Establish adequate airway in unconscious patients
+yy
+Swallowing test in an upright position (use 10-15ml of water)
+yy
+Insert nasogastric tube as early as possible for feeding and 
+medications in unconscious patients or those with swallowing 
+difficulties to prevent aspiration
+yy
+Nurse in the lateral position with suctioning where necessary 
+yy
+Elevate head of bed to 30 degrees to reduce intracranial 
+pressure	
+yy
+Prevent pressure sores by regular turning (every 2 hours) in bed
+yy
+Maintain adequate hydration 
+yy
+Keep patient clean and dry by frequent use of bedpan/urine pot, 
+diapers, condom catheter as required. Urethral catheter should be 
+used only if absolutely necessary
+yy
+Start physiotherapy as soon as practicable
+Pharmacological treatment 
+A.     Infarctive Strokes and TIAs
+1st Line Treatment
+Evidence Rating: [B]
+yy
+Aspirin, oral, 
+Adults 
+300 mg stat.
+Then 
+75 mg daily
+Children
+> 16 years;	
+same as adult dose
+< 16 years;	
+not recommended
+And
+yy
+Atorvastatin, oral, 
+Adults 
+40-80 mg daily
+Children 
+Not recommended 
+Or 
+yy
+Rosuvastatin, oral, 
+Adults 
+20-40 mg daily
+Children 
+Not recommended 
+B.     Haemorrhagic Stroke with evidence of cerebral oedema present
+1st Line Treatment
+Evidence Rating: [B]
+yy
+Mannitol, IV, 
+Adults
+0.5-1 g/kg 6 hourly (up to 2 g/kg per dose)
+
+--- Page 150 ---
+— Stroke —
+Standard Treatment Guidelines, 7th Edition, 2017
+132
+Children
+1 month-18 years; 0.5-1.5 g/kg Or 2.5-7.5 ml/kg of 20% solution
+(See treatment flowchart for acute medical management of stroke 
+below)
+C.     Control of co-morbidities (e.g. hypertension, diabetes etc.)
+(See appropriate sections)
+Referral Criteria 
+Patients with worsening symptoms and signs should be urgently 
+referred for specialist evaluation and care.  All stable patients with 
+neurological deficits should be referred to a speech therapist, occupational 
+therapist or physiotherapist as appropriate.
+ 
+Flowchart
+Fig 7-4: Flowchart: Stroke
+Table 7-3:  Treatment flowchart for acute medical management of stroke
+History and 
+examination
+Identify risk factors, site and extent of the stroke    
+Consider sources of embolism
+Investigations
+FBC, Urine R/E, BUE, +Cr, Fasting glucose, Fasting cholesterol, 
+CT Scan, CXR, ECG
+Hydration
+Aiming for euvolaemia (2.5-3 L per day on average) 
+Use normal saline or dextrose saline
+Avoid dextrose 5% or 10% unless hypoglycaemic.
+
+--- Page 151 ---
+— Stroke —
+Chapter 7: Disorders of the Cardiovascular System
+133
+Table 7-3:  Treatment flowchart for acute medical management of stroke
+Stress ulcer 
+prophylaxis
+Give proton pump inhibitor
+Glucose control
+Keep RBS (4-10) mmol/L
+May need insulin sliding scale to control or supplement oral 
+medications (avoid oral metformin if diabetic)
+Pyrexia
+If > 37.5 oC manage with regular paracetamol to control pyrexia
+Consider source (chest, urine, malaria, other) and manage 
+accordingly
+Blood pressure 
+management
+Often rises as direct result of stroke and may partially settle 
+with no action.  If > 180/110 mmHg aim for gradual reduction 
+of no more than 20% over 24 hours. Continue pre-stroke 
+medication if indicated. DO NOT USE SUBLINGUAL NIFEDIPINE.  
+Sudden reduction in BP can lead to extension of stroke.  
+Treatment of infarcts
+Start aspirin 300 mg stat as soon as infarct identified via (oral/
+NG) if no contraindications.  Reduce dose to 75 mg daily after 1 
+week, and consider further anti-platelet medication.  
+Atrial Fibrillation
+Consider rhythm control for acute onset; anticoagulation 
+Mobilisation of 
+patients
+Early referral of all patients to the physiotherapist (even if 
+unconscious)
+Aspiration 
+pneumonia
+Look for signs of this regularly (rising respiratory rate, 
+tachycardia, chest signs).  Treat with IV Amoxicillin + Clavulanic 
+Acid and IV metronidazole for first 48 hours then review 
+DVT and Pulmonary 
+embolism 
+Prophylactic heparin if infarct detected on CT scan 
+Seizures
+Terminate seizures as per protocols.  Regular anticonvulsant if 
+more than one seizure occurs
+Change in conscious 
+level
+Urgently consider possibilities such as; cerebral oedema/
+hypoglycaemia/metabolic/drug causes that can be reversed
+Rising ICP
+Nurse at 30 degrees head up, IV mannitol +/- Dexamethasone  
+as required
+High cholesterol
+Start high dose statins as per guidelines
+
+--- Page 161 ---
+— Hypercyanotic attack —
+Chapter 7: Disorders of the Cardiovascular System
+143
+Referral Criteria 
+Refer all children with congenital heart disease to a paediatric 
+cardiologist or paediatrician for further clinical assessment and 
+management.
+49.	 Hypercyanotic attack
+This is a life threatening paediatric cardiac emergency. 
+It usually occurs in infants with a peak incidence between 4 and 6 
+months. A severe episode may lead to limpness, seizures, cerebrovascular 
+accident or even death. Spells may be brief (1-2 minutes) and self-correct 
+or may progress to a severe, life-threatening episode. Prompt recognition 
+by parents and medical staff is important. The attack is often early in the 
+morning with no apparent reason. It may be precipitated following a bath, 
+by prolonged crying, defaecation, dehydration, febrile illness or induction 
+of anaesthesia.
+Causes 
+yy
+Congenital heart disease e.g. Tetralogy of Fallot, pulmonary stenosis, 
+double outlet right ventricle, tricuspid atresia, Eisenmenger 
+syndrome
+Symptoms
+yy
+Irritability and prolonged crying 
+yy
+Deep rapid breathing
+yy
+Increased severity of cyanosis
+Signs
+yy
+Tachycardia 
+yy
+Systolic murmur 
+yy
+Coma
+yy
+Convulsions 
+yy
+Hemiparesis
+Investigations
+yy
+FBC
+yy
+Chest X-ray 
+yy
+ECG 
+yy
+Echocardiography
+Treatment 
+Treatment objectives
+yy
+To recognise the problem early
+yy
+To reverse obstruction 
+yy
+To correct metabolic derangement in severe hypoxia
+yy
+To prevent complications and death from severe hypoxia
+Non-pharmacological treatment
+yy
+Hold in knee chest position (teach parents)
+
+--- Page 164 ---
+— Hypertension  —
+Standard Treatment Guidelines, 7th Edition, 2017
+146
+Non-pharmacological treatment
+Bed rest
+Pericardiocentesis (indicated when there is cardiac tamponade, large 
+or symptomatic pericardial effusion). Evidence Rating: [B]
+Pharmacological treatment 
+A.     Acute pericarditis
+1st Line Treatment
+Evidence Rating: [B]
+yy
+Ibuprofen, oral, 
+Adults
+300-800 mg 6-8 hourly
+Children
+7-18 years;	
+	
+200 mg 6-8 hourly
+2-7 years;	
+	
+100 mg 6-8 hourly 
+1-2 years;	
+  	
+50 mg 6-8 hourly
+6-12 months;	   	
+50 mg 8 hourly
+1-6 months;	     	
+5 mg/kg 6-8 hourly
+And  
+yy
+Colchicine, oral, 
+Adults 
+0.5 mg 12 hourly
+Children
+Not recommended
+Or
+yy
+Prednisolone, oral, (restricted to connective tissue diseases and 
+uraemic pericarditis)
+Adults
+40 mg daily for 14 days and taper off 
+Children
+2 mg/kg daily for 14 days and taper off 
+B.     For treatment of underlying cause
+(See appropriate section)
+Referral Criteria 
+Refer all patients to a Cardiologist for further evaluation after the 
+inital treatment. Patients with large effusions or cardiac tamponade 
+require urgent pericardiocentesis under echocardiographic guidance and 
+they should be referred immediately.
+51.	 Hypertension 
+Hypertension or ‘high blood pressure’ carries an increased risk of 
+early death from stroke, heart attack, heart failure and kidney failure if it is 
+not detected early and properly controlled. Owing to this, the focus must 
+
+--- Page 165 ---
+— Hypertension  —
+Chapter 7: Disorders of the Cardiovascular System
+147
+be on when to initiate treatment, rather than how hypertension should 
+be defined.
+Since there are often no specific symptoms associated with 
+hypertension, there is the need for regular blood pressure (BP) screening 
+in the adult population for early detection. 
+In the general adult population, treatment must be initiated at a 
+BP of 140/90 mmHg or higher for individuals below 60 years of age, and 
+150/90 mmHg or higher in those above 60 years. For individuals with 
+diabetes mellitus or non-diabetics with Chronic Kidney Disease (CKD), 
+treatment for hypertension must be initiated at a BP of 140/90 mmHg, 
+irrespective of age. 
+In the majority of patients with hypertension, no specific underlying 
+cause is identified (primary hypertension). In these individuals, increasing 
+age, family history, excess body weight, lack of physical activity and 
+excessive alcohol intake may be possible predisposing factors. In about 
+10% of cases of hypertension, there may be an underlying kidney disease, 
+endocrine disorder, renal artery stenosis or coarctation of the aorta 
+(secondary hypertension). 
+Once a diagnosis of hypertension is made, the individual should 
+be evaluated to exclude secondary causes and to identify other existing 
+cardiovascular risk factors e.g. diabetes, dyslipidaemia, hyperuricaemia, 
+etc.
+ 
+Box 7-6:  Cardiovascular Risk Factors
+yy
+Age (men ≥ 55 years; women ≥ 65)
+yy
+Family history of premature cardiovascular disease (men aged < 55 years; 
+women aged < 65)
+yy
+Dyslipidaemia 
+yy
+Obesity (BMI ≥ 30 kg/m2)
+yy
+Diabetes mellitus
+yy
+Smoking
+yy
+Pulse pressure (in the elderly) ≥ 60mmHg
+yy
+Microalbuminuria or proteinuria
+yy
+Left ventricular hypertrophy
+yy
+Left bundle branch block and other electrocardiographic features suggesi­
+tive of ischaemic heart disease
+yy
+Previous stroke or transient ischaemic attack
+yy
+Periperal arterial disease
+yy
+Heart failure
+yy
+Coronary artery disease
+yy
+Chronic kidney disease
+yy
+Advanced retinopathy: haemorrhages or exudates, papilloedema
+Causes 
+yy
+Primary hypertension
+yy
+Secondary hypertension 
+yy
+Kidney related- CKD, polycystic kidney disease
+yy
+Endocrine - phaeochromocytoma, Cushing’s syndrome, Conn’s 
+syndrome, hypothyroidism, hyperthyroidism, acromegaly
+
+--- Page 167 ---
+— Hypertension  —
+Chapter 7: Disorders of the Cardiovascular System
+149
+Pharmacological treatment 
+A.     Treatment of hypertension
+1st Line Treatment
+Evidence Rating: [A]
+Box 7-7:  Notes on anti-hypertensive medicines
+Any of the five classes of major antihypertensive drugs can be used as first-line 
+treatment. These are:
+yy
+Thiazide Diuretics 
+yy
+Calcium Channel Blockers 
+yy
+Angiotensin Converting Enzyme Inhibitors
+yy
+Angiotensin Receptor Blockers 
+yy
+Beta-blockers
+In the general black population thiazide diuretics or calcium channel blockers, 
+either as monotherapy or in some combination therapy, is preferrable. Angio­
+tensin converting enzyme Inhibitors are not recommended as first-line drugs for 
+uncomplicated hypertension in black patients.
+Dual therapy should be started earlier when the blood pressure exceeds 
+180/110 mmHg.
+Additional anti-hypertensive drugs should be used if target blood pressure 
+levels are not achieved. Add-on drugs should be chosen from first-line choices 
+bearing in mind compelling indications and contraindications. 
+Compelling indications for the choice of antihypertensives
+yy
+Left ventricular hypertrophy: ACE-I or ARB, CCB preferably Amlodipine 
+yy
+Microalbuminuria: ACE-I or ARB
+yy
+Renal dysfunction: ACE-I or ARB; Caution- if eGFR <15min/ml without renal 
+replacement therapy
+yy
+Previous stroke: Any of the first-line drugs, especially ACE-I
+yy
+Coronary artery disease (Angina/Myocardial infarction): ACE-I or ARB, Be­
+ta-blocker, CCB.
+yy
+Heart failure: ACE-I or ARB, Cardio-selective B-Blockers- bisoprolol, metop­
+rolol, carvedilol; Loop diuretics, Spironolactone in advanced heart failure
+yy
+Peripheral artery disease: CCB, ACE-I or ARB
+yy
+Diabetes mellitus: ACE-I or ARB
+yy
+Atrial fibrillation: ARB or ACE-I or B-blockers
+Compelling  Contraindications
+yy
+Gout: Thiazide diuretics
+yy
+Beta-blockers: Asthma, 2 and 3 AV block
+yy
+CCB: Heart failure
+yy
+ACE-I or ARB: Bilateral renal artery stenosis and hyperkalaemia
+	
+Thiazide Diuretics:  
+yy
+Bendroflumethiazide, oral, 2.5 mg daily
+Or 
+yy
+Hydrochlorothiazide, oral, 12.5 mg-25 mg daily
+And/Or
+
+--- Page 172 ---
+— Hypertension in Pregnancy  —
+Standard Treatment Guidelines, 7th Edition, 2017
+154
+Or
+yy
+Amlodipine, oral,
+Children
+12-18 years;	 	
+5-10 mg daily
+1 month-12 years; 	
+100-400 microgram/kg daily (max. 10 mg 
+daily)
+	
+Vasodilators
+yy
+Hydralazine, oral,
+Children
+12-18 years; 	 	
+25 mg 12 hourly increased to usual max. 50-
+100 mg 12 hourly
+1 month-12 years; 	
+250-500 microgram/kg 8-12 hourly in­
+creased as necessary to max. 7.5 mg/kg daily (not exceeding 200 mg)
+Neonate
+250-500 microgram/kg 8-12 hourly increased as necessary to max. 
+2-3 mg/kg every 8 hours 
+IV, 250-500 microgram/kg diluted in 10 ml normal saline given over 
+20 minutes, then 100-200 microgram/kg 4-6 hourly (max 3 mg/kg 
+in 24 hours)
+	
+Angiotensin-receptor blockers
+yy
+Losartan, oral,  
+Children
+Initial dose;	
+	
+0.7 mg /kg daily (max. 50 mg)
+Maintenance dose;	
+1.4 mg /kg daily (max. 100 mg)
+Referral Criteria 
+Refer all cases of hypertension in children to a specialist for 
+investigation and further treatment.
+53.	 Hypertension in Pregnancy 
+(See section on ‘Hypertension in Pregnancy’ under ‘Obstetric care 
+and Obstetric Disorders’) 
+54.	 Hypertensive Emergencies
+A hypertensive crisis is a severe and potentially life threatening 
+increase in blood pressures (BP) which may result in an acute stroke, 
+subarachnoid haemorrhage, seizures (hypertensive encephalopathy), 
+heart attack, acute dissection of aorta, heart failure, renal damage or 
+eclampsia (during pregnancy).  The underlying cause may be primary 
+hypertension; however, secondary causes of hypertension must be 
+excluded.
+In adult patients this often occurs with a BP > 180/120 mmHg, while 
+in children this may occur at lower BP levels. 
+
+--- Page 173 ---
+— Hypertensive Emergencies —
+Chapter 7: Disorders of the Cardiovascular System
+155
+These patients need careful examination to exclude target organ 
+damage. Rapid correction of blood pressure with careful monitoring to 
+avoid a precipitous drop is indicated to prevent organ damage. 
+Symptoms
+yy
+Headache 
+yy
+Chest pain
+yy
+Shortness of breath
+yy
+Nausea
+yy
+Vomiting
+yy
+Confusion 
+yy
+Seizures
+yy
+Unconsciousness  
+Signs
+yy
+Severely elevated blood pressure (for age)
+yy
+Unconsciousness  
+yy
+Seizures
+yy
+Neck rigidity 
+yy
+Lung crepitations
+Investigations
+yy
+Chest X-ray
+yy
+12-lead ECG
+yy
+FBC
+yy
+Urinalysis 
+yy
+Blood urea, electrolytes and creatinine 
+yy
+Brain CT scan (for stroke)
+yy
+Chest CT scan with angiography (for suspected aortic dissection)
+yy
+Cardiac enzymes: creatinine kinase-MB (CK-MB), serum aspartate 
+transaminase (AST), serum lactic dehydrogenase (LDH) and troponins 
+(for acute coronary syndrome)
+yy
+Echocardiography
+Treatment 
+Treatment objectives
+yy
+To limit further organ-related complications by controlled reduction 
+of BP
+yy
+To control and subsequently prevent seizures if present
+yy
+To manage identified target organ damage 
+Non-pharmacological treatment
+yy
+Strict bed rest
+Pharmacological treatment 
+Evidence Rating: [A]
+yy
+Labetalol, IV, 
+Adults
+20-50 mg stat. (over a 2 minute period) 
+
+--- Page 176 ---
+— Arrhythmias —
+Standard Treatment Guidelines, 7th Edition, 2017
+158
+Investigations
+yy
+12-lead ECG 
+yy
+Serum electrolytes (including magnesium, calcium)
+yy
+Thyroid function tests
+yy
+Chest X-ray
+yy
+Ambulatory ECG (Holter) 
+yy
+Echocardiography
+Treatment 
+Treatment objectives
+yy
+To control ventricular rate
+yy
+To restore sinus rhythm
+yy
+To relieve symptoms
+yy
+To improve functional capacity and quality of life
+yy
+To prevent or treat associated complications
+yy
+To treat the underlying condition e.g. thyrotoxicosis 
+yy
+To prevent stroke or systemic thromboembolism
+yy
+To reduce morbidity and mortality
+Non-pharmacological treatment
+yy
+Reassure the patient
+yy
+Avoid excessive intake of alcohol, coffee or tea and stop smoking (if 
+these are possible precipitating factors)
+yy
+Massage of the carotid sinus on one side for a few seconds. This may 
+terminate an attack of paroxysmal supraventricular tachycardia
+yy
+Electrical cardioversion 
+Pharmacological treatment 
+A.     Fast atrial fibrillation or atrial flutter-for rate control
+1st Line Treatment
+Evidence Rating: [A]
+yy
+Atenolol, oral, 
+Adults
+50-100 mg daily
+Children 
+12-18 years; 	 	
+25-50 mg daily 
+1 month-12 years; 	
+12.5-50 mg daily 
+Neonates
+Refer to a paediatrician
+Or
+yy
+Bisoprolol, oral, 
+Adults
+2.5-10 mg daily
+Children 
+Safety not establised in children 
+Or 
+yy
+Metoprolol tartrate, oral, 
+
+--- Page 178 ---
+— Arrhythmias —
+Standard Treatment Guidelines, 7th Edition, 2017
+160
+Or 
+yy
+Metoprolol tartrate, oral, 
+Adults
+50-100 mg 8 or 12 hourly daily (max. 300 mg daily)
+Children 
+12-18 years; 	 	
+50 mg 8 or 12 hourly daily (max. 300 mg dai­
+ly)
+<12 years; 	
+	
+refer to a paediatrician
+Note 7-13
+Avoid if beta-blockers are contraindicated e.g. bronchial asthma, hypotension 
+Or
+yy
+Verapamil, oral, 
+Adults
+40-120 mg 6-8 hourly (max. 480 mg daily)
+Children 
+Refer to a paediatrician
+Note 7-14
+Avoid use in patients already on beta-blocker
+2nd Line Treatment
+Evidence Rating: [A]
+yy
+Digoxin, oral, 
+Adults
+125-250 micrograms daily 
+Children
+Refer to a paediatrician
+D.     Prevention of stroke or systemic thromboembolism in atrial 
+fibrillation or flutter  
+Patients should be given long-term anticoagulation.
+(See options for long-term anticoagulation in section on ‘DVT’ or 
+‘Pulmonary Embolism’).
+Referral Criteria 
+Refer all patients to a cardiologist, physician specialist or paediatrician 
+for further evaluation and management after the initial treatment.
+All symptomatic patients, as well as those who cannot have an ECG 
+done or interpreted, or who present with heart failure, should be referred 
+immediately.
+Flowchart 
+
+--- Page 183 ---
+— Dizziness and Blackouts —
+Chapter 7: Disorders of the Cardiovascular System
+165
+sensations difficult to describe. Dizziness is almost always associated 
+with other symptoms, therefore a careful history and focused physical 
+examination should be performed in all cases to identify the cause.
+Like dizziness, “blackouts” is a vague, descriptive term implying 
+either altered consciousness, visual disturbance or a sensation of falling. 
+A careful history, particularly from an eye-witness, is essential. 
+Episodes of transient disturbance of consciousness and falls are 
+common clinical problems. It is usually possible to distinguish between 
+a fit (a seizure), an episode of fainting and other types of attack from the 
+history given by the patient and the account of an eye witness.
+Causes 
+Cardiovascular
+yy
+Vasovagal - (fainting)
+yy
+Postural hypotension
+yy
+Acute haemorrhage
+yy
+Cardiac arrhythmias
+yy
+Severe aortic stenosis
+yy
+Complete heart block with Stokes-Adams attacks
+yy
+Vertebro-basilar insufficiency
+Cerebral 
+yy
+Transient Ischaemic Attacks (TIA)
+yy
+Stroke
+yy
+Epilepsy
+Others
+yy
+Drug-induced 
+yy
+Severe anaemia
+yy
+Hypoglycaemia 
+yy
+Middle ear disease
+yy
+Meniere’s disease
+yy
+Conversion disorder (Hysterical fainting/Hyperventilation)
+Symptoms
+yy
+Light-headedness
+yy
+Loss of consciousness 
+yy
+Sense of motion or spinning of body 
+yy
+Unsteadiness 
+yy
+Nausea
+yy
+Vomiting
+yy
+Tinnitus
+Signs
+yy
+Sweating (suggests vasovagal episode/hypoglycaemia)
+yy
+Tachycardia or bradycardia (suggest cardiac arrhythmia) 
+yy
+Hypotension 
+yy
+Postural hypotension 
+yy
+Pallor 
+
+--- Page 184 ---
+— Dizziness and Blackouts —
+Standard Treatment Guidelines, 7th Edition, 2017
+166
+yy
+Nystagmus, dysdiadochokinesis, ataxia, hypotonia, dysarthria 
+(suggests cerebellar cause)
+yy
+Focal neurological signs suggests stroke, TIA
+Investigations
+yy
+These vary depending on the cause
+yy
+FBC
+yy
+Random blood sugar
+yy
+X-ray of cervical spine 
+yy
+ECG
+Treatment 
+Treatment objectives
+yy
+To identify and appropriately manage the possible underlying 
+cause(s)
+Non-pharmacological treatment
+yy
+Postural hypotension - review medications
+yy
+Hyperventilation syndrome - breathing control exercise
+yy
+Counseling 
+yy
+Cervical collar 
+yy
+Moulded cervical pillows
+Pharmacological treatment 
+yy
+Treat the underlying cause. (See appropriate section) 
+Referral Criteria 
+Refer patients to a physician specialist for evaluation if the cause is 
+difficult to determine. If the cause is identified, refer to the appropriate 
+specialist for further evaluation and management. 
+
+--- Page 188 ---
+— Pneumonia —
+Standard Treatment Guidelines, 7th Edition, 2017
+170
+Box 8-1: Severity score for community acquired pneumonia (CURB-65)
+In the presence any of the following additional factors, all cases of pneumonia 
+would warrant hospitalisation.
+Additional factors
+yy
+Coexisting diseases such as chronic lung disease, heart failure or renal dis­
+ease
+yy
+Extensive disease, multiple lobes involved
+yy
+Low oxygen saturation SpO2, < 92% on room air
+yy
+Severe tachycardia
+Causes 
+Community acquired pneumonia
+yy
+Streptococcus pneumonia
+yy
+Streptococcus pyogenes
+yy
+Haemophilus influenza
+yy
+Klebsiella pneumoniae
+yy
+Mycoplasma pneumonia and Legionella pneumophila (tend to occur 
+in epidemics)
+yy
+Staphylococcus aureus (in children after viral illness like measles, in 
+diabetics or in the elderly during ‘flu’ epidemics)
+Aspiration pneumonia
+yy
+Anaerobic and/or gram negative organisms (associated with 
+aspiration e.g. stroke, seizures, unconsciousness)
+Hospital acquired pneumonia
+yy
+Gram-negative bacteria e.g. Pseudomonas aeruginosa 
+yy
+MRSA (Methicillin resistant) 
+yy
+VRSA (Vancomycin resistant) 
+yy
+Staphylococcus aureus 
+Others
+yy
+Pneumocystis 
+jiroveci 
+pneumonia 
+and 
+other 
+fungi 
+(in 
+immunocompromised states e.g. haematological malignancies, HIV/
+AIDS)
+yy
+Viruses
+Symptoms 
+yy
+Fever - short history 
+yy
+Productive cough 
+yy
+Sputum - rusty or blood stained, yellowish, greenish
+yy
+Pleuritic chest pain - worse on deep breathing or coughing
+yy
+Breathlessness
+yy
+Sweating
+yy
+Muscle aches
+yy
+Elderly and immunocompromised patients may have minimum or no 
+symptoms
+Signs
+yy
+Rapid breathing 
+
+--- Page 189 ---
+— Pneumonia —
+Chapter 8: Disorders of the Respiratory System
+171
+yy
+Grunting (in children)
+yy
+Use of accessory muscles of respiration and flaring of the nasal 
+margins
+yy
+Lower chest wall indrawing (in children)
+yy
+Restricted movement of the affected side of the chest (due to pain)
+yy
+Fever
+yy
+Rapid pulse rate
+yy
+Blood pressure may be normal or low
+yy
+Signs of consolidation or pleural effusion on chest examination
+yy
+Restlessness or confusion, drowsiness
+yy
+Low blood oxygen saturation by pulse oximetry < 92%
+Complications  
+yy
+Pleural effusion 
+yy
+Lung abscess
+yy
+Empyema
+yy
+Pericardial effusion/pericarditis
+yy
+Pneumothorax particularly Staph. aureus infection, Pneumocystis 
+jiroveci pneumonia
+yy
+Meningitis
+yy
+Septicaemia with multi organ failure
+yy
+Adult respiratory distress syndrome (ARDS)
+Investigations
+yy
+FBC
+yy
+C-reactive protein (CRP)
+yy
+Chest X-ray
+yy
+Sputum gram stain and culture and sensitivity
+yy
+Ziehl-Neelsen stain for acid-fast bacilli (to exclude TB)
+yy
+Blood culture and sensitivity
+yy
+Blood urea and electrolytes
+Treatment 
+Treatment objectives
+yy
+To identify patients at greater risk who require in-hospital 
+management 
+yy
+To alleviate symptoms
+yy
+To treat and eradicate the infection 
+yy
+To prevent and/or manage complications 
+Non-pharmacological treatment
+yy
+Nurse in comfortable position, usually with head raised
+yy
+Sponging to control fever, especially in children < 5 years (who are at 
+risk of febrile convulsions)
+yy
+Adequate oral hydration (if it can be tolerated)
+yy
+Chest physiotherapy
+
+--- Page 201 ---
+— Chronic Bronchitis  —
+Chapter 8: Disorders of the Respiratory System
+183
+3 months-1 year; 20 mg/kg (of amoxicillin) 12 hourly for 7 days 
+< 3 months; 	 15 mg/kg (of amoxicillin) 12 hourly for 7 days 
+For children double the dose of the above antibiotic in severe infec­
+tions (bronchopneumonia)
+Or
+yy
+Erythromycin, oral, (for individuals allergic to penicillin)
+Adults
+250-500 mg 6 hourly for 7 days
+Children
+8-18 years; 	
+	
+250-500 mg 6 hourly 7 days
+2-8 years; 	
+	
+250 mg 6 hourly 7 days
+6 months-2 years; 	
+125 mg 6 hourly 7 days
+Or
+yy
+Azithromycin, oral,
+Adults
+500 mg once daily for 3 days
+Children
+10 mg/kg once daily for 3 days
+And 
+yy
+Oxygen 
+By nasal prongs, 2-6 L/min
+Or 
+Face mask, 4-8 L/min
+Or 
+Non-rebreather mask, 10-15 L/min
+Referral Criteria 
+Refer all complicated cases of acute bronchitis to a specialist.
+62.	 Chronic Bronchitis 
+This is chronic inflammation of the bronchial mucosa due to irritants 
+such as tobacco smoke. It occurs after the age of 40 years and is part of 
+the syndrome of chronic obstructive pulmonary disease (COPD). There is 
+progressive worsening with age, eventually resulting in chronic respiratory 
+failure. It is aggravated by recurrent viral and bacterial infections.
+Oxygen therapy in these patients must be given with caution to 
+prevent carbon dioxide retention due to depression of respiration.  High 
+flow rates remove the central hypoxic drive that maintains respiratory 
+effort and can be harmful.
+Causes 
+yy
+Cigarette smoking
+yy
+Industrial dust
+yy
+Chemical irritants
+yy
+Inhaled smoke from use of biomass fuels (eg. charcoal, wood)
+
+--- Page 211 ---
+9
+Chapter
+193
+Disorders of the Central 
+Nervous System
+65.	 Headache
+Headache is caused by traction, displacement, inflammation, vascular 
+spasm or distension of the pain sensitive structures in the head or neck. 
+Headaches that are new in onset and clearly different from any the patient 
+has experienced previously are commonly a symptom of serious illness 
+and therefore demand prompt evaluation. The precipitating factors, 
+associated symptoms and clinical findings on examination, together with 
+the results of appropriate investigations, can provide a guide to the cause 
+of the headache. 
+Causes 
+Acute
+yy
+Subarachnoid haemorrhage and other cerebrovascular diseases
+yy
+Infections e.g. malaria, typhoid fever, viral infections
+yy
+Meningitis or encephalitis
+yy
+Ocular disorders (glaucoma, acute iritis, refractive errors)
+yy
+Post-seizures
+yy
+Post-lumbar puncture
+yy
+Hypertensive encephalopathy
+Subacute
+yy
+Lesions of the middle ear (otitis media, mastoiditis)
+yy
+Intracranial mass (tumour, subdural haematoma, abscess)
+yy
+Idiopathic intracranial hypertension
+yy
+Trigeminal neuralgia
+yy
+Post-herpetic neuralgia
+yy
+Severe hypertension
+yy
+Atypical facial pain
+yy
+Medication
+yy
+Post trauma 
+yy
+Giant cell temporal arteritis 
+Chronic
+yy
+Migraine
+yy
+Cluster headache
+yy
+Tension headache
+
+--- Page 212 ---
+— Headache —
+Standard Treatment Guidelines, 7th Edition, 2017
+194
+yy
+Cervical spine disease
+yy
+Sinusitis
+yy
+Dental disease
+yy
+Psychogenic causes
+Symptoms
+yy
+Visual e.g. photophobia, flashes of light, floaters
+yy
+Aura e.g. visual, auditory, gustatory, tactile
+yy
+Accompanying features e.g. nausea, vomiting, fever, collapse
+yy
+Site of pain e.g. occipital, ocular, unilateral, bilateral
+yy
+Characteristics e.g. pulsating, throbbing, sharp, dull
+yy
+Relieving or exacerbating factors e.g. cough, coitus, lying flat
+Signs
+yy
+Usually none
+yy
+Local tenderness
+yy
+Fever
+yy
+Neck stiffness
+yy
+Positive Kernigs
+yy
+Markedly elevated blood pressure 
+yy
+Drowsiness 
+yy
+Excessive lacrimation 
+yy
+Conjunctival redness
+yy
+Papilloedema 
+yy
+Focal neurologic deficit e.g. cranial nerve deficit, hemiparesis
+Investigations
+yy
+FBC
+yy
+ESR
+yy
+Skull X-ray
+yy
+Cervical X-ray
+yy
+X-ray of the paranasal sinuses
+yy
+Lumbar puncture (meningitis, subarachnoid bleed)
+yy
+Eye tests (tonometry, refraction, fundoscopy)  
+yy
+Cranial CT scan or MRI if warranted
+Treatment 
+Treatment objectives
+yy
+To relieve pain
+yy
+To identify and treat underlying cause
+yy
+To prevent complications relating to the underlying cause
+yy
+To improve quality of life
+Non-pharmacological treatment
+yy
+Relaxation techniques
+yy
+Avoidance of stress
+yy
+Psychotherapy
+yy
+Identification and elimination of trigger factors
+
+--- Page 213 ---
+— Headache —
+Chapter 9: Disorders of the Central Nervous System
+195
+Pharmacological treatment 
+A.     Acute symptomatic treatment of headaches
+1st Line Treatment
+Evidence Rating: [B]
+yy
+Paracetamol, oral,
+Adults
+500 mg-1 g 6 - 8 hourly  
+Children
+6-12 years; 	
+	
+250-500 mg 6-8 hourly
+1-5 years; 	
+	
+120-250 mg 6-8 hourly
+3 months-1 year; 	
+60-120 mg 6-8 hourly
+Or 
+yy
+Diclofenac, oral,
+Adults
+50 mg 8 hourly or 100 mg 12 hourly 
+Children
+>12 years;	
+ 	
+50 mg 12 hourly
+<12 years; 	
+	
+not recommended
+Or
+yy
+Ibuprofen, oral,
+Adults
+400 mg 6-8 hourly
+Children
+6-12 years; 	
+	
+200-400 mg 6-8 hourly
+1-5 years; 	
+	
+100-200 mg 6-8 hourly
+3 months-1 year; 	
+not recommended
+Or
+yy
+Tramadol, oral,
+Adults
+50-100 mg 4-6 hourly (max. 400 mg daily)
+Children
+> 12 years;	
+	
+50-100 mg 4-6 hourly 
+< 12 years;	
+	
+not recommended
+B.     Prophylaxis for Migraine headaches
+1st Line Treatment 
+Evidence Rating: [B]
+yy
+Propranolol, oral,
+Adults
+Initial; 40 mg 12 hourly, maintenance; 80-120 mg 12 hourly 
+Children
+Initial; 20-40 mg 12 hourly, maintenance; 40-80 mg 12 hourly 
+Referral Criteria 
+Refer recurrent, unresolving or unexplained headaches to a specialist 
+for evaluation and appropriate management.
+
+--- Page 214 ---
+— Seizures —
+Standard Treatment Guidelines, 7th Edition, 2017
+196
+66.	 Seizures
+A seizure is a clinical event caused by a transient disturbance of 
+brain function due to an abnormal paroxysmal neuronal discharge in 
+the brain. If these episodes are recurrent without an identifiable cause, 
+they are commonly described as epilepsy.  The term status epilepticus 
+is used for repeated seizures, which occur without the patient regaining 
+consciousness between attacks. (See section on ‘Epilepsy and Status 
+epilepticus’).
+The clinical presentation depends on the part of the brain affected. 
+Patients may sometimes describe the warning signals (termed a prodrome 
+or aura), which they experienced before the event.  A detailed description 
+by a witness is key. 
+General anaesthesia and ventilation may be required in severe cases 
+and where high doses of anticonvulsants are required.
+Causes 
+yy
+Congenital, prenatal or perinatal injury
+yy
+Fevers, especially in children aged 6 months to 6 years (febrile 
+convulsion)
+yy
+Cerebral malaria
+yy
+Infections e.g. meningitis, TB, HIV, abscesses in the brain
+yy
+Metabolic causes: hypoglycaemia, hypocalcaemia, hyponatraemia, 
+hyperosmolar diabetic state, uraemia, hepatic failure
+yy
+Idiopathic epilepsy  (See section on ‘Epilepsy’)
+yy
+Eclampsia
+yy
+Vascular diseases: hypertensive encephalopathy, stroke, myocardial 
+infarction
+yy
+Space occupying lesions: tumour or malformations of the brain
+yy
+Head trauma
+yy
+Drugs and toxins: alcohol, antidepressants, metronidazole, drug and 
+alcohol withdrawal
+yy
+Degenerative diseases e.g. dementia 
+yy
+Psychogenic:  (See section on ‘Psychogenic Seizures’)
+Symptoms
+yy
+Loss of consciousness 
+yy
+Tongue biting 
+yy
+Foaming at the mouth
+yy
+Incontinence of stool and/or urine
+yy
+Aura (may include a strange gut feeling, somatosensory 
+manifestations - visual, olfactory, gustatory or auditory e.g. strange 
+smells/flashing lights)
+yy
+Muscle twitching and movements which may be focal or generalized
+yy
+After a seizure, the patient may be confused (post-ictal confusion) or 
+may sleep for some time (post-ictal sleep)
+
+--- Page 215 ---
+— Seizures —
+Chapter 9: Disorders of the Central Nervous System
+197
+Signs
+yy
+A prodrome or aura with automatism (lip smacking, picking at items)
+yy
+Muscle twitching and movements which may be focal or generalized
+yy
+Post-ictal sleep 
+yy
+Post-ictal confusion
+yy
+Todd’s paralysis (stroke-like weakness) may rarely occur
+yy
+Examine carefully for evidence of neurological localizing signs, 
+tongue laceration and evidence of trauma to the face or other parts 
+of the body
+Investigations
+yy
+FBC, ESR 
+yy
+Blood glucose
+yy
+BUE
+yy
+Calcium
+yy
+LFTs
+yy
+Chest X-ray
+yy
+Electroencephalogram (EEG)
+yy
+CT scan (head) 
+Treatment 
+Treatment objectives
+yy
+To stop the seizure
+yy
+To treat underlying cause
+yy
+To prevent injury
+Non-pharmacological treatment
+yy
+Move sharp objects, fire etc. away from patient during seizures
+yy
+Ensure clothing around the neck is loose
+yy
+Ensure the airway is clear, wipe or suction any secretions or vomitus 
+from the mouth or nose. 
+yy
+Do not force a spoon or tongue depressor into mouth!
+yy
+Remove false teeth if present
+yy
+After convulsions cease, turn the patient into semi-prone position 
+by turning the patient on the side, with one leg bent and the other 
+leg straight
+yy
+Monitor fits (fits chart)
+Pharmacological treatment 
+A.     Acute Seizures (immediate emergency measures)
+1st Line Treatment
+Evidence Rating: [A]
+yy
+Oxygen 
+By nasal prongs, 2-6 L/min
+Or 
+Face mask, 4-8 L/min
+Or 
+Non-rebreather mask, 10-15 L/min
+
+--- Page 216 ---
+— Seizures —
+Standard Treatment Guidelines, 7th Edition, 2017
+198
+And
+yy
+Lorazepam, slow IV,
+Adults
+4 mg as a single dose, repeated once after 10 minutes if necessary. 
+Given into a large vein slowly over 3-5 minutes.
+Children 
+12-18 years; 	 	
+4 mg as a single dose, repeated once after 
+10 minutes if necessary. Given into a large vein slowly over 3-5 min­
+utes.
+1 month-12 years; 	
+100 microgram/kg (max. 4 mg) as a single 
+dose, repeated once after 10 minutes if necessary.
+Neonates; 	
+	
+100 microgram/kg (max. 4 mg) as a single 
+dose, repeated once after 10 minutes if necessary.
+Or
+yy
+Midazolam, IV,
+Adults
+150-300 microgram/kg, may repeat every 10-15 minutes as required 
+Children
+1 month-18 years; 	
+initially 150-200 microgram, followed by 
+followed by continuous infusion of 60 microgram/kg per hour. May 
+increase by 60 microgram /kg per hour every 15 minutes until sei­
+zures are controlled. (max. 300 microgram/kg per hour)
+Neonates; 	
+	
+150-200 microgram/kg followed by contin­
+uous infusion of 60 microgram/kg per hour. May increase by 60 mi­
+crogram /kg per hour every 15 minutes until seizures are controlled. 
+(max. 300 microgram/kg per hour)
+Or
+yy
+Midazolam, buccal,
+Adults
+10 mg
+Repeat after 10 minutes if necessary.
+A third dose must not be given sooner than 12 hours after the sec­
+ond dose.
+Children
+6 months-18 years;	
+200-500 microgram/kg (max. single dose 10 
+mg)	
+Repeat after 10 minutes if necessary.
+A third dose must not be given sooner than 6 hours after the second 
+dose in children < 40 kg.
+2nd Line Treatment 
+yy
+Diazepam, IV,
+Adults
+10 mg slowly over 2-3 minutes (approximately 2.5 mg every 30 sec­
+onds) 
+Children
+200-300 microgram/kg slowly over 2-3 minutes.
+This may be repeated 10 minutes later if the fit continues. 
+Or
+
+--- Page 217 ---
+— Seizures —
+Chapter 9: Disorders of the Central Nervous System
+199
+yy
+Diazepam, rectal,
+Children
+>12 years;	
+	
+0.2 mg/kg 
+6-12 years;	
+	
+0.3 mg/kg 
+2-6 years;	
+	
+0.5 mg/kg 
+1 month-2 years; 	
+2.5 mg 
+Neonates; 	
+	
+1.25-2.5 mg
+This may be repeated 10 minutes later if the fit continues. (max. 10 
+mg)
+Note 9-1
+If a rectal formulation is not immediately available, draw up the injectable form 
+directly into a syringe and administer it into the rectum (after removing the 
+needle). 
+B.     If seizures continue (Status Epilepticus)
+yy
+Phenytoin, IV, (with ECG monitoring)
+Adults
+15 mg/kg slowly at rate no greater than 50 mg/minute. (max. 2 g 
+loading dose),
+Then
+Maintenance, 100 mg 6-8 hourly
+Children 
+1-12 years; initially, 18 mg/kg slowly at a rate no greater than 50 mg/
+minute. 
+Then
+Maintenance, 5-10 mg/kg daily (max. 300 mg daily)
+1-6 months; initially, 18 mg/kg slowly at a rate no greater than 1 mg/
+kg/minute.
+Then
+Maintenance, 2.5-5 mg/kg 12 hourly
+Neonates; initially, 18 mg/kg slowly at a rate no greater than 1 mg/
+kg/minute. 
+Then
+Maintenance, 2.5-5 mg/kg 12 hourly
+Note 9-2
+May cause cardiac arrhythmias if given faster than 25 mg/minute.
+Caution 9-1.
+Never mix phenytoin with 5% Dextrose, to minimise the risk of crystallisation. 
+Instead, phenytoin must be put in Normal Saline.
+Or
+yy
+Phenobarbitone, IV,
+Adults
+10-20 mg/kg, repeat dose at 20 minute intervals if necessary (max. 
+total dose 30 mg/kg)
+Then (starting 12 hours after initial dose) 
+
+--- Page 218 ---
+— Epilepsy  —
+Standard Treatment Guidelines, 7th Edition, 2017
+200
+0.5-1.5 mg/kg 12-24 hourly
+Children 
+1 month-12 years; 	
+10 mg/kg at a rate not more than 1 mg/kg/
+minute. Repeat after 15 minutes if necessary. 
+Neonates 
+Initially, 15-20 mg/kg stat. 
+May repeat dose of 5-10 mg /kg at 20 minute intervals (max. total 
+dose 40 mg/kg) 
+Then (starting 12 hours after initial dose) 
+3-4 mg/kg 24 hourly
+Referral Criteria 
+If seizures remain uncontrolled within 30 minutes after they began, 
+refer immediately for specialist attention. Note that oxygenation should 
+be continued during transfer. 
+67.	 Epilepsy 
+Epilepsy is a disorder of the central nervous system (CNS), which is 
+characterized by spontaneous recurrent seizures or the tendency to have 
+seizures. Epilepsy is now classified as Generalized (tonic, clonic, absence, 
+atonic or myoclonic) with aura and loss of consciousness or Focal.
+Traditionally, a single seizure has been regarded as an indication 
+for investigation and assessment, but not for drug treatment unless the 
+circumstances of the seizure necessitate it.
+Drug treatment should certainly be considered after two seizures, or 
+if the second seizure follows closely from the first. The type of drug used 
+depends on the type of seizure. 
+Drug treatment of epilepsy should be guided by the following 
+general principles. Begin with a single drug at the lowest dosage range 
+and increase dose gradually to the upper limit of dosage range or until 
+side-effects appear, if seizures are not controlled.
+Subsequently, if seizures still remain uncontrolled, change to a 
+different drug by gradually reducing the dose of the initial agent while 
+simultaneously introducing the new one. This usually takes 3-4 weeks.
+Try three separate drugs in this fashion if no clinical response is 
+observed, before resorting to drug combinations.
+Anticonvulsant drug treatment can be totally withdrawn (gradually) 
+in a patient with epilepsy only after a 2-year seizure-free period and after 
+a full evaluation and discussion with the patient.
+Patients with epilepsy should be advised not to drive a vehicle if 
+not certified to be seizure-free, swim alone, work at heights, operate 
+machines, cook by open fire alone, nor ingest alcohol excessively.
+Causes 
+yy
+Idiopathic
+
+--- Page 219 ---
+— Epilepsy  —
+Chapter 9: Disorders of the Central Nervous System
+201
+Symptoms
+(See section on ‘Seizures’)
+Signs
+(See section on ‘Seizures’)
+Investigations
+(See section on ‘Seizures’)
+Treatment 
+Treatment objectives
+(See section on ‘Seizures’)
+Non-pharmacological treatment
+(See section on ‘Seizures’)
+Pharmacological treatment 
+A.     Management of Epilepsy - Acute Generalized seizures
+yy
+Phenytoin, IV,
+Adult
+10-15 mg/kg stat. over 20-30 minutes 
+Then 
+100 mg 6-8 hourly PRN
+Children
+3-5 mg/kg
+Or
+yy
+Phenobarbital (daily), IM,
+Adult
+60-180 mg at night 
+Children
+2.5-5 mg/kg daily by slow IV or oral
+Or
+yy
+Carbamazepine
+Adult
+100-200 mg once or 12 hourly
+Then 
+Increase gradually to 0.8-1.2 g 8-12 hourly 
+Children
+1 month-12 years; 	
+2.5-5 mg/kg at night or 12 hourly
+Increase when necessary
+Then (maintenance)
+5 mg/kg 8-12 hourly
+Or
+yy
+Sodium valproate (12 hourly)
+Adult
+600 mg (max. 2 g)
+Children
+> 12 years; 	
+	
+600 mg (max. 2g)
+1 month-12 years; 	
+10-15 mg/kg, daily or two divided doses 
+Then (maintenance)
+
+--- Page 220 ---
+— Epilepsy  —
+Standard Treatment Guidelines, 7th Edition, 2017
+202
+25-30 mg/kg daily in two divided doses
+Or 
+yy
+Lamotrigine
+Adult
+25-50 mg 12 hourly 
+Children 
+25-50 mg daily 
+Or 
+yy
+Levetiracetam
+Adult
+25-50 mg 12 hourly 
+Children 
+25-50 mg daily 
+B.     Management of Epilepsy - Generalized absence seizure
+yy
+Sodium valproate (8-12 hourly)
+Adult
+600 mg (max. 2 g)
+Children
+> 12 years; 	
+	
+600 mg (max. 2 g)
+1 month-12 years;   	
+10-15 mg/kg, daily or two divided doses 
+Then (maintenance)
+25-30 mg/kg daily in two divided doses
+Or
+yy
+Ethosuximide (daily)
+Adult
+250 mg 12 hourly, incease by 250 mg every 5-7 days to 1-1.5 g daily 
+in two divided doses
+Children
+> 6 years; 	
+	
+250 mg 12 hourly, incease by 250 mg every 
+5-7 days to 1-1.5 g daily in two divided doses
+1 month-6 years;   	
+5 mg/kg (max. 125 mg 12 hourly)
+C.     Management of Epilepsy - Focal seizure
+yy
+Carbamazepine, oral, 
+Adult
+100-200 mg once or 12 hourly, 
+Then 
+Increase gradually to 0.8-1.2 g 8-12 hourly
+Children
+1 month-12 years;	
+2.5-5 mg/kg at night or 12 hourly.
+Increase when necessary
+Then (maintenance) 
+5 mg/kg 8-12 hourly
+Or
+yy
+Sodium valproate (8-12 hourly)
+Adult
+600 mg (max. 2 g)
+Children
+
+--- Page 221 ---
+— The Unconscious Patient —
+Chapter 9: Disorders of the Central Nervous System
+203
+> 12 years; 	
+	
+600 mg (max. 2 g)
+1 month-12 years;   	
+10-15 mg/kg, daily or two divided doses 
+Then (maintenance)
+12.5-15 mg/kg 12 hourly
+Note 9-3
+Where available slow release preparations are preferred
+All patients with epilepsy should receive continous education and counselling 
+by the Pharmacist.
+Referral Criteria 
+Refer all patients with intractable seizures to the specialist
+68.	 The Unconscious Patient
+Unconsciousness is a common clinical problem and may be associated 
+with diseases of several organs in the body. The cause of unconsciousness 
+is often not immediately evident, and a systematic approach to its 
+diagnosis and management is therefore important. Obtaining a thorough 
+history from accompanying relatives, friends and the police is essential.
+Causes 
+yy
+Infections e.g. meningitis, cerebral malaria
+yy
+Hypoglycaemia (diabetes-related or alcohol induced)
+yy
+Diabetic ketoacidosis
+yy
+Severe hypertension with encephalopathy
+yy
+Cerebrovascular Accident (CVA) or stroke
+yy
+Drug ingestion or overdose e.g. alcohol, salicylates, barbiturates, 
+cocaine
+yy
+Electrolyte imbalance
+yy
+Epilepsy - status epilepticus
+yy
+Head injury
+yy
+Major organ failure e.g. hepatic failure, renal failure and myocardial 
+infarction
+yy
+Hypoxia from severe anaemia
+yy
+Poisoning e.g. kerosene, pesticides, herbicides
+Symptoms
+yy
+Depends on the underlying cause (See appropriate sections)
+Signs
+yy
+Depends on the underlying cause (See appropriate sections)
+Investigations
+Tests depend on suspected cause 
+yy
+FBC 
+yy
+BF for MPs
+yy
+Blood glucose
+yy
+Urea and electrolytes
+
+--- Page 223 ---
+— The Unconscious Patient —
+Chapter 9: Disorders of the Central Nervous System
+205
+Complaints
+Diagnosis
+Action
+50 mg/kg in 250 ml of Dextrose 
+5% over 4 hours. 
+Then 
+100 mg/kg in 500 ml of Dextrose 
+5% over 16 hours.
+Children < 20 kg:
+150 mg/kg in 3 ml/kg of Dextrose 
+5% given over 15 min. 
+Followed by 50 mg/kg in 7 ml/
+kg of Dextrose 5% given over 4 
+hours. 
+Then 100 mg/kg in 14 ml of 
+Dextrose 5% over 16 hours.
+Presence or absence 
+of history of diabetes; 
+polyuria, polydipsia.
+Hyperventilation, 
+gradual onset of illness, 
+evidence of infection
+Urine sugar and ketone 
+positive 
+Blood glucose > 18 
+mmol/L
+Diabetic ketoacidosis * 
+(See section on DKA)
+High-grade fever, 
+seizures, headache, 
+neck stiffness, altered 
+consciousness etc.
+Meningitis *
+Treat with appropriate antibiotics 
+and anti-malarial until either 
+diagnosis confirmed. 
+(See appropriate section).
+Cerebral Malaria
+History of previous 
+seizures, sudden onset 
+of convulsions; with or 
+without incontinence.
+Epilepsy * 
+Give Diazepam, IV (slowly over 
+2-3 minutes), to abort seizures 
+and continue or start with 
+anti-epileptic drug treatment. 
+(See appropriate section)
+Patient with sudden 
+onset of paralysis of one 
+side of body.
+Stroke *
+Check blood pressure and blood 
+glucose. (See appropriate section)
+Patient with 
+hypertension, 
+headaches, seizures
+Hypertensive    
+encephalopathy *
+Check blood pressure 
+If > 180/110 mmHg, give oral or 
+parenteral anti-hypertensive to 
+reduce BP gradually
+Sudden onset associated 
+with cardiac arrhythmia 
+or emotional crisis.
+Syncope
+Unconsciousness is usually brief. 
+Prompt awakening occurs.
+Monitor vital signs, ECG
+Reassure
+
+--- Page 225 ---
+10
+Chapter
+207
+Psychiatric Disorders
+69.	 Attention Deficit Hyperactivity Disorder (ADHD)
+Attention Deficit Hyperactivity Disorder is the most common 
+neurobehavioural disorder affecting children. It may present in infancy 
+and can continue into adulthood. It affects 5-8% of children and nearly 
+three times as many boys as girls. Nearly half the children presenting with 
+ADHD may also have an associated learning problem. 
+The term is commonly applied wrongly to the normal child who is 
+always on the go and never sits still. Recognized causes of hyperactivity 
+in children include normal variation, boredom or understimulation or 
+excessive restraint, learning difficulties, autism, partial seizures and drugs 
+like clonazepam, phenobarbitone and phenytoin.
+ADHD is also wrongly attributed to poor parenting, too much TV, 
+poor schools, poor home environment, excess sugar or food allergies.
+No specific tests confirm a diagnosis of ADHD. A full physical and 
+neurological examination must be done in all cases. The behavioural 
+deficits and excesses that constitute a diagnosis of ADHD must be present 
+in multiple settings such as home and school.
+Causes 
+yy
+Unknown 
+yy
+Related factors: 
+yy
+Hereditary
+yy
+Imbalance of neurotransmitters
+Symptoms
+yy
+Inattention 
+yy
+child often fails to finish things he or she starts
+yy
+often does not seem to listen
+yy
+has difficulty concentrating on school work
+yy
+Impulsivity 
+yy
+child often acts before thinking 
+yy
+hits others when upset 
+yy
+inability to wait for his or her turn in a game
+yy
+engages in dangerous activities without consideration of the 
+consequences
+
+--- Page 227 ---
+— The Acutely Disturbed Patient —
+Chapter 10: Psychiatric Disorders
+209
+40 mg once daily for 7 days
+Then 
+Increase according to response to a max. of 100 mg 
+Children 
+> 6 years (weight > 70 kg);   40 mg once daily for 7days
+Then
+Increase according to response to a max. of 80 mg
+> 6 years (weight < 70 kg); 500 micrograms/kg daily for 7 days
+Then
+Increase according to response to a max. of 1.2 mg/kg daily
+< 6 years;  	
+	
+not recommended
+2nd Line Treatment
+Evidence Rating: [B]
+yy
+Imipramine, oral,
+Adults
+75 mg daily
+Then
+Increase to 150 mg daily if necessary (max. 200 mg per day)
+Children 
+6-18 years; 	
+	
+10-30 mg 12 hourly 
+Referral Criteria 
+Refer to a clinical psychologist for behaviour management. An 
+occupational therapist, remedial teacher, speech therapist following a 
+needs assessment.
+Refer to a specialist if there is no clinical improvement after a month 
+of the above recommended therapy. 
+70.	 The Acutely Disturbed Patient
+The acutely disturbed patient presents in an excited, agitated or 
+aggressive state. There may be delusions and perceptual changes like 
+hallucinations that overwhelm the patient. Disorientation and alteration 
+in consciousness are often prominent when the cause is organic.  The 
+patients are usually brought in restrained by more than one person or by 
+the police. The condition must be regarded as an emergency since a few 
+cases are potentially fatal.
+Causes 
+Acute (Functional) Psychiatric Disorders
+yy
+Mania or hypomania
+yy
+Schizophrenia and like states
+yy
+Other psychotic disorders
+yy
+Agitated depression
+yy
+Acute psychosis
+Acute (Organic) Psychiatric Disorders
+
+--- Page 228 ---
+— The Acutely Disturbed Patient —
+Standard Treatment Guidelines, 7th Edition, 2017
+210
+yy
+Toxic psychosis secondary to drug intoxication (amphetamines, 
+cocaine, marijuana, heroin etc.)
+yy
+Abnormal reaction to alcoholic Intoxication
+yy
+Acute Alcoholic Withdrawal Syndrome  (delirium tremens)
+yy
+Infective causes e.g. typhoid, malaria, meningitis, HIV, encephalitis, 
+hepatitis
+Acute Metabolic Disorders
+yy
+Hypoglycaemia
+yy
+Thyroid disease
+yy
+Porphyria
+Others
+yy
+Head trauma 
+yy
+Subdural hematoma
+Symptoms
+(See relevant sections for symptoms of specific disorders)
+yy
+Sleeplessness
+yy
+Restlessness - agitated or even combative patient
+yy
+Talking excessively and loudly, or low toned, reduced speech, even 
+mute in some cases
+yy
+Disinhibited behaviour or speech
+yy
+Hearing or seeing “imaginary” people or objects. 
+yy
+Expression of fear, undue suspicion, inappropriate guilt or bizarre 
+beliefs
+yy
+Destructiveness
+Signs
+(See relevant sections for signs of specific disorders)
+yy
+Elated, irritable, angry or depressed mood
+yy
+Physical aggression, agitation or restlessness
+yy
+Lack of insight
+yy
+Pressured or retarded speech
+yy
+Hyperactivity or reduced motor activity  
+yy
+Disinhibition - social and sexual 
+yy
+Delusions of grandeur, guilt or paranoia
+yy
+Auditory hallucinations
+yy
+Visual hallucinations (especially in toxic, infectious and withdrawal 
+states)
+yy
+Fever (infective conditions)
+yy
+Drowsiness, altered consciousness (mainly in alcohol withdrawal)
+yy
+Disorientation and confusion (mainly in alcohol withdrawal)
+yy
+Sweating
+yy
+Tremors (mainly in alcohol withdrawal)
+Investigations
+yy
+Usually none
+yy
+Urine screen (for substances like amphetamines, cocaine, heroin, 
+cannabis)
+
+--- Page 231 ---
+— Psychogenic Seizures —
+Chapter 10: Psychiatric Disorders
+213
+If a rectal formulation is not immediately available, draw up the injectable form 
+directly into a syringe and administer it into the rectum (after removing the 
+needle). 
+Diazepam IV must be administered with care if the cause of the acute distur­
+bance is thought to be organic.
+ 
+Referral Criteria 
+Refer all acutely disturbed patients to a specialist.
+71.	 Psychogenic Seizures
+Psychogenic seizures or pseudo seizures are non-epileptic seizures, 
+which mimic epilepsy but actually have an underlying psychological cause. 
+In patients with this form of disorder, there may be a history of physical, 
+sexual or psychological abuse.  The symptoms may be precipitated by 
+stress and the signs are often variable and may include resistance to 
+eye opening upon examination. The diagnosis requires a high level of 
+suspicion since it is often difficult to separate from epileptic seizures and 
+may, in fact co-exist with epilepsy.
+Symptoms
+yy
+Recurrent tonic clonic-like seizures
+yy
+Attacks usually occur only when attention of other people can be 
+attracted
+yy
+Patients hardly ever get injured, even when they fall (unlike in true 
+seizures)
+yy
+Thrusting pelvic movements are common during “seizure” attacks
+yy
+Tongue biting, if it occurs is usually at the tip of the tongue instead of 
+the sides as in true seizures
+yy
+May have urinary incontinence as in normal seizures
+Investigations
+yy
+Serum prolactin
+yy
+EEG
+Treatment
+Treatment objectives
+yy
+To stop seizures 
+yy
+To restore normalcy  
+Non-pharmacological treatment
+yy
+Reassure parents, guardians etc. 
+yy
+Counselling 
+yy
+Psychotherapy
+Pharmacological treatment
+yy
+Anti-epileptic medicines do not appear to have any beneficial effect 
+on frequency of attacks
+
+--- Page 232 ---
+— Insomnia —
+Standard Treatment Guidelines, 7th Edition, 2017
+214
+Referral Criteria 
+Refer all cases for evaluation by psychologist or psychiatrist.
+72.	 Insomnia
+Insomnia is defined as a subjective report of difficulty with sleep 
+initiation, duration, consolidation, or quality that occurs despite 
+adequate opportunity for sleep, and that results in some form of daytime 
+impairment. Insomnia symptoms occur quite commonly in the general 
+population. Risk factors for insomnia include increasing age, female sex, 
+co-morbid disorders such as medical, psychiatric, substance use, and shift 
+work. Patients with psychiatric and chronic pain disorders have relatively 
+high rates of insomnia. 
+Causes 
+yy
+Behavioural - spending more time in bed in an effort to “catch up” 
+on sleep
+yy
+Stress 
+yy
+Learned habits which do not enhance sleep
+yy
+Cognitive distortions (e.g. if one does not sleep throughout the night, 
+one has not slept at all)
+yy
+Medicines (e.g.for treatment of common cold, hypertension, asthma)
+yy
+Caffeine-containing beverages (e.g. coffee, tea) 
+yy
+Withdrawal from alcohol and other drugs of abuse (e.g. cocaine, 
+marijuana, amphetamines)
+yy
+Medical condition (e.g. sleep apnea, airway obstruction, liver 
+disease, renal disease, thyroid disorders)
+yy
+Psychological and environmental factors 
+yy
+Other psychiatric disorders such as anxiety and mood disorders
+yy
+Travel (especially across time zones leading to jet lag) 
+yy
+Shift work
+ 
+Symptoms
+yy
+Prolonged average time for falling asleep - longer than 30 minutes 
+yy
+Total sleep time less than 6.5 hours 
+yy
+Difficulty falling asleep
+yy
+Frequent awakenings
+yy
+Difficulty returning to sleep
+yy
+Awakening too early in the morning
+yy
+Sleep that does not feel restful, refreshing or restorative
+yy
+Anticipating poor sleep hours before bedtime, and becoming more 
+alert and anxious as bedtime approaches
+yy
+Daytime effects of poor sleep:
+yy
+Fatigue and sleepiness
+yy
+Mood disturbances and cognitive difficulties
+yy
+Poor quality of life (worsened by interpersonal difficulties, or 
+
+--- Page 233 ---
+— Insomnia —
+Chapter 10: Psychiatric Disorders
+215
+avoidance of day activities)
+yy
+Exacerbation of co-morbid conditions such as depression, high 
+blood pressure, etc.  
+yy
+Day-to-day variability
+Box 10-1: History taking and assessment of patients with Insomnia
+yy
+Characterization of the sleeping environment (couch/bed, light/dark, qui­
+et/noisy, room temperature, alone/bed partner, TV on/off), patient’s state 
+of mind (sleepy vs. wide awake, relaxed vs. anxious) 
+yy
+Identify perpetuating negative behaviours and cognitive processes 
+yy
+Assess Sleep-Wake Schedule with sleep dairy:  time to fall asleep (sleep la­
+tency), number of awakenings, Wake time After Sleep Onset (WASO), sleep 
+duration
+yy
+Assess  
+yy
+Breathing-related sleep disorders (snoring, gasping, coughing)
+yy
+Sleep related movement disorders (kicking, restlessness)
+yy
+Parasomnias (behaviors or vocalization)
+yy
+Co-morbid medical/neurological disorders (reflux, palpitations, seizures, 
+headaches)
+yy
+Other physical sensations and emotions associated with wakefulness (such 
+as pain, restlessness, anxiety, frustration, sadness) 
+Assess Daytime Activities and Daytime Function: 
+yy
+Napping (frequency/day, times, voluntary/involuntary)
+yy
+Work (work times, work type such as driving or with dangerous conse­
+quences, disabled, caretaker responsibilities)
+yy
+Lifestyle (sedentary/active, homebound, light exposure, exercise) 
+yy
+Travel (especially across time zones) 
+yy
+Quality of life and exacerbation of co-morbid disorders
+Investigations
+yy
+FBC
+yy
+BUE and creatinine
+yy
+LFTs
+yy
+Blood glucose
+yy
+Thyroid function tests
+Treatment 
+Treatment objectives  
+yy
+Reduction of waking symptoms
+yy
+Improvement of daytime function
+yy
+Reduction of distress
+yy
+Treatment of co-morbid conditions
+Non-pharmacological treatment
+yy
+Stimulus control therapy (avoid stimulating sleep environments such 
+as leaving lights, TV and radio on) 
+yy
+Relaxation training
+yy
+Cognitive Behavior Therapy 
+yy
+Avoidance of day-time sleep
+yy
+Avoidance of excessive stimulant consumption pre-bed time (e.g. 
+
+--- Page 234 ---
+— Depression —
+Standard Treatment Guidelines, 7th Edition, 2017
+216
+coffee, tea, alcohol etc.) 
+Pharmacological treatment
+1st Line Treatment 
+Evidence Rating: [C]
+yy
+Lorazepam, oral, 
+Adults
+1-4 mg at bedtime
+Children
+Not recommended
+Or
+yy
+Triazolam, oral, 
+Adults
+Elderly; 	
+	
+125-250 microgram at bedtime  
+< 60 years; 	
+	
+125-500 microgram at bedtime  
+Children
+Not recommended
+ 
+2nd Line Treatment 
+Evidence Rating: [B] 
+yy
+Melatonin, oral, (particularly for children)
+Adults
+3-5 mg daily, 1-2 hours before bedtime (max. 10 mg)
+Children
+1 month-18 years; 	
+2-3 mg at bedtime
+Increase if necessary after 1-2 weeks to 4-6 mg daily (max. 10 mg)
+Or
+Evidence Rating: [B]
+yy
+Amitriptyline, oral,
+Adult
+25-50 mg at night for two weeks 
+Children
+Not recommended
+Referral Criteria 
+Refer to clinical psychologist for those patients who do not respond 
+to the common non-pharmacological and pharmacological interventions 
+for cognitive behaviour therapy. Refer patients with underlying physical 
+causes to the appropriate specialists. 
+73.	 Depression
+Depression is a mood disorder, which may occur in all age groups, 
+although the symptoms may differ in children. It is a relatively common 
+condition and has a tendency to recur. Some affected persons may turn 
+out to have bipolar disorder, in which case, episodes of mania occur. 
+Clinically significant depression, also called major depression, is 
+
+--- Page 235 ---
+— Depression —
+Chapter 10: Psychiatric Disorders
+217
+twice as common in women as in men. Many affected individuals seek 
+help from spiritual and traditional healers. For a good proportion of those 
+who go to hospitals, their condition is not recognised.
+Depression is a significant cause of morbidity all over the world 
+and most people who attempt or successfully complete suicide have 
+depression. One should not dismiss or take for granted statements made 
+by patients such as “I want to die”, “life is not worth living”, or “I am 
+fed up with life”. All cases of attempted suicide should be referred to a 
+psychiatrist after initial management of the presenting complication e.g. 
+self-inflicted injuries or poisoning.
+Recurrent depression or unipolar depression is treated differently 
+(with antidepressants) from bipolar depression, which responds more to 
+mood stabilizers.
+The diagnostic criteria for major depression relies on the presence of 
+at least five (5) of the symptoms listed in the section on symptoms below, 
+experienced every day for at least two weeks.
+In the treatment of depression, maximum tolerable doses of 
+antidepressant medications must be given for at least 6 weeks before 
+deciding a particular medication is not effective. 
+After an episode of depression, treatment must be continued for at 
+least 6 months, as there is a high risk of relapse within this period.
+Antidepressants must be stopped immediately if a manic swing 
+occurs. Patients with suicidal tendencies must be admitted and kept 
+under close observation.
+Causes 
+yy
+Genetic
+yy
+Familial
+yy
+Environmental
+yy
+Psychosocial factors
+yy
+Endocrine disorders e.g. hypothyroidism, Cushing’s syndrome
+Symptoms
+yy
+Depressed mood, often reported as feeling ‘out of sorts’ 
+yy
+Loss of interest or lack of pleasure in things previously of interest
+yy
+Significant weight loss or weight gain
+yy
+Insomnia or sleeping too much
+yy
+Psychomotor agitation or retardation
+yy
+Fatigue or loss of energy
+yy
+Feelings of worthlessness or excessive guilt
+yy
+Impaired thinking
+yy
+Poor concentration; 
+yy
+indecisiveness; 
+yy
+worrying excessively 
+yy
+Multiple bodily complaints
+yy
+Suicidal ideas or thoughts of death
+
+--- Page 236 ---
+— Depression —
+Standard Treatment Guidelines, 7th Edition, 2017
+218
+yy
+Hallucinations or delusions of morbid themes in severe cases
+In children
+yy
+Truancy or refusal to go to school
+yy
+Poor school performance
+yy
+Bedwetting in a previously ‘dry’ child
+yy
+Odd behaviour, aggression or defiance
+yy
+Irritability
+yy
+Appetite changes
+yy
+Some of the ‘adult’ symptoms listed above 
+Signs
+yy
+Depressed mood
+yy
+Evidence of weight loss or weight gain
+yy
+Agitation or retardation
+yy
+Hallucinations 
+Investigations
+yy
+FBC
+yy
+BUE and Creatinine
+yy
+FBS
+yy
+Thyroid function and cortisol levels if indicated
+yy
+Administer a standardized scale of depression such as the PHQ 
+(patient health questionnaire 9 item scale)
+Treatment 
+Treatment objectives
+yy
+To reduce symptoms
+yy
+To prevent disruption to normal life at home, work or school
+yy
+To prevent suicide
+Non-pharmacological treatment
+yy
+Counselling
+yy
+Psychotherapy, specifically Cognitive Behaviour Therapy
+yy
+Electroconvulsive therapy
+Pharmacological treatment 
+1st Line Treatment
+Evidence Rating: [A]
+yy
+Fluoxetine, oral,
+Adults 
+20 mg once daily for 2-4 weeks, 
+Then
+Increase if necessary to max. of 80 mg
+Children
+8-18 years; 	
+	
+10 mg once daily for 1-2 weeks 
+Then
+Increase if necessary to max. 20 mg once daily. 
+< 8 years; 	
+	
+not recommended
+
+--- Page 237 ---
+— Depression —
+Chapter 10: Psychiatric Disorders
+219
+Note 10-4 
+Use with caution in children with epilepsy. Stop if seizure occurs.
+Or
+yy
+Sertraline, oral,
+Adults
+50 mg once daily, 
+Then
+Increase if necessary by increments of 50 mg at intervals of at least 1 
+week, to max. of 200 mg daily.  
+Children
+13-18 years;	 	
+50 mg once daily 
+Then
+Increase if necessary by increments of 50 mg at intervals of at least 1 
+week, to max. of 200 mg daily.  
+6-12 years; 	
+	
+25 mg daily, 
+Then
+Increase if necessary to 50 mg daily after 1 week. 
+Further increase if necessary in steps of 50 mg at intervals of at least 
+one week to a max. of 200 mg daily
+< 6 years; 	
+	
+not recommended
+Or
+yy
+Citalopram, oral, 
+Adults 
+20 mg once daily, increase if necessary in steps of 20 mg daily, at 
+intervals of 3-4 week, max. 40 mg.  
+Children 
+> 12 years;	
+	
+10 mg once daily,
+Then 
+Increase if necessary to 20 mg once daily in the evening, over 2-4 
+weeks (max. of 40 mg once daily)
+< 12 years; 	
+	
+not recommended 
+Or
+yy
+Imipramine, oral, 
+Adults
+25-50 mg once daily (early evening),
+Then
+Increase by 25 mg every 3-5 days up to max. of 150 mg.
+Children
+Not recommeded
+Or
+yy
+Amitriptyline, oral,
+Adults
+25-50 mg once daily (early evening),
+Then
+Increase by 25 mg every 3-5 days up to a max. of 150 mg.
+Children
+
+--- Page 238 ---
+— Schizophrenia —
+Standard Treatment Guidelines, 7th Edition, 2017
+220
+> 16 years; 	
+	
+5-15 mg 12 hourly
+< 16 years; 	
+	
+not recocommended
+A.     Management of patients with depression requiring night sedation 
+yy
+Lorazepam, oral,
+Adults
+2-3 mg 8-12 hourly, max. 10 mg daily
+Children 
+2-18 years; 	
+	
+0.05 mg/kg 8 hourly, max. 2 mg daily 
+Or
+yy
+Diazepam, oral,
+Adults
+5-10 mg 6-12 hourly     
+Children
+12-18 years; 	 	
+10 mg 12 hourly 
+5-12 years; 	
+	
+5 mg 12 hourly 
+Referral Criteria 
+Refer patients with atypical or unusual symptoms, hysterical or phobic 
+features, and those who do not respond to adequate anti-depressant 
+treatment within 2 months, to a psychiatrist, as should children suspected 
+to suffer from depression.
+Patients requiring Cognitive Behaviour Therapy should be referred 
+to a psychologist.
+74.	 Schizophrenia
+Schizophrenia is probably the most severe and potentially 
+disabling form of mental illness in every community worldwide. It may 
+present as an acute or chronic illness. The clinical features include 
+characteristic ‘positive’ or ‘negative’ symptoms, deterioration in social, 
+work or interpersonal relationships and continued evidence of disturbed 
+behaviour for at least 6 months. 
+The clinical features may be numerous and can change over time. 
+Psychosis associated with substance abuse and mood disorders with 
+psychotic features may mimic schizophrenia. 
+For this illness, a few people may recover completely after an 
+episode or two. Treatment must be started once symptoms are present. A 
+definitive diagnosis and establishment of a treatment plan is best carried 
+out by a psychiatrist.  Treatment for acute episodes can be started by a 
+psychiatrist and follow up treatment continued by most health care givers. 
+Treatment must be for at least 18 months after remission of symptoms for 
+a first episode. However, life long treatment is probably the best strategy 
+to avoid recurrence. 
+Side effects such as extra-pyramidal reactions (slowness, drooling, 
+stiffness, tremors, rigidity, muscle spasms including tongue sticking 
+
+--- Page 239 ---
+— Schizophrenia —
+Chapter 10: Psychiatric Disorders
+221
+out, neck bending, etc.) to antipsychotics may occur especially when 
+administered at high doses.  These adverse reactions can be prevented 
+or managed with anticholinergic agents, which must be used sparingly as 
+they may contribute to the development of another adverse event, called 
+tardive dyskinesia, in the long term. (See section on ‘Adjunct Treatment’ 
+below)
+Causes 
+yy
+Largely unknown
+yy
+Possible associations: 
+yy
+Bio-Genetic (to do with dopamine and serotonin receptors)
+yy
+Bio-Psycho social determinants; genetic predisposition coupled 
+with stress (economic, disruptive family environments, etc.) 
+Birth defects in brain associated with season of birth, possible 
+viral infections, etc. 
+yy
+Environmental triggers
+yy
+Illicit drugs (marijuana, amphetamines etc.)
+Symptoms/Signs
+‘Positive’ symptoms 
+yy
+Hallucinations (e.g. hearing voices)
+yy
+Delusions (stated beliefs which cannot be substantiated)
+yy
+Incoherent speech or illogicality
+yy
+Odd or disorganised behaviour
+yy
+Patient believes his or her thoughts are controlled by outside forces
+‘Negative’ symptoms
+yy
+Poverty of speech or content of speech (few words or with little 
+substance)
+yy
+Apathy
+yy
+Reduced social contact or withdrawal
+yy
+Flattened affect (showing little facial expressive responses)
+yy
+Delusions 
+yy
+May be persecutory, such as undue suspicion, or totally bizarre, 
+like being controlled or being made to feel emotions or sensa­
+tions
+yy
+Grandiose delusions may also occur but without the elevated 
+mood seen in manic patients
+yy
+Hallucinations 
+yy
+commonly auditory (but may involve any of the other senses)
+yy
+Auditory hallucinations of multiple voices commenting on pa­
+tients’ actions, arguing about the patient are almost diagnostic
+yy
+Motor disorders like posturing, excitement or stupor may occur but 
+are not essential for diagnosis
+Investigations
+yy
+Usually none required for diagnosis 
+yy
+Tests to rule out organic causes of psychosis
+yy
+Baseline full blood count, blood sugar, lipids, liver and kidney function 
+
+--- Page 240 ---
+— Schizophrenia —
+Standard Treatment Guidelines, 7th Edition, 2017
+222
+tests, for purposes of guiding treatment
+yy
+For Olanzapine and Risperidone, ensure that fasting blood sug­
+ar, lipid profiles, liver and kidney function test are carried out at 
+least twice a year.
+Treatment 
+Treatment objectives
+yy
+To abolish symptoms
+yy
+To restore functioning to the maximum level possible
+yy
+To reduce the chances of recurrence
+yy
+To monitor blood glucose, lipid profiles, liver and kidney function at 
+least twice a year for patients on olanzapine and risperidone 
+Non-pharmacological treatment
+yy
+Supportive psychotherapy  
+yy
+Rehabilitation
+yy
+Family therapy
+yy
+Psychoeducation about cause, course, treatment, side effects and 
+relapse prevention
+yy
+Behaviour Therapy e.g. social skills training, progressive muscle 
+relaxation, coping skills, etc.
+Pharmacological treatment 
+1st Line Treatment
+Evidence Rating: [A]
+A.     Management of acute attacks
+yy
+Olanzapine, IM or oral, 
+Adults
+5-10 mg stat. 
+Then
+5-10 mg daily, max. 20 mg daily
+Children 
+> 12 years;  	
+5-10 mg stat. 
+Then
+5-10 mg daily, max. 20 mg daily
+< 12 years; 	
+not recommended
+Or
+yy
+Chlorpromazine, IM, 
+Adults
+25-50 mg 6-8 hourly, adjusting to max. of 400 mg daily
+Children
+12-18 year; 	
+25-50 mg 6-8 hourly, adjusting to max. of 400 mg daily
+6-12 years; 	
+500 microgram/kg 6-8 hourly to max. of 75 mg daily
+1-6 year; 	
+500 microgram/kg 6-8 hourly to max. of 40 mg daily
+Or
+yy
+Chlorpromazine, oral, 
+Adults 
+
+--- Page 241 ---
+— Schizophrenia —
+Chapter 10: Psychiatric Disorders
+223
+25 mg 8 hourly or 75 mg at night
+Then 
+Adjust according to response to 75-300 mg daily
+Children 
+> 12 years;	
+	
+25 mg 8 hourly or 75 mg at night 
+Then
+Adjust according to response to max. of 75-300 mg daily
+6-12 years; 	
+	
+10 mg 8 hourly 
+Then
+Adjust according to response to max. of 75 mg daily
+1-6 years;	
+	
+500 microgram/kg 4-6 hourly
+Then
+Adjust according to response to max. of 40 mg daily
+Or
+yy
+Haloperidol, IM, 
+Adults
+2-5 mg stat.
+Then 
+Repeat 4-8 hourly according to response, to maximum of 20 mg daily
+Children
+6-12 years; 	
+	
+1-3 mg 4-8 hourly as required
+< 6 years; 	
+	
+not recommended
+Or
+yy
+Haloperidol, oral, 
+Adults
+0.5-5 mg 8-12 hourly daily
+Then 
+5-10 mg 8-12 hourly (max. of 30 mg)
+Children 
+> 12 years; 	
+	
+0.5-5 mg 8-12 hourly daily
+Then 
+5-10 mg 8-12 hourly (max. of 30 mg)
+3-12 years or body weight 15-40 kg; 0.25-0.5 mg daily
+Then
+Increase by 0.5 mg daily every 5-7 days
+< 3 years; 	
+	
+not recommended
+B.     Maintenance
+yy
+Risperidone, oral,
+Adults
+1-4 mg 12-24 hourly (start at low dose and adjust daily according to 
+patient response)
+Or
+yy
+Olanzapine, oral,
+Adults 
+5-10 mg, max. 20 mg daily
+
+--- Page 242 ---
+— Schizophrenia —
+Standard Treatment Guidelines, 7th Edition, 2017
+224
+Children 
+> 12 years; 	
+	
+5-10 mg, max. 20 mg daily
+< 12 years;	
+	
+not recommended
+Or
+yy
+Chlorpromazine, oral, 
+Adults
+25 mg 8 houly or 75 mg at night, adjust to max. of 200 mg 8 hourly
+Children 
+12-18 years; 25 mg 8 hourly or 75 mg at night, adjust to max. of 200 
+mg 8 hourly
+< 12 years; 	
+	
+not recommended
+Or
+yy
+Haloperidol, oral, 
+Adults
+1-3 mg 8 hourly, adjusted to max. daily dose of 20 mg
+Children 
+12-18 years; 	 	
+1-3 mg 8hourly, adjusted to max. daily dose 
+of 20 mg
+3-12 years; 	
+	
+500 micrograms 12 hourly, adjust up to a 
+max. of 5 mg 12 hourly
+C.	
+Maintenance treatment for patients with recurrent or chronic 
+illness (depot preparations)
+yy
+Fluphenazine decanoate, IM, 
+Adults
+25 mg monthly
+Children
+Not recommended
+Or
+yy
+Flupenthixol decanoate, IM, 
+Adults
+Give test dose of 5-20 mg, and after at least 7 days, give 
+40 mg monthly 
+Children
+Not recommended
+D.     Adjunct treatment for management or prevention of antipsychotic 
+drug side effects 
+yy
+Trihexyphenidyl (Benzhexol), oral,
+Adults
+2.5-5 mg 6-8 hourly max. 20 mg daily 
+Children 
+6-18 years; 	
+	
+0.5-1 mg 12-24 hourly, 
+Then
+Increase every 3-7 days by 1 mg daily according to response
+Or
+yy
+Benzatropine (Benztropine), oral,
+Adults
+
+--- Page 243 ---
+— Schizophrenia —
+Chapter 10: Psychiatric Disorders
+225
+1-2 mg 8-12 hourly
+Children 
+> 3 years;  	
+	
+20-50 microgram/kg 12-24 hourly
+Or
+yy
+Biperidine, oral,  
+Adults
+1 mg 12 hourly, 
+Then 
+adjust to 2 mg 8 hourly up to 4 mg 8 hourly.
+Children 
+not recommended
+Or
+yy
+Biperidine, slow IV/IM,
+Adults
+2.5-5 mg adjust to a max. of 20 mg in 24 hours    
+Or
+yy
+Benztropine, IV/IM,
+Adults
+1-2 mg slowly over 2-4 minutes, repeat if symptoms persist after 
+8-12 hours
+Or
+yy
+Diazepam, oral,
+Adults
+5-10 mg 6-12 hourly     
+Children
+12 -18 years; 	 	
+10 mg 12 hourly 
+5 - 12 years; 	 	
+5 mg 12 hourly 
+Or
+yy
+Diazepam, IV,
+Adults
+5-10 mg slowly over 2-3 minutes (approximately 2.5 mg every 30 
+seconds) 
+Children
+200-300 microgram/kg slowly over 2-3 minutes.
+This may be repeated 10 minutes.
+Or
+yy
+Promethazine hydrochloride, oral or IM, 
+Adults
+12.5-25 mg initially, may repeat dose if symptoms persist after 6 
+hours
+Children 
+> 6 years;	
+	
+6.25-12.5 mg
+Then 
+Repeat dose after 6 hours
+< 6 years;	
+	
+not recommended
+Referral Criteria 
+Refer all patients to a psychiatrist after an acute episode if treatment 
+
+--- Page 244 ---
+— Bipolar Disorder —
+Standard Treatment Guidelines, 7th Edition, 2017
+226
+was initiated without a psychiatrist’s supervision. 
+Likewise refer all patients with recurrent episodes and those 
+whose symptoms cannot be controlled to a psychiatrist for further drug 
+treatment or Electroconvulsive Therapy. 
+75.	 Bipolar Disorder
+Bipolar disorder is a form of mood disorder. The term refers to a 
+condition in which patients experience mood swings between the two 
+extremes of depression and mania. Bipolar disorder is referred to in older 
+literature as manic-depressive illness. It is important to note that the 
+affected patient usually presents with one predominant mood state at a 
+time, either depression or mania.
+A single manic episode and a history of depression qualify for 
+classification as bipolar disorder. A current episode of depression without 
+a past manic episode is not diagnosed as a bipolar disorder. Repeated 
+depressive episodes are diagnosed as recurrent depression.
+Causes 
+yy
+Largely unknown
+yy
+Possible associations:
+yy
+Tendency to run in families
+yy
+Genetic factors
+Symptoms
+yy
+Persistently elevated mood:- euphoria, expansiveness, feeling ‘high’ 
+or irritable
+yy
+Overactivity 
+yy
+Talking fast and excessively
+yy
+Grandiose claims
+yy
+Reduced sleep
+yy
+Reckless spending and being overly generous
+yy
+Sexual and social disinhibition
+yy
+Auditory hallucinations, in severe cases (patients may hear voices, 
+often reinforcing their grandiose beliefs)
+yy
+Undue suspicion (paranoia) may exist
+yy
+Impaired judgement
+Signs
+yy
+None typical of bipolar disorder
+yy
+Same as symptoms above
+Investigations
+yy
+Usually no specific investigations
+yy
+Rarely, thyrotoxicosis may mimic mania and must be excluded
+
+--- Page 245 ---
+— Bipolar Disorder —
+Chapter 10: Psychiatric Disorders
+227
+Treatment
+Treatment objectives
+yy
+To treat symptoms of mania or depression, whichever is present with 
+current episode 
+yy
+To reduce the level of activity in mania to a manageable state 
+yy
+To elevate mood to a normal state in depression
+yy
+To abolish psychotic symptoms (delusions and hallucinations), if 
+present
+Non-pharmacological treatment
+yy
+Psychotherapy
+yy
+Psychoeducation
+Pharmacological treatment 
+A.     Management of the manic patient 
+yy
+Risperidone, oral,
+Adults
+1-4 mg 12-24 hourly, to a max. of 8 mg daily
+Children 
+>12 years; 	
+	
+500 micrograms stat.
+Then
+Adjust daily in steps of 500 micrograms - 1 mg daily to a max. of 6 
+mg daily
+< 12 years; 	
+	
+not recommended 
+Or
+yy
+Olanzapine, oral,
+Adults
+5-15 mg 12-24 hourly to max. 20 mg daily 
+Children 
+12-18 years; 	 	
+2.5 mg daily, up to max. of 20mg daily
+<12 years;  	
+	
+not recommended
+Or
+yy
+Haloperidol, oral,
+Adults
+5-10 mg 12 hourly up to a max. of 20 mg daily
+Or
+yy
+Chlorpromazine, oral,
+Adults
+25 mg 8 houly or 75 mg at night, 
+Then
+Increase by 25 mg daily to 50-100 mg 8 hourly
+Or
+yy
+Sodium valproate, oral, 
+Adults
+	
+250-750 mg 12 hourly (controlled release preferable)
+Children 
+< 18 years; 	
+	
+not recommended
+
+--- Page 247 ---
+— Alcohol Withdrawal Syndromes   —
+Chapter 10: Psychiatric Disorders
+229
+Note 10-6
+Lithium levels should be monitored 12 hours after dose, twice weekly until con­
+dition stabilises, then once every month.
+Or
+yy
+Sodium valproate, oral, 
+Adults
+250-750 mg 12 hourly (controlled release preferable)
+Children 
+< 18 years; 	
+	
+not recommended
+Or 
+yy
+Carbamazepine, oral, 
+Adults
+200-800 mg 12 hourly (controlled release preferable)
+Children 
+< 18 years; 	
+	
+not recommended 
+Referral Criteria 
+Refer all patients suffering a first episode, not responding to 
+treatment after one month and all children to a psychiatrist.
+76.	 Alcohol Withdrawal Syndromes  
+These occur following sudden withdrawal from alcohol. They are 
+often seen 12 to 18 hours after the last drink, but may be earlier and 
+are worst between 24 to 48 hours after onset. This commonly occurs 
+in patients admitted to hospital for other problems e.g. arising from 
+accidents or physical illnesses, which keeps them from drinking. The 
+presentation varies from minimal tremors to states of full-blown agitation 
+and confusion, which are potentially fatal.
+Causes
+yy
+Abrupt cessation or significant reduction in alcohol intake in an 
+individual with heavy drinking over many months or years 
+Minor Withdrawal
+Alcoholic Hallucinosis
+Alcoholic Seizures
+Onset
+12 to 18 hours after 
+last drink, but may 
+be earlier. Peaks 
+between 24-48 hours
+12-24 hrs after cessation 
+of drinking and generally 
+stops within 48 hours
+7-36 hours after the 
+last drink but may 
+be earlier. 
+Symptoms
+Shaky hands
+Headaches
+Insomnia
+Mild anxiety
+Nausea,
+Vomiting
+Sweating
+Sensation of objects 
+crawling on body
+“Seeing” objects not really 
+present
+“Hearing” noises or voices 
+nobody else can hear.
+sudden generalised 
+seizures in a 
+chronic alcoholic
+
+--- Page 248 ---
+— Alcohol Withdrawal Syndromes   —
+Standard Treatment Guidelines, 7th Edition, 2017
+230
+Minor Withdrawal
+Alcoholic Hallucinosis
+Alcoholic Seizures
+Signs
+Increased pulse rate
+Raised blood pressure
+The vivid hallucina­
+tions occur in clear 
+consciousness.
+Pulse, Blood Pressure and 
+respiration are within 
+normal limits
+generalised 
+seizures
+Treatment
+Treatment objectives
+yy
+To stabilise pulse and blood pressure
+yy
+To prevent dehydration
+yy
+To treat presenting conditions like malaria etc. 
+yy
+To relieve pain, tremors and seizures
+yy
+To stop hallucinations
+Non-pharmacological treatment
+yy
+Sit or lie in a quiet place
+yy
+Physical restraints may be required temporarily for very agitated 
+patients
+yy
+Encourage intake of fluids as can be tolerated to prevent dehydration
+Pharmacological treatment 
+1st Line Treatment
+Evidence Rating [A]
+yy
+Haloperidol, oral/IM, 
+Adults
+5 mg 8 hourly as required until hallucinations cease.
+Children 
+Refer to specialist
+Or
+yy
+Olanzapine, oral, 
+Adults
+5-10 mg 24 hourly (max. of 10 mg 12 hourly)
+Children 
+> 12 years; 	
+	
+2.5-5 mg stat. 
+Then
+May be increased up to 10 mg (max. 5 mg 12 hourly)
+Referral Criteria
+Refer all patients with alcohol withdrawal syndromes to a psychologist 
+or psychiatrist. Also refer all children to a paediatrician.
+
+--- Page 249 ---
+— Alcoholic Delirium Tremens  —
+Chapter 10: Psychiatric Disorders
+231
+77.	 Alcoholic Delirium Tremens 
+This is the most dramatic withdrawal syndrome. It usually starts 2-3 
+days after drinking stops. On average, the syndrome lasts 3 days but may 
+continue for much longer. Without good supportive care and adequate 
+treatment, Delirium Tremens (DT) is associated with significant mortality.
+Risk factors include long history of heavy alcohol use, previous history 
+of DT, concurrent illness, significant alcohol level during withdrawal, long 
+duration since last drink (over 48 hours) and age over 30 years.
+Causes 
+yy
+Sudden withdrawal of alcohol from a long-term chronic user of 
+alcohol
+Symptoms
+yy
+Restlessness
+yy
+Shaking of hands, whole limbs or body
+yy
+Sweating
+yy
+Confusion
+yy
+Inappropriate behaviour
+yy
+Unintelligible speech 
+yy
+Misidentification
+yy
+Seeing or talking to imaginary objects
+Signs
+yy
+Tremors
+yy
+Psychomotor agitation or retardation
+yy
+Sweating
+yy
+Vomiting
+yy
+Disorientation
+yy
+Intermittent visual, tactile or auditory hallucinations or illusions 
+(Visual hallucinations are frequently of small objects or frightening 
+‘animals’ on walls etc.)
+yy
+Fever > 38°C.
+yy
+Pulse > 100 beats/minute, Blood Pressure > 160/100mmHg
+Investigations
+yy
+Full Blood Count
+yy
+Liver Function Tests 
+yy
+Screen for malaria and common infections
+Treatment
+Treatment objectives
+yy
+To relieve agitation and calm patient
+yy
+To correct fluid and electrolyte imbalance
+yy
+To prevent complications like seizures, development of amnesia and 
+encephalopathy
+yy
+To prevent or manage heart complications if present
+
+--- Page 250 ---
+— Alcoholic Delirium Tremens  —
+Standard Treatment Guidelines, 7th Edition, 2017
+232
+  Non-pharmacological treatment
+yy
+Seclusion of the patient
+yy
+Application of restraints as necessary
+yy
+Psychotherapy and psychoeducation 
+Pharmacological treatment
+Evidence Rating: [A]
+A.     For control of seizures 
+yy
+Lorazepam, IV, IM or oral,
+Adults
+Days 1 to 3:	
+	
+2-4 mg once daily 
+Days 4 and 5: 		
+1-2 mg once daily
+Or
+yy
+Diazepam, IV, (administer slowly-over 2-3 minutes, approximately 
+2.5 mg every 30 seconds)
+Adults
+Day 1:	
+	
+10-20 mg 6 hourly 
+Day 2:	
+	
+10-20 mg 8 hourly 
+Day 3:	
+	
+10-20 mg 12 hourly 
+Day 4:	
+	
+5-10 mg 8 hourly 
+Day 5:	
+	
+5-10 mg 12 hourly then stop
+Note 10-7
+It is best to give benzodiazepines as needed rather than on a fixed dose sched­
+ule.
+Withhold if patient is asleep or has slurred speech, ataxia, nystagmus or over 
+sedated. 
+Or 
+yy
+Chlordiazepoxide, oral,
+Adults 
+50-100 mg 4 hourly as required (max. 300 mg)
+And
+yy
+Thiamine, oral, IM or IV, 
+Adults (oral, IM, IV)
+100 mg daily for 3 days (before any IV Glucose load)
+And
+yy
+Folic Acid, oral, 
+Adults
+1 mg daily as needed
+And
+yy
+Dextrose saline (5% glucose in 0.9% saline), IV, 
+Adults
+As necessary 
+B.     For patients with seizures not controlled by benzodiazepines alone
+yy
+Lorazepam, IV, IM or oral,
+
+--- Page 251 ---
+— Anxiety Disorders   —
+Chapter 10: Psychiatric Disorders
+233
+Adults
+Days 1 to 3:	
+	
+2-4 mg once daily 
+Days 4 and 5: 		
+1-2 mg once daily
+Or
+yy
+Diazepam, IV, (administer slowly-over 2-3 minutes, approximately 
+2.5 mg every 30 seconds)
+Adults
+Day 1:	
+	
+10-20 mg 6 hourly 
+Day 2:	
+	
+10-20 mg 8 hourly 
+Day 3:	
+	
+10-20 mg 12 hourly 
+Day 4:	
+	
+5-10 mg 8 hourly 
+Day 5:	
+	
+5-10 mg 12 hourly then stop
+And
+yy
+Phenobarbitone, slow IV or IM,
+Adults
+0.5-1.5 mg/kg 12 hourly 
+Referral Criteria
+Refer patients whose symptoms are difficult to control within 3 days 
+or who remain agitated despite being given over 20 mg diazepam within 
+4 hours to a specialist.
+Refer patients to a psychiatrist or clinical psychologist for 
+consideration of other treatment options to assist long-term abstinence 
+and rehabilitation after acute phase is over.
+78.	 Anxiety Disorders  
+Anxiety is a common symptom that occurs in all psychiatric disorders 
+including depressive illness and most psychoses. Physical diseases like 
+hyperthyroidism, cardiac disease or hypertension may also present with 
+anxiety and therefore must be excluded. 
+There are various forms of anxiety disorders (e.g. generalized anxiety 
+disorders, panic disorders, phobias, obsessive compulsive disorder, acute 
+stress disorder, post traumatic stress disorder, etc.), but the common 
+ones seen in general practice are generalized anxiety disorders and panic 
+disorders. 
+In all cases of suspected anxiety disorders, it is important to assess 
+the scope of the anxiety, including the antecedents, behaviour and 
+consequences of anxiety for the patient through an indepth interview. It 
+is also important to ask about the presence of obsessive thoughts and/
+or compulsions as these are increasingly common and tend not to be 
+reported out of embarrassment but which lead to much personal distress. 
+In this case refer to a psychiatrist.
+In generalized anxiety disorders, there is excessive anxiety and 
+worry about events or activities, such as performance at school or work, 
+
+--- Page 252 ---
+— Anxiety Disorders   —
+Standard Treatment Guidelines, 7th Edition, 2017
+234
+occurring on most days, for at least 6 months.
+A panic disorder refers to a pattern of recurrent unexpected 
+attacks of intense fear or discomfort over a discrete period more than 
+3 times a week. During attacks 4 or more of the symptoms listed below 
+develop abruptly and reach a peak within 10 minutes. Panic disorders 
+are accompanied by persistent concern about having another attack or 
+worrying about implications of having an attack.  
+In children especially, partial complex seizures may mimic panic 
+attacks. Medications are required to treat panic disorders only if the 
+attacks occur frequently enough to cause distress.
+GENERALIZED ANXIETY DISORDERS
+Causes 
+yy
+Multiple negative life experiences
+yy
+Environmental factors
+yy
+Personality trait
+yy
+Genetic predisposition
+Symptoms
+yy
+Excessive anxiety and worry occurring on most days, for at least 6 
+months
+yy
+Anxiety or worry associated with at least 3 of the following:
+yy
+Muscle tension (often reported as pain in various parts like 
+neck, trunk or headaches)
+yy
+Crawling and burning sensation around the body
+yy
+Restlessness or feeling on edge 
+yy
+Being easily fatigued
+yy
+Difficulty concentrating or mind going blank
+yy
+Irritability
+yy
+Sleep disturbance (difficulty falling asleep or frequent waken­
+ing)
+yy
+Palpitations
+ 
+Signs
+yy
+Restlessness
+yy
+Sweating 
+yy
+Anxious mood
+yy
+Tachycardia 
+yy
+Tremors
+Investigations
+yy
+None to confirm the diagnosis. 
+yy
+Tests to exclude probable differential diagnoses such as 
+hyperthyroidism, phaeochromocytoma, cardiac arrhythmias etc.
+Treatment 
+Treatment objectives
+yy
+To reduce anxiety
+
+--- Page 253 ---
+— Anxiety Disorders   —
+Chapter 10: Psychiatric Disorders
+235
+yy
+To attain relief of somatic symptoms
+Non-pharmacological treatment
+yy
+Reassurance about the absence of physical disease once they are 
+ruled out
+yy
+Teach relaxation methods 
+yy
+Encourage regular physical exercise if possible
+yy
+Encourage healthy social activities
+yy
+Cognitive Behaviour Therapy
+Pharmacological treatment 
+A.     For anxiety with somatic complaints
+1st Line Treatment 
+Evidence Rating: [B]
+yy
+Sertraline, oral, 
+Adults
+50 mg as a single oral evening dose; 
+Then
+Increase by 25 mg at 1 week intervals, if necessary, to a max. of 200 
+mg
+Children 
+12-18 years; 	 	
+50 mg daily 
+6-12 years; 	
+	
+25 mg daily 
+< 6 years; 	
+	
+not recommended
+Or
+yy
+Fluoxetine, oral,
+Adults
+10 mg daily, 
+Then
+Increase up to 60 mg daily if necessary
+Children 
+7-18 years; 	
+	
+10 mg daily 
+Then
+Increase to 20 mg after 1-2 weeks if necessary
+Or
+yy
+Amitriptyline, oral, 
+Adults
+25-50 mg daily (as a single evening dose) 
+Children 
+> 12 years; 	
+	
+10 mg daily (as a single evening dose) max. 
+20 mg
+Or
+yy
+Imipramine, oral, 
+Adults
+25-50 mg daily (as a single evening dose)
+Children 
+Not recommended for this indication 
+
+--- Page 254 ---
+— Anxiety Disorders   —
+Standard Treatment Guidelines, 7th Edition, 2017
+236
+B.     For anxiety with prominent somatic complaints
+yy
+Propranolol, oral, 
+Adults
+10-80 mg 12 hourly 
+C.     Additional treatment for anxiety with significant distress 
+yy
+Diazepam, oral, 
+Adults
+2-5 mg 12 hourly for 2 weeks and gradually tailed off over the next 
+2 weeks. 
+(Do not give for more than one month continuously)
+Children 
+1-12 years;	
+	
+1.25-5 mg 6 hourly as needed
+Referral Criteria 
+Refer to a clinical psychologist for Cognitive Behaviour Therapy and 
+other non-pharmacological treatment modalities. Refer to a psychiatrist 
+in severe cases not responsive to drug treatment.
+PANIC DISORDERS
+Causes 
+yy
+Largely unknown
+yy
+Misinterpretation of normal internal body stimuli (e.g. a quickened 
+heart beat interpreted as a heart attack or serious illness, etc). 
+yy
+Misinterpretation of external stimuli (crowds, enclosed spaces such 
+as moving vehicles, lifts, etc.) as signalling danger
+yy
+Contributing factors:
+yy
+Stress
+yy
+Genetic predisposition
+Symptoms
+yy
+Fear of dying or going ‘crazy’
+yy
+Palpitations, pounding heart or rapid heart rate
+yy
+Trembling or shaking
+yy
+Sensation of shortness of breath
+yy
+Feeling of choking
+yy
+Chest pain or discomfort
+yy
+Feeling dizzy, unsteady or faint
+yy
+Numbness or tingling sensations
+yy
+Chills or hot flushes
+yy
+Derealisation (feeling of unreality) or depersonalisation (feeling 
+detached from oneself)
+yy
+Nausea or abdominal distress
+Signs
+yy
+Tachycardia
+yy
+Tremors 
+yy
+Sweating
+
+--- Page 255 ---
+— Anxiety Disorders   —
+Chapter 10: Psychiatric Disorders
+237
+Investigations
+yy
+None diagnostic
+Treatment 
+Treatment objectives
+yy
+To stop the attacks of panic or at least reduce the frequency and 
+intensity of symptoms to a minimum
+yy
+To help return to normal activities of daily living
+yy
+To prevent recurrence of symptoms
+Non-pharmacological treatment
+yy
+Rebreathing in and out of a paper bag closed around lips and nose 
+(avoid polythene bags, try large paper envelopes)
+yy
+Eliminate caffeine-containing foods e.g. coffee, tea, cola and 
+chocolates, from their diet, as they tend to worsen anxiety
+yy
+Relaxation training 
+yy
+Cognitive Behaviour Therapy
+Pharmacological treatment 
+A.     Initial management for patients unresponsive to non-
+pharmacological treatment 
+1st Line Treatment 
+Evidence Rating: [B] 
+yy
+Fluoxetine, oral,
+Adults
+10 mg daily (as a single morning dose) 
+Then
+Increase up to 60 mg daily if necessary
+Children 
+6-18 years; 	
+	
+10 mg daily
+Then
+Increase up to 20 mg after 1-2 weeks if necessary
+Or
+Sertraline, oral, 
+Adults
+25 mg daily (as a single evening dose) 
+Then 
+Increase to 50 mg after 1 week if necessary 
+Then
+50 mg weekly to a max. of 200 mg daily if necessary
+Children 
+Not recommended 
+Or
+yy
+Imipramine, oral, 
+Adults
+25-50 mg daily (as a single evening dose) max. 150 mg daily
+Children 
+
+--- Page 256 ---
+— Anxiety Disorders   —
+Standard Treatment Guidelines, 7th Edition, 2017
+238
+Not recommended for this indication 
+B.     For very frequent panic attacks
+yy
+Lorazepam, oral,
+Adults
+1-4 mg daily for 2 weeks
+Children 
+2-18 years;  	 	
+0.05 mg/kg daily for 2 weeks
+C.     For anticipated anxiety attacks 
+yy
+Lorazepam, oral,
+Adults
+1-4 mg stat. 
+Children
+0.25-0.5 mg stat. 
+D. 	 For Acute Symptomatic Control
+yy
+Lorazepam, oral,
+Adults
+1-4 mg 8-12 hourly as required (max. 10 mg daily) 
+Children 
+Not recommended for this indication 
+Or 
+yy
+Alprazolam, oral,
+Adults
+0.25-0.5 mg 6-8 hourly 
+Increase if necessary every 3-4 days, max. 4 mg daily
+Children 
+< 18 years; 	
+	
+not recommended
+Or 
+yy
+Diazepam, oral, 
+Adults
+2-5 mg 12 hourly for 2 weeks and gradually taper off over the next 
+2 weeks. 
+(Do not give for more than one month continuously)
+Children 
+1-12 years;	
+	
+1.25-5 mg 6 hourly as needed
+Note 10-8
+Duration of treatment for recurrent cases should be at least 6 weeks and should 
+be continued for up to 6 months or more after attacks have remitted to prevent 
+early relapse. Wean off slowly over a month or more.
+Referral Criteria
+Refer children with symptoms suggestive of a panic disorder to a 
+paediatrician. Also refer patients to a psychologist for Cognitive Behaviour 
+Therapy and to a psychiatrist for additional drug therapy where indicated. 
+
+--- Page 257 ---
+— Substance Use Disorders —
+Chapter 10: Psychiatric Disorders
+239
+79.	 Substance Use Disorders
+Abuse of substances such as marijuana, benzodiazepines, heroine, 
+cocaine etc. is prevalent in many communities around the country. 
+Typically, individuals with such disorders request help only after they 
+are forced to do so by family members. They may also begin to have 
+withdrawal symptoms when on admission for serious physical illness. 
+This is because they have no access to the substance being abused. This 
+may complicate treatment of the primary disease for which they were 
+admitted. 
+Causes 
+yy
+Social factors
+yy
+Peer pressure (e.g. family members, friends)
+yy
+Lack of coping skills (e.g. with life’s difficulties, aids to coping in 
+times of trouble)
+yy
+Addiction
+yy
+Tolerance (increased requirement of substance to maintain the same 
+feeling) 
+yy
+Withdrawal effects (unpleasant effects lead to a return to drug use)
+Symptoms 
+Cannabis withdrawal
+yy
+Insomnia 
+yy
+Shakiness 
+yy
+Irritability 
+yy
+Restlessness 
+yy
+Anxiety 
+yy
+Anger
+yy
+Onset: Within 24 hours of drug use
+yy
+Duration: 1-2 weeks
+Benzodiazepine withdrawal
+yy
+Anxiety
+yy
+Headache 
+yy
+Insomnia
+yy
+Muscle aching and twitching 
+yy
+Perceptual changes 
+yy
+Feelings of unreality
+yy
+Depersonalization 
+yy
+Seizures 
+yy
+Onset: 1-10 days (depending on half-life of drug)
+yy
+Duration: 3-6 weeks (may be longer)
+Opioid withdrawal
+yy
+Anxiety
+
+--- Page 259 ---
+— Substance Use Disorders —
+Chapter 10: Psychiatric Disorders
+241
+Box 10-2:  Screening of patients suspected of substance abuse
+Physical appearance 
+yy
+Sweating, tremor, agitation, problem with coordination, gait. Rate these ap­
+pearances and reassess them at regular intervals to monitor the progress 
+of symptoms. If symptoms are increasing in severity, notify a senior staff 
+member, or if available, a doctor
+Suicide risk assessment 
+yy
+To determine the level of risk at a given time and to provide appropriate 
+clinical care and management. Possible suicidal behaviour includes thinking 
+about suicide, harming oneself or attempting suicide. 
+yy
+Screening questions of suicide risk: 
+yy
+Have things been so bad lately that you have thought you would rather 
+not be here?
+yy
+Have you had any thoughts of harming yourself?
+yy
+Are you thinking of suicide?
+yy
+Do you have any plans to commit suicide?
+yy
+Have you ever tried to harm yourself?
+yy
+Have you made any current plans?
+yy
+Do you have access to any thing with which to hurt yourself? 
+Mental state examination
+yy
+To determine: 
+yy
+The need for other psychological therapies
+yy
+Concomitant psychiatric conditions which place the patient or others at risk
+yy
+The patient’s capacity for informed consent and active participation in 
+treatment planning
+Assessment of psychosocial factors affecting withdrawal 
+yy
+Ask patient about:
+yy
+Reasons for presenting for withdrawal management at this time
+yy
+Past experiences, current knowledge and fears of withdrawal
+yy
+Perceived ability to cope with withdrawal and its treatment.
+yy
+Family supports and social networks available for withdrawal treatment:
+yy
+Potential barriers to successful withdrawal
+yy
+Care of children (assess possible neglect or physical or sexual abuse of chil­
+dren or exposure to such harm from others and intervene to protect as 
+soon as possible or refer to appropriate agency)
+yy
+Drug use of cohabitants
+yy
+Current legal issues
+yy
+Financial problems
+yy
+Work commitments
+Treatment 
+Treatment objectives
+yy
+To provide supportive care (information, stress reduction, 
+reassurance)
+yy
+To teach coping skills (relaxation techniques, dietary guidelines, 
+methods to reduce craving for the substance, sleep disturbance 
+management)
+yy
+To manage difficult behavior (anxiety, agitation, panic and aggression)
+
+--- Page 260 ---
+— Autistic Spectrum Disorder —
+Standard Treatment Guidelines, 7th Edition, 2017
+242
+yy
+To manage confusion, disorientation and hallucinations
+yy
+To plan an organised discharge, follow up and after-care to prevent 
+relapse
+Non-pharmacological treatment
+yy
+Cognitive Behaviour Therapy  
+yy
+Stress management to reduce craving 
+Pharmacological treatment 
+A.     Management of withdrawal symptoms - cannabis 
+yy
+Requires no medical intervention 
+B.     Management of withdrawal symptoms - stimulants
+yy
+Requires observation but does not require a specific intervention
+C.     Management of withdrawal symptoms - benzodiazapines
+yy
+Substitute with equivalent dose of benzodiazapine for a few days, 
+then taper off dose over 2-3 weeks 
+D.     Management of withdrawal symptoms - opiates
+yy
+Oral rehydration fluids or IV fluids may be required 
+yy
+Long acting benzodiazapines e.g. diazepam, to control insomnia and 
+muscle cramps (See drug doses under appropriate sections) 
+yy
+Anti-emetics e.g. promethazine etc., for nausea and vomiting (See 
+drug doses under appropriate sections) 
+yy
+Methadone, buprenorphine and clonidine may be used, where 
+available and with caution, to reduce the severity of symptoms (See 
+drug doses under appropriate sections) 
+yy
+NSAIDs e.g. ibuprofen, diclofenac etc., for pain relief (See drug doses 
+under appropriate sections) 
+Referral Criteria 
+Refer for specialist psychiatrist/clinical psychologist care and 
+management if withdrawal symptoms are particularly distressful and do 
+not respond to treatment or when there are repeated relapses.   
+Refer for Cognitive Behaviour Therapy to a clinical psychologist.
+80.	 Autistic Spectrum Disorder
+Autism is a neurodevelopmental disorder characterized by qualitative 
+impairments occuring in a child before the age of 36 months, in three key 
+areas; social interaction (often the earliest features of Autistic Spectrum 
+Disorder-ASD), communication, interests and activities. 
+The clinical presentation is varied and may encompass children 
+with severe manifestations of the above features or with more subtle 
+behavioural deficits, hence the use of the term Autistic Spectrum 
+Disorder. Learning disability in this condition is very common and the risk 
+of epilepsy is significant.
+
+--- Page 261 ---
+— Autistic Spectrum Disorder —
+Chapter 10: Psychiatric Disorders
+243
+ASD is increasingly being recognized in Ghana.
+Causes 
+yy
+No clear aetiology 
+yy
+Genetic
+Symptoms
+yy
+Absence of joint attention (i.e. failure to show interest, follow gaze, 
+lack of social smiling and limited use of gestures e.g. shaking head, 
+waving or clapping)
+yy
+Communication deficit 
+yy
+Receptive: fails to acquire language or delays in understanding 
+language 
+yy
+Expressive: delays in use of language
+yy
+Limited range of interests (limited play with toys and other objects)
+yy
+Repetitive activities (e.g. spinning objects)
+yy
+Global developmental delays (e.g. walking, speech etc.)
+yy
+Learning difficulties
+yy
+Attention deficit 
+yy
+Sleeping difficulties
+yy
+Feeding difficulties
+Signs
+yy
+Lack of pointing to objects by 24 months
+yy
+No single words by 18 months
+yy
+No two word spontaneous phrase by 24 months
+yy
+Loss of language
+yy
+Avoidance of eye contact
+Investigations
+yy
+Usually none required 
+yy
+Electroencephalogram (EEG) if seizures suspected
+yy
+Brain CT or MRI only in special circumstances e.g. abnormal physical 
+features present
+Treatment 
+Treatment objectives
+yy
+To correct social communication difficulties using a multidisciplinary 
+behavioural and educational approach
+Non-pharmacological treatment
+yy
+Applied Behaviour Analysis (ABA) - teaching based on teacher 
+request, prompt assistance to child, child response and feedback 
+Pharmacological treatment 
+A.     For aggression, irritability or self-mutilation 
+Evidence Rating: [B]
+yy
+Risperidone, oral,
+Children
+
+--- Page 285 ---
+— Pruritus —
+Chapter 11: Disorders of the Skin
+267
+92.	 Pruritus
+Pruritus or itching is an unpleasant sensation on the skin that 
+provokes the desire to rub or scratch the area. Itching can cause discomfort 
+and frustration. In severe cases it can lead to disturbed sleep, anxiety 
+and depression. Constant scratching to obtain relief can damage the skin 
+and reduce its effectiveness as a major protective barrier. Treatment of 
+pruritus must address the underlying condition. Diagnosis therefore 
+needs to be made for effective treatment. 
+Causes 
+Localised pruritus (confined to a certain part of the body)
+yy
+Seborrhoiec dermatitis
+yy
+Pruritus vulvae
+yy
+Anogenital pruritus
+yy
+Tinea infections
+yy
+Gravitational eczema
+yy
+Lichen simplex chronicus
+Pruritic skin disorders (due to a primary skin disease)
+yy
+Atopic eczema
+yy
+Dry skin 
+yy
+Allergic contact dermatitis 
+yy
+Urticaria 
+yy
+Scabies
+yy
+Prurigo
+yy
+Miliaria (heat rash)
+yy
+Pediculosis 
+yy
+Insect bites
+yy
+Dermatitis herpetiformis
+yy
+Lichen planus
+yy
+Bullous pemphigoid
+Generalised pruritus (usually due to a systemic disease)
+yy
+Haematological e.g. iron deficiency anaemia, polycythaemia rubra 
+vera, lymphomas, leukaemias
+yy
+Liver disease e.g. intrahepatic or extrahepatic cholestasis, primary 
+biliary cirrhosis, hepatitis
+yy
+Chronic kidney disease
+yy
+Thyroid disease
+yy
+Pregnancy
+yy
+Diabetes mellitus
+yy
+Carcinomas 
+yy
+Drug reaction
+yy
+Onchocerciasis 
+yy
+Psychogenic 
+Symptoms
+yy
+Itching 
+
+--- Page 312 ---
+— Diabetic Ketoacidosis —
+Standard Treatment Guidelines, 7th Edition, 2017
+294
+the absence of a significant amount of ketones in the urine (usually trace 
+or 1+) and the presence of severe dehydration. The management of this 
+condition is similar to that of DKA.
+Causes 
+yy
+Severe deficiency of insulin
+yy
+Interruption of anti-hyperglycaemic therapy (usually for financial 
+reasons or for alternative treatment)
+yy
+Stress of intercurrent illness (e.g. infection, myocardial infarction, 
+stroke, surgery, complicated pregnancy etc.)
+Symptoms
+yy
+Polyuria
+yy
+Polydipsia 
+yy
+Nausea, vomiting 
+yy
+Abdominal pain 
+yy
+Alteration in sensorium or collapse
+yy
+Symptoms of infection or other underlying condition 
+Signs
+yy
+Dehydration (dry skin, reduced skin turgor or sunken eyes)
+yy
+Deep and fast breathing 
+yy
+Low blood pressure 
+yy
+Fast and weak pulse 
+yy
+‘Fruity’ breath (smell of acetone)
+yy
+Confusion, stupor or unconsciousness 
+yy
+Evidence of infection, recent surgery, stroke etc.
+ 
+Investigations
+yy
+Random blood glucose (usually >18 mmol/L)
+yy
+Urine glucose (usually >3+)
+yy
+Urine ketones (usually >2+)
+yy
+Blood urea and electrolytes (usually low potassium, however if in 
+renal failure urea and potassium may be high)
+yy
+Blood film for malaria parasites
+yy
+Full blood count (raised white cell count would suggest bacterial 
+infection)
+yy
+Urine culture
+yy
+Blood culture
+yy
+Chest X-ray (for pneumonia)
+yy
+Arterial blood gases 
+yy
+Electrocardiogram (to identify hypokalaemia, and in adult patients to 
+exclude acute myocardial infarction as a precipitating factor)
+Treatment 
+Treatment objectives
+yy
+To replace the fluid losses
+yy
+To replace the electrolyte losses, especially potassium 
+
+--- Page 318 ---
+— Dyslipidaemia —
+Standard Treatment Guidelines, 7th Edition, 2017
+300
+Referral Criteria 
+If the patient does not respond to the above treatment 
+recommendations, refer to a specialist. 
+102.	Dyslipidaemia
+There is ample evidence linking high blood cholesterol levels to 
+Cardiovascular Disease (CVD) events, including myocardial infarction, 
+strokes, and peripheral vascular disease. On the other hand, there is also 
+evidence for significant reduction in morbidity and mortality from CVDs 
+by reducing blood cholesterol levels in those at risk (primary prevention) 
+and those who have suffered a CVD event (secondary prevention). 
+The commonly assessed blood lipid parameters are total cholesterol, 
+HDL cholesterol, LDL cholesterol and triglycerides. However, the primary 
+target for intervention is the LDL-cholesterol level. As treatment may 
+be for long periods or lifelong, periodic monitoring of liver and muscle 
+enzymes (transaminases and creatine kinase) and blood glucose are 
+advisable to forestall medication-related side effects. 
+Causes 
+yy
+High dietary intake of saturated fats (animal fat)
+yy
+Lack of physical activity
+yy
+Metabolic syndrome (a combination of several of the following; 
+obesity, hypertension, type 2 diabetes, dyslipidaemia, gout etc.)
+yy
+Hereditary factors
+yy
+Excessive alcohol intake
+yy
+Hypothyroidism
+yy
+Nephrotic syndrome
+Symptoms
+yy
+Usually none
+yy
+Abdominal pain from pancreatitis related to hypertriglyceridaemia 
+Signs
+yy
+Usually none
+yy
+Occasionally
+yy
+Whitish ring around the cornea (corneal arcus)
+yy
+Yellowish skin eruptions around the eyes (xanthelasmata)
+yy
+Whitish blood sample (lipaemic blood)
+Investigations
+yy
+Fasting blood lipid profile 
+yy
+Thyroid function test (if lipid levels very high)
+yy
+Plasma protein (if lipid levels very high, to exclude nephrotic 
+syndrome)
+yy
+Urine protein (if lipid levels very high, to exclude nephrotic syndrome)
+
+--- Page 319 ---
+— Dyslipidaemia —
+Chapter 12: Endocrine and Metabolic Disorders
+301
+Treatment objectives
+yy
+To reduce the risk of clinical atherosclerotic cardiovascular events 
+and related deaths in: 
+yy
+Healthy individuals at risk (primary prevention) 
+yy
+Individuals who have suffered a CVD event (secondary preven­
+tion)
+yy
+To reduce the LDL-C level to the following targets:
+yy
+At least a 50 % LDL-C reduction for primary prevention (in the 
+general population i.e. individuals ≥ 21 years of age with an un­
+treated LDL-C ≥ 4.9 mmol/L)   
+yy
+30-49 % LDL-C reduction for primary prevention (in individuals 
+40 to 75 years of age with diabetes with an untreated LDL-C 
+1.8-4.9 mmol/L)   
+yy
+LDL-C < 1.8 mmol/L for secondary prevention  (in adults who 
+have previously suffered a heart attack, stroke or peripheral 
+vascular disease)
+Non-pharmacological treatment
+yy
+Dietary measures - a low calorie, low saturated fat (animal fat), 
+high polyunsaturated fat (plant fat) diet is recommended under the 
+supervision of a dietician
+yy
+Weight reduction in patients who are overweight or obese
+yy
+Reduction in alcohol consumption, where this is excessive
+yy
+Regular physical activity or exercise tailored to the individual patient
+Pharmacological treatment 
+A.     Low CVD risk - primary prevention
+1st Line Treatment
+Evidence Rating: [A]
+yy
+Simvastatin, oral, 
+Adults
+10-20 mg at night
+B.     Moderate CVD risk - Diabetes and CVD risk equivalents
+Evidence Rating: [A]
+yy
+Atorvastatin, oral, 
+Adults 
+10-20 mg daily
+Or 
+yy
+Rosuvastatin, oral, 
+Adults 
+5-10 mg daily
+Or 
+yy
+Simvastatin, oral, 
+Adults
+20-40 mg at night
+
+--- Page 321 ---
+— Hypothyroidism   —
+Chapter 12: Endocrine and Metabolic Disorders
+303
+yy
+Thyroid ultrasound scan
+yy
+Thyroid autoantibodies (if necessary)
+yy
+Radioisotope scan of thyroid (if necessary)
+yy
+Fine needle aspiration cytology (if necessary)
+yy
+X-ray of the neck including thoracic inlet view for large goitres
+Treatment 
+Treatment objectives
+yy
+To assess and correct level of thyroid hormone production
+yy
+To reduce symptoms associated with thyrotoxicosis
+yy
+To reduce or prevent obstructive symptoms
+yy
+To identify thyroid neoplasms and manage appropriately 
+Non-pharmacological treatment
+yy
+Subtotal thyroidectomy where indicated
+Pharmacological treatment 
+yy
+Appropriate treatment of hypothyroidism or hyperthyroidism (See 
+sections on ‘Hypothyroidism’ and ‘Hyperthyroidism’)
+Referral Criteria 
+Refer patients to a physician or surgical specialist where complications 
+(e.g. hypothyroidism, hyperthyroidism, breathing difficulty etc.) or 
+malignancy are suspected or if full clinical assessment and investigations 
+are not possible.
+104.	Hypothyroidism  
+Hypothyroidism is a condition associated with reduction in thyroid 
+hormone production. Thyroid hormone is required for normal metabolism 
+and growth. Its deficiency has major consequences on foetal development 
+as well as intellectual and physical development in infants and children 
+(cause of cretinism).
+In adults, it may be the cause of several problems including heart 
+disease, menstrual irregularity and infertility, mental health conditions and 
+dementia. Iodine replacement is not the treatment for hypothyroidism. 
+Screening for hypothyroidism in all new borns, and every 5 years in 
+adults after age 35 years, especially females, by measuring TSH (thyroid 
+stimulating hormone) levels in blood where this is possible, should be 
+encouraged. 
+Causes 
+yy
+Antibody-related thyroid gland destruction 
+yy
+Subtotal thyroidectomy
+yy
+Pituitary surgery or lesions 
+yy
+Congenital
+yy
+Severe iodine deficiency
+yy
+Drug induced (e.g. radioiodine therapy, amiodarone etc.)
+
+--- Page 322 ---
+— Hypothyroidism   —
+Standard Treatment Guidelines, 7th Edition, 2017
+304
+Symptoms
+yy
+General weakness and tiredness
+yy
+Intolerance to cold environments
+yy
+Constipation
+yy
+Weight gain
+yy
+Hair loss
+yy
+Dry skin
+yy
+Hoarse voice
+yy
+Memory loss
+yy
+Goitre may be present
+yy
+Abnormal menstrual periods and sub-fertility (in adult females)
+yy
+Poor growth, development and poor school performance in children 
+Signs
+Neonate
+yy
+Prolonged neonatal jaundice
+yy
+Excessive sleep
+yy
+Feeding problems 
+Children
+yy
+Cretinism (mental subnormality, short stature, large tongue, dry 
+skin, sparse hair, protuberant abdomen, umbilical hernia, abnormal 
+facies) 
+Adults
+yy
+Slow pulse (usually <60 per minute)
+yy
+Dry coarse skin
+yy
+Puffy face 
+yy
+Pallor
+yy
+Hoarse voice
+yy
+Slow reflexes
+yy
+Dementia
+yy
+Goitre may be present
+Investigations
+yy
+Thyroid function tests - free T3, free T4, TSH
+yy
+Fasting blood lipids (for elevated cholesterol level)
+Treatment 
+Treatment objectives
+yy
+To correct blood level of thyroid hormones 
+yy
+To maintain lifelong normal levels of thyroid hormones 
+Non-pharmacological treatment
+yy
+Surgical intervention for pituitary lesions where necessary
+Pharmacological treatment 
+A.     Initiation of Treatment and Maintenance
+Note 12-5
+Start treatment with a low dose of levothyroxine, especially in the elderly and 
+
+--- Page 329 ---
+— Overweight and Obesity  —
+Chapter 12: Endocrine and Metabolic Disorders
+311
+yy
+Blood electrolytes (may show low potassium)
+yy
+Blood glucose (commonly elevated)
+yy
+Abdominal ultrasound scan (may show an adrenal tumour) 
+yy
+CT scan (may show evidence of a pituitary or adrenal tumour) 
+Treatment 
+Treatment objectives
+yy
+To normalise plasma level of cortisol
+yy
+To correct electrolyte imbalance
+yy
+To correct plasma glucose
+yy
+To correct blood pressure
+yy
+To prevent complications of excess plasma cortisol 
+Non-pharmacological treatment
+yy
+Pituitary or adrenal surgery where tumours in the respective glands 
+have been diagnosed
+Pharmacological treatment 
+Treatment is dependent on the cause and requires specialized 
+investigations. Manage hypertension and diabetes along standard lines 
+(See appropriate sections) and refer patient for definitive treatment.
+Note 12-9
+Do not withdraw corticosteroids suddenly in patients with Cushing’s syndrome 
+due to corticosteroid abuse or prolonged use. Instead, the dose must be ta­
+pered off slowly over several weeks and months to prevent acute adrenal insuf­
+ficiency (See section on ‘Adrenal Insufficiency’).
+Referral Criteria 
+Refer all suspected cases to an endocrinologist or specialist physician 
+in a regional or teaching hospital for the appropriate investigations and 
+management.
+108.	Overweight and Obesity 
+Overweight and obesity are associated with conditions that cause 
+premature ill-health and death, such as type 2 diabetes, high blood 
+pressure (hypertension), heart disease and stroke.  Other conditions 
+such as gout, obstructive sleep apnoea, gallstones, heartburn, arthritis, 
+skin infections as well as various cancers have been linked to excess body 
+weight. They also increase the risk of developing deep vein thrombosis 
+and pulmonary embolism as well as elevated blood cholesterol, which 
+increases the risk for heart attacks and strokes.   
+Weight reduction often corrects, or helps to control, these associated 
+conditions. Occasionally rapid weight gain may be associated with an 
+underlying endocrine condition such as hypothyroidism and Cushing’s 
+syndrome. 
+
+--- Page 345 ---
+— Severe Pre-Eclampsia and Imminent Eclampsia —
+Chapter 13: Obstetric Care and Obstetric Disorders
+327
+pressure below 140/90mmHg may cause foetal distress and should be 
+avoided. BP monitoring must be carried out every 15-30 minutes until the 
+BP is reduced and the patient is stable. Thereafter monitoring can be done 
+by 2-4 hourly. Daily weighing of the patient is essential.
+Symptoms 
+yy
+Frontal headaches
+yy
+Vomiting
+yy
+Visual disturbances such as double vision (diplopia), blurred vision, 
+flashes of light 
+yy
+Epigastric pain
+yy
+Decrease in urine production (oliguria) 
+Signs
+yy
+Elevated blood pressure
+yy
+Liver tenderness 
+yy
+Urine production of < 30 ml/hour or < 400 ml/24 hours
+yy
+Increased tendon reflexes 
+yy
+Presence of ankle clonus (occasionally)
+Investigations
+yy
+FBC
+yy
+Blood clotting profile (bedside clotting time, prothrombin time, INR, 
+APTT)
+yy
+Serum uric acid
+yy
+BUE and Creatinine
+yy
+Urinalysis and culture
+yy
+Liver function tests 
+yy
+Random blood glucose
+yy
+Daily assessment of urine proteins
+yy
+Ultrasound scan for close foetal growth monitoring
+Treatment
+Treatment objectives
+yy
+To reduce the blood pressure, but not lower than 140/90 mmHg
+yy
+To prevent the mother from suffering from complications of the 
+hypertension such as a stroke
+yy
+To prevent fits/eclampsia
+yy
+To stabilise the patient and deliver her if eclampsia is imminent
+Non-pharmacological treatment
+yy
+Early delivery of mother if eclampsia is imminent
+yy
+If the patient is not symptomatic and the pregnancy is less than 34 
+weeks allow pregnancy to continue if the foetal condition would 
+allow
+yy
+If the pregnancy is 34 weeks or more consider delivery after 
+stabilisation
+
+--- Page 346 ---
+— Eclampsia —
+Standard Treatment Guidelines, 7th Edition, 2017
+328
+Pharmacological treatment
+Evidence Rating: [C]
+A.     BP management in severe pre-eclampsia and imminent eclampsia
+yy
+Hydralazine, IV, 5-10 mg slowly over 20-30 minutes 
+Or
+yy
+Nifedipine, sublingual, 10 mg stat.
+Or
+yy
+Labetalol, IV, 20 mg stat. over at least 1 minute
+Repeat at 10-minute intervals if the BP remains > 160/110 mm Hg 
+as follows: 40 mg; 80 mg; 80 mg boluses to a cumulative dose of 
+220 mg
+When the BP < 160/110 mmHg commence an infusion of 40 mg per 
+hour. 
+Double the infusion rate at 30-minute intervals until satisfactory re­
+sponse or a dose of 160 mg per hour is attained. 
+Then
+yy
+Nifedipine retard, oral, 20-40 mg daily
+Or
+yy
+Methyldopa, oral, 250-500 mg 8-12 hourly 
+B.     Management or prevention of seizures in severe pre-eclampsia 
+and imminent eclampsia
+yy
+Magnesium sulphate, IV, 20 ml of the 20% solution (4 g)
+And 
+yy
+Magnesium sulphate, IM, 10 ml of the 50% solution, (5 g) into each 
+buttock (total of 10 g)
+Referral Criteria 
+Refer all cases of severe pre-eclampsia and imminent eclampsia 
+promptly to a hospital or obstetrician after initiation of treatment.
+When the “obstetrician” considers that the foetus is immature, the 
+patient should be transferred to a hospital capable of looking after the 
+immature baby.
+114.	Eclampsia
+Eclampsia occurs as a complication of worsening pre-eclampsia. 
+The blood pressure is high with associated proteinuria and convulsion 
+or eclamptic fit, which is similar to an epileptic fit with tonic and clonic 
+phases followed by coma. The fits are often repetitive and of short 
+duration (60-90 seconds).
+Causes 
+yy
+As for pre-eclampsia
+
+--- Page 348 ---
+— Eclampsia —
+Standard Treatment Guidelines, 7th Edition, 2017
+330
+Pharmacological treatment 
+Evidence Rating: [A]
+A.     Fluid replacement 
+yy
+Sodium Chloride 0.9%, IV,
+Or 
+yy
+Ringer’s lactate, IV, (Maximum 1 Litre in 6 hours or 4 Litres in 24 
+hours)
+B.     Treatment of convulsions  
+yy
+Magnesium sulphate, IV, 20 ml of the 20% solution (4 g) 
+Administer slowly over 5 to 15 minutes
+Then 
+yy
+Magnesium sulphate, IM, 10 ml of the 50% solution, (5 g) into each 
+buttock (total of 10 g)
+C.     Treatment of recurrent convulsions  
+If fits recur within 20 minutes, do not repeat Magnesium sulphate. 
+(See other treatment options below)
+If fits recur after 20 minutes, repeat Magnesium Sulphate, IV,
+> 70kg; 	
+20 ml of the 20% solution (4g) 
+< 70kg; 	
+10 ml of the 20% solution (2 g) once 
+D.     Maintenance 
+yy
+Magnesium sulphate, IM, 5 g in alternating buttocks every 4 hours till 
+24 hours after last seizure or delivery, whichever is later
+Note 13-1
+Toxicity to Magnesium Sulphate presents as slowing or arrest of the heartbeat 
+and the respiration and loss of the deep tendon reflexes. Before giving a dose 
+ensure that the following parameters are normal:
+yy
+Respiratory rate > 12-16 per minute
+yy
+Urine output 100 ml or more over the previous 4 hours
+yy
+Presence of knee jerk or other deep tendon reflexes
+In case of toxicity to Magnesium Sulphate
+yy
+Give assisted respiration
+yy
+Administer 10 ml of 10% Calcium Gluconate, IV, slowly in suspected magne­
+sium sulphate toxicity
+E.     Treatment of convulsions not responding to Magnesium sulphate   
+And
+Evidence Rating: [A]
+yy
+Diazepam, IV, 10 mg slowly over 2-3 minutes (not exceeding 2.5 mg 
+every 30 seconds, 
+Then
+> 60kg;  	
+5-10 mg 8 hourly
+< 60kg;  	
+5 mg 8 hourly
+
+--- Page 355 ---
+— Sickle Cell Disease in Pregnancy  —
+Chapter 13: Obstetric Care and Obstetric Disorders
+337
+yy
+Prolonged second stage labour should be avoided by offering assisted 
+delivery (vacuum) 
+yy
+Active Management of Third Stage of Labour (AMTSL) is 
+recommended to prevent PPH 
+	
+Postpartum care
+yy
+All Sickle Cell Disease patients must be hospitalized and monitored 
+closely for at least 72 hours postpartum 
+yy
+Check for pallor, puerperal sepsis, acute chest syndrome, vaso-
+occlusive crises and urinary tract infection 
+yy
+Continue with prophylactic antibiotics for at least 72 hours 
+postpartum
+yy
+Counsel women and their support persons to avoid crises triggers 
+such as stress, pain, lack of sleep, fatigue etc.
+yy
+Encourage early ambulation (especially after operative delivery) 
+yy
+Review client at 7 days postpartum and thereafter weekly until 6 
+weeks
+yy
+Refer patient to physician for continuing care
+yy
+Counsel on family planning and offer contraception
+	
+Baby
+yy
+The baby should be screened for sickle cell disease
+yy
+Closely monitor the babies with associated complications e.g. IUGR, 
+prematurity etc.
+	
+Sickling crises in pregnancy 
+yy
+Admit all sickle cell patients with sickling and/or obstetric 
+complications during pregnancy to a hospital
+yy
+Avoid NSAIDs e.g. Diclofenac in the 3rd trimester
+yy
+Opiods like pethidine and morphine for pain management should be 
+used with care during labour due to respiration depression effects on 
+baby (See section on Analgesia in Labour)
+yy
+Identify and treat underlying triggers e.g UTI, malaria, dehydration 
+etc. (See appropriate sections)
+yy
+Blood transfusion is recommended if haemogloblin level is less than 
+7g/dl at 36 weeks and/or during crises (See section on ‘Sickle Cell 
+Disease’)
+yy
+If in vaso-oclusive crises maintain hydration with IV fluids (crystalloids) 
+2-4 litres in 24 hours, and provide analgesia (See section on ‘Sickle 
+Cell Disease’)
+yy
+Acute chest syndrome (ACS)- foetal monitoring is essential during 
+this crisis (See section on ‘Acute Chest Syndrome’)
+Pharmacological treatment 
+A.     Antenatal treatments 
+(See section on Pharmacological treatments under ‘Antenatal Care’)
+
+--- Page 370 ---
+— Analgesia in Labour —
+Standard Treatment Guidelines, 7th Edition, 2017
+352
+123.	Analgesia in Labour
+The pain threshold may be low during labour on account of fear, 
+anxiety and uncertainty. Adequate pain relief during labour results in less 
+anxiety and good progress.
+In the first stage of labour pain relief may be required for painful 
+uterine contractions, whereas in the second stage of labour, analgesia is 
+required for instrumental delivery and when an episiotomy is given.
+Pharmacological treatment
+A. 	 During the first stage of labour - parenteral 
+Evidence Rating: [C]
+yy
+Morphine, IV, 2.5-5 mg 4 hourly as required 
+And
+yy
+Metoclopramide, IV, 5-10 mg 8 hourly as required for vomiting
+Or
+yy
+Pethidine hydrochloride, IM, 50-100 mg stat. repeated as required 
+3-4 hours later (Maximum 400 mg in 24 hours)
+And
+yy
+Promethazine, IV/IM, 25 mg as required (Maximum 25 mg 6 hourly) 
+as required to reduce the chances of vomiting and to potentiate the 
+analgesic effect of Pethidine
+Box 13-7: 
+yy
+Given IM, the maximum analgesic effect of Pethidine is obtained after 45 
+minutes and lasts for 3-4 hours. It is therefore best not to give it when deliv­
+ery is anticipated within 4 hours i.e. up to 6-7 cm dilatation 
+yy
+If the baby is born within 6 hours of Pethidine administration it may have 
+respiratory depression requiring narcotic antagonists such as Naloxone IM, 
+100 microgram/kg stat. (If no response, give subsequent dose of 100 micro­
+gram after 3-8 minutes). Continue resuscitation with oxygen via a facemask 
+or through an endotracheal tube and self inflating (Ambu) bag until the de­
+pression is reversed.
+yy
+However, Pethidine should not be withheld from patients who need anal­
+gesia when the cervix is already 6-7 cm dilated in which case 50-75 mg IM 
+Pethidine with 12.5-25 mg. Promethazine may be given intravenously. 
+B. 	 During the first stage of labour – inhalational 
+yy
+Nitrous oxide and Oxygen mixture, 50:50 
+Note 13-10
+To be used in the late first stage when delivery is expected within 1 hour.  
+
+--- Page 371 ---
+— Analgesia in Labour —
+Chapter 13: Obstetric Care and Obstetric Disorders
+353
+C. 	 During the first stage of labour - epidural 
+Note 13-11
+This procedure is best carried out by an anaesthetist.   
+D.     During the second stage of labour 
+yy
+Local Anaesthetics for episiotomy and pudendal block anaesthesia to 
+facilitate instrumental delivery.
+yy
+Lidocaine hydrochloride (Xylocaine/Lignocaine) 1%, with or without 
+adrenaline, infiltrated in the perineum before an episiotomy. If not 
+given before delivery it can be given before the repair of the episi­
+otomy
+E.     Anaesthesia for short obstetric procedures e.g. manual removal of 
+placenta, repair of large vaginal and cervical tears
+yy
+Pethidine, IM or IV, 1 mg/kg slowly (max. 100 mg) if no anaesthetist 
+is available
+And
+yy
+Promethazine hydrochloride, IM, 25 mg stat. (if vomiting occurs)
+Or 
+yy
+Metoclopramide, IV, 5-10 mg 8 hourly as required  
+And
+yy
+Diazepam, slow IV, 5-10 mg (at a rate of 2.5 mg per minute)
+Note 13-12
+Monitor respiratory rate closely. Stop Diazepam if respiratory rate is less than 
+10 /minute).
+Do not mix the two drugs in the same syringe.
+2nd Line Treatment 
+yy
+Ketamine, IM, 5-10 mg/kg stat.
+Or
+yy
+Ketamine, IV slowly, 1-2 mg/kg
+Or
+yy
+Ketamine, IV infusion, (For longer procedures) 1 mg per ml of ket­
+amine in dextrose 5% or normal saline (maintenance dose 10-45 mi­
+crogram per kg per minute adjusted according to response. 
+And
+yy
+Diazepam, slow IV, 5-10 mg, administered over 2-3 minutes (approx­
+imately 2.5 mg per minute) to prevent Hallucinations
+F.      Premedication before Ketamine administration
+yy
+Atropine, IM, 600 microgram stat. 
+And
+yy
+Oxygen, by face mask, 6-8 L/minute

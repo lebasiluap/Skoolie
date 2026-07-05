@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Skoolie",
+    "slug": "skoolie",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.skoolie.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow Skoolie to access your photo library to set a profile picture.",
+        "NSCameraUsageDescription": "Allow Skoolie to use your camera to take a profile photo."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.skoolie.app",
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Skoolie to access your photos."
+        }
+      ],
+      "expo-notifications"
+    ],
+    "scheme": "skoolie",
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

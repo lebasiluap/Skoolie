@@ -8,7 +8,7 @@ import BookmarkButton from '@/components/BookmarkButton'
 
 const XP_PER_CORRECT = 10
 const XP_PER_WRONG = 2
-const OPTION_LETTERS = ['A', 'B', 'C', 'D']
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
 
 interface Props {
   questions: Question[]
@@ -41,7 +41,7 @@ function shuffleQuestions(questions: Question[]): ShuffledQuestion[] {
     const newCorrectIdx = items.findIndex(it => it.origLetter === q.correct_answer)
     return {
       ...q,
-      displayOptions: items.map((it, i) => it.text.replace(/^[A-D]\.\s*/, `${OPTION_LETTERS[i]}. `)),
+      displayOptions: items.map((it, i) => it.text.replace(/^[A-E]\.\s*/, `${OPTION_LETTERS[i]}. `)),
       displayCorrect: OPTION_LETTERS[newCorrectIdx],
       origLetters: items.map(it => it.origLetter),
     }
@@ -228,7 +228,7 @@ export default function MCQClient({
                         <div style={{ width: 30, height: 30, borderRadius: '50%', background: isAns ? 'var(--teal)' : isSel ? 'var(--red)' : 'var(--surface-3)', color: (isAns || isSel) ? '#fff' : 'var(--text-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
                           {isAns ? '✓' : isSel ? '✗' : letter}
                         </div>
-                        <span style={{ fontSize: 14, fontWeight: isAns ? 700 : 600, color: isAns ? 'var(--teal-deep)' : isSel ? 'var(--red)' : 'var(--text)' }}>{opt.replace(/^[A-D]\.\s*/, '')}</span>
+                        <span style={{ fontSize: 14, fontWeight: isAns ? 700 : 600, color: isAns ? 'var(--teal-deep)' : isSel ? 'var(--red)' : 'var(--text)' }}>{opt.replace(/^[A-E]\.\s*/, '')}</span>
                       </div>
                     )
                   })}
@@ -343,7 +343,7 @@ export default function MCQClient({
                 <span style={{ width: 32, height: 32, borderRadius: '50%', background: chipBg, color: chipFg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
                   {letter}
                 </span>
-                <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4, color: textColor }}>{option.replace(/^[A-D]\.\s*/, '')}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.4, color: textColor }}>{option.replace(/^[A-E]\.\s*/, '')}</span>
               </button>
             )
           })}

@@ -1,0 +1,1932 @@
+A.  Nondepolarizing (competitive) blockers
+The first known NMB was curare [kyoo-RAH-ree], which Amazon hunters used to paralyze prey. The development
+of tubocurarine [too-boe-kyoo-AR-een] followed, but it has been replaced by agents with fewer adverse effects,
+such as cisatracurium [cis-a-trah-CURE-ih-um], mivacurium [mi-vah-KYOO-ree-um], pancuronium [pan-kure-OH-
+nee-um], rocuronium [roe-kyoor-OH-nee-um], and vecuronium [ve-KYOO-roe-nee-um].
+1.  Mechanism of action
+a.  At low doses
+NMBs competitively block ACh at the nicotinic receptors (Figure 5.9). They compete with ACh at the receptor
+without stimulating it, thus preventing depolarization of the muscle cell membrane and inhibiting muscular
+contraction. Their competitive action can be overcome by administration of cholinesterase inhibitors, such as
+neostigmine and edrophonium, which increase the concentration of ACh in the NMJ. Clinicians employ this strategy
+to shorten the duration of neuromuscular blockade. In addition, at low doses the muscle responds to direct electrical
+stimulation from a peripheral nerve stimulator to varying degrees, allowing for monitoring of the extent of
+neuromuscular blockade.
+Figure 5.9 Mechanism of action of competitive neuromuscular blocking drugs.
+b.  At high doses
+Nondepolarizing agents can block the ion channels of the motor end plate. This leads to further weakening of
+neuromuscular transmission, reducing the ability of cholinesterase inhibitors to reverse the actions of the
+nondepolarizing blockers. With complete blockade, the muscle does not respond to direct electrical stimulation.
+2.  Actions
+Muscles have differing sensitivity to blockade by competitive agents. Small, rapidly contracting muscles of the face
+and eye are most susceptible and are paralyzed first, followed by the fingers, limbs, neck, and trunk muscles. Next,
+the intercostal muscles are affected and, lastly, the diaphragm. The muscles recover in the reverse manner. [Note:
+Sugammadex is a selective relaxant-binding agent that terminates the action of both rocuronium and vecuronium and
+can be used to speed recovery (see Chapter 13).]
+3.  Pharmacokinetics
+All NMBs are injected intravenously or occasionally intramuscularly. These agents possess two or more quaternary
+amines in their bulky ring structure that prevent absorption from the gut. They penetrate membranes very poorly and
+do not enter cells or cross the blood–brain barrier. Drug action is terminated in a variety of ways (Figure 5.10).
+Pancuronium is excreted unchanged in urine. Cisatracurium undergoes organ-independent metabolism (via
+Hofmann elimination) to laudanosine, which is further metabolized and renally excreted. The amino steroid drugs
+vecuronium and rocuronium are deacetylated in the liver and excreted unchanged in bile. Mivacurium is eliminated
+by plasma cholinesterase. The choice of agent depends on the desired onset and duration of muscle relaxation and
+the route of elimination. Characteristics of the neuromuscular-blocking drugs are shown in Figure 5.11.
+201
+www.webofpharma.com
+Figure 5.10 Pharmacokinetics of the neuromuscular blocking drugs. Cisatracurium
+undergoes organ-independent elimination. Mivacurium and succinylcholine are
+metabolized by plasma cholinesterase. IV = intravenous.
+202
+www.webofpharma.com
+203
+www.webofpharma.com
+Figure 5.11 Characteristics of neuromuscular blocking drugs.
+4.  Adverse effects
+In general, these agents are safe with minimal side effects. The adverse effects of the specific NMBs are shown in
+Figure 5.11.
+5.  Drug interactions
+a.  Cholinesterase inhibitors
+Drugs such as neostigmine, physostigmine, pyridostigmine, and edrophonium can overcome the action of
+nondepolarizing NMBs. However, with increased dosage, cholinesterase inhibitors can cause a depolarizing block
+due to elevated ACh concentrations at the end plate membrane. If the NMB has entered the ion channel (is bound to
+the receptor), cholinesterase inhibitors are not as effective in overcoming blockade.
+b.  Halogenated hydrocarbon anesthetics
+Drugs such as desflurane act to enhance neuromuscular blockade by exerting a stabilizing action at the NMJ. These
+agents sensitize the NMJ to the effects of NMBs.
+c.  Aminoglycoside antibiotics
+Drugs such as gentamicin and tobramycin inhibit ACh release from cholinergic nerves by competing with calcium
+ions. They synergize with competitive blockers, enhancing neuromuscular blockade.
+d.  Calcium channel blockers
+These agents may increase the neuromuscular blockade of competitive blockers.
+204
+www.webofpharma.com
+B.  Depolarizing agents
+Depolarizing blocking agents work by depolarizing the plasma membrane of the muscle fiber, similar to the action
+of ACh. However, these agents are more resistant to degradation by acetylcholinesterase (AChE) and can more
+persistently depolarize the muscle fibers. Succinylcholine [suk-sin-il-KOE-leen] is the only depolarizing muscle
+relaxant in use today.
+1.  Mechanism of action
+Succinylcholine attaches to the nicotinic receptor and acts like ACh to depolarize the junction (Figure 5.12). Unlike
+ACh, which is instantly destroyed by AChE, the depolarizing agent persists at high concentrations in the synaptic
+cleft, remaining attached to the receptor for a longer time and providing sustained depolarization of the muscle cell.
+[Note: The duration of action is dependent on diffusion from the motor end plate and hydrolysis by plasma
+cholinesterase (also called butyrylcholinesterase or pseudocholinesterase). Genetic variants in which plasma
+cholinesterase levels are low or absent lead to prolonged neuromuscular paralysis.] The depolarizing agent first
+causes opening of the sodium channel associated with nicotinic receptors, which results in depolarization of the
+receptor (phase I). This leads to a transient twitching of the muscle (fasciculations). Continued binding of the
+depolarizing agent renders the receptor incapable of transmitting further impulses. With time, continuous
+depolarization gives way to gradual repolarization as the sodium channel closes or is blocked. This causes a
+resistance to depolarization (phase II) and flaccid paralysis.
+205
+www.webofpharma.com
+Figure 5.12 Mechanism of action of depolarizing neuromuscular blocking drugs.
+206
+www.webofpharma.com
+2.  Actions
+As with the competitive blockers, the respiratory muscles are paralyzed last. Succinylcholine initially produces brief
+muscle fasciculations that cause muscle soreness. This may be prevented by administering a small dose of
+nondepolarizing NMB prior to succinylcholine. Normally, the duration of action of succinylcholine is extremely
+short, due to rapid hydrolysis by plasma cholinesterase. However, succinylcholine that reaches the NMJ is not
+metabolized, allowing the agent to bind to nicotinic receptors, and redistribution to plasma is necessary for
+metabolism.
+3.  Therapeutic uses
+Because of its rapid onset of action, succinylcholine is useful when rapid endotracheal intubation is required. It is
+also used during electroconvulsive shock treatment.
+4.  Pharmacokinetics
+Succinylcholine is injected intravenously. Its brief duration of action results from redistribution and rapid hydrolysis
+by plasma cholinesterase. Drug effects rapidly disappear upon discontinuation.
+5.  Adverse effects
+a.  Hyperthermia
+Succinylcholine can potentially induce malignant hyperthermia in susceptible patients (see Chapter 13).
+b.  Apnea
+Administration of succinylcholine to a patient who is deficient in plasma cholinesterase or has an atypical form of
+the enzyme can lead to prolonged apnea due to paralysis of the diaphragm. The rapid release of potassium may also
+contribute to prolonged apnea in patients with electrolyte imbalances. In patients with electrolyte imbalances
+receiving digoxin or diuretics (such as heart failure patients) succinylcholine should be used cautiously or not at all.
+c.  Hyperkalemia
+Succinylcholine increases potassium release from intracellular stores. This may be particularly dangerous in burn
+patients and patients with massive tissue damage in which potassium has been rapidly lost or in patients with renal
+failure.
+207
+www.webofpharma.com
+5.1
+5.2
+5.3
+5.4
+5.5
+Study Questions
+Choose the ONE best answer.
+During an ophthalmic surgical procedure, the surgeon wanted to constrict the pupil using a miotic drug.
+However, he accidentally used another drug that caused dilation of the pupil (mydriasis). Which drug was
+most likely used?
+A.  Acetylcholine
+B.  Pilocarpine
+C.  Tropicamide
+D.  Bethanechol
+Correct answer = C. Muscarinic agonists such as ACh, pilocarpine, and bethanechol contract the circular muscles
+of iris sphincter and cause constriction of the pupil (miosis), whereas muscarinic antagonists such as tropicamide
+prevent contraction of the circular muscles of the iris and cause dilation of the pupil (mydriasis).
+Sarin is a nerve gas that is an organophosphate cholinesterase inhibitor. Which agent could be used as an
+antidote to sarin poisoning?
+A.  Pilocarpine
+B.  Carbachol
+C.  Atropine
+D.  Physostigmine
+Correct answer = C. Sarin is an organophosphate cholinesterase inhibitor. It causes an increase in ACh levels in
+tissues that leads to cholinergic crisis through activation of muscarinic and nicotinic receptors. Most symptoms of
+cholinergic crisis are mediated by muscarinic receptors and, therefore, the muscarinic antagonist atropine is used
+as an antidote for sarin poisoning. Cholinergic agonists such as pilocarpine, carbachol, and physostigmine
+(indirect agonists) worsen symptoms of sarin poisoning.
+A patient with Alzheimer disease needs treatment for overactive bladder (OAB). Which drug is the best
+choice for this patient?
+A.  Darifenacin
+B.  Solifenacin
+C.  Tolterodine
+D.  Trospium
+Correct answer = D. All of agents for OAB except trospium cross the blood–brain barrier to various degrees and
+could worsen dementia symptoms in Alzheimer disease. Trospium is a quaternary ammonium compound that
+minimally crosses the blood–brain barrier.
+A patient with asthma was prescribed a β2 agonist for acute relief of bronchospasm, but did not respond to
+treatment. Which drug is the most likely next option for this patient?
+A.  Benztropine
+B.  Ipratropium
+C.  Oxybutynin
+D.  Physostigmine
+Correct answer = B. Major receptors present in the bronchial tissues are muscarinic and adrenergic β2 receptors.
+Muscarinic activation causes bronchoconstriction, and β2 receptor activation causes bronchodilation. Therefore,
+direct or indirect (physostigmine) muscarinic agonists worsen bronchospasm. Ipratropium is a muscarinic
+antagonist that can relax bronchial smooth muscles and relieve bronchospasm in patients who are not responsive
+to β2 agonists. Benztropine is used in the treatment of Parkinson disease or relief of extrapyramidal symptoms
+from antipsychotics. Oxybutynin is used for overactive bladder.
+A 50-year-old male who is noncompliant with medications was recently diagnosed with chronic obstructive
+pulmonary disease (COPD). His physician would like to prescribe an inhaled anticholinergic that is dosed
+once or twice daily. Which drug is most appropriate for this patient?
+A.  Atropine
+B.  Ipratropium
+C.  Tiotropium
+D.  Trospium
+Correct answer = C. The physician should prescribe a long-acting muscarinic antagonist (LAMA) so that the
+patient has to inhale the medication only 1 or 2 times daily. Tiotropium is a LAMA, whereas ipratropium is a
+short-acting muscarinic antagonist (SAMA). Atropine and trospium are muscarinic antagonists, but are not
+indicated for pulmonary conditions such as asthma or COPD and are not available as inhaled formulations.
+208
+www.webofpharma.com
+5.6
+5.7
+5.8
+5.9
+5.10
+Which is the most effective drug for motion sickness for a person planning to go on a cruise?
+A.  Atropine
+B.  Fesoterodine
+C.  Scopolamine
+D.  Tropicamide
+Correct answer = C. All muscarinic antagonists (anticholinergic drugs) listed are theoretically useful as
+antimotion sickness drugs; however, scopolamine is the most effective in preventing motion sickness.
+Tropicamide mostly has ophthalmic uses, and fesoterodine is used for overactive bladder.
+Which is correct regarding ganglion-blocking drugs?
+A.  Blockade of sympathetic ganglia could result in reduced blood pressure.
+B.  Blockade of parasympathetic ganglia could result in reduced heart rate.
+C.  Nicotine is a nondepolarizing ganglion blocker.
+D.  Atropine is a nondepolarizing ganglion blocker.
+Correct answer = A. Selective blockade (in theory) of the sympathetic ganglion causes reduction in
+norepinephrine release and, therefore, reduction in heart rate and blood pressure. Selective blockade (in theory) of
+the parasympathetic ganglion causes reduction in ACh release and an increase in heart rate. Receptors at both
+sympathetic and parasympathetic ganglia are of the nicotinic type. Nicotine is an agonist at nicotinic receptors
+and produces a depolarizing block in the ganglia. Atropine is a muscarinic antagonist and has no effect on the
+nicotinic receptors found in the ganglia.
+Which drug is useful in treating sinus bradycardia?
+A.  Atropine
+B.  Cisatracurium
+C.  Neostigmine
+D.  Succinylcholine
+Correct answer = A. Sinus bradycardia is a condition where the heart rate is below normal and most often caused
+by increased vagal tone (increased release of ACh in the sinoatrial [SA] node that acts on muscarinic receptors to
+reduce heart rate). A muscarinic antagonist such as atropine is useful in this situation to bring the heart rate back
+to normal. Succinylcholine and cisatracurium are nicotinic antagonists and have no effect on muscarinic receptors
+in the SA node. Neostigmine is a cholinesterase inhibitor and can worsen bradycardia by increasing the level of
+ACh in the SA node.
+An ICU patient with severe lung injury requires a neuromuscular blocking agent to assist in his ventilator
+management. He has liver disease and is currently in renal failure. Which neuromuscular blocker is the best
+choice for this patient?
+A.  Cisatracurium
+B.  Pancuronium
+C.  Vecuronium
+D.  Rocuronium
+Correct answer = A. Pancuronium is renally eliminated and the patient has renal failure. Vecuronium and
+rocuronium are hepatically metabolized and the patient has liver disease. Cisatracurium is cleared by organ-
+independent metabolism (Hofmann elimination).
+Where would you expect to see the first return of function in skeletal muscles following discontinuation of a
+nondepolarizing neuromuscular blocking agent?
+A.  Arms
+B.  Diaphragm
+C.  Fingers
+D.  Pupils
+Correct answer = B. Following administration of a neuromuscular blocker, the facial muscles are impacted first,
+but the pupils are not controlled by skeletal muscle and are not affected. The fingers and arms would be next, with
+the diaphragm function lost last. Function returns in the opposite order, so function of the diaphragm returns first.
+209
+www.webofpharma.com
+6
+Adrenergic Agonists
+Rajan Radhakrishnan
+210
+www.webofpharma.com
+I.  Overview
+The adrenergic drugs affect receptors that are stimulated by norepinephrine (noradrenaline) or epinephrine
+(adrenaline). These receptors are known as adrenergic receptors or adrenoceptors. Drugs that activate adrenergic
+receptors are termed sympathomimetics, and drugs that block activation of adrenergic receptors are termed
+sympatholytics. Some sympathomimetics directly activate adrenergic receptors (direct-acting agonists), while others
+act indirectly by enhancing release or blocking reuptake of norepinephrine (indirect-acting agonists). This chapter
+describes agents that either directly or indirectly stimulate adrenoceptors (Figure 6.1). Sympatholytic drugs are
+discussed in Chapter 7.
+Figure 6.1 Summary of adrenergic agonists. Agents marked with an asterisk (*) are
+211
+www.webofpharma.com
+catecholamines.
+212
+www.webofpharma.com
+II.  The Adrenergic Neuron
+Adrenergic neurons release norepinephrine as the primary neurotransmitter. These neurons are found in the central
+nervous system (CNS) and in the sympathetic nervous system, where they serve as links between ganglia and the
+effector organs. Adrenergic drugs act on adrenergic receptors, located either presynaptically on the neuron or
+postsynaptically on the effector organ (Figure 6.2).
+Figure 6.2 Sites of actions of adrenergic agonists.
+213
+www.webofpharma.com
+A.  Neurotransmission at adrenergic neurons
+Neurotransmission in adrenergic neurons closely resembles that described for the cholinergic neurons (see Chapter
+4), except that norepinephrine is the neurotransmitter instead of acetylcholine. Neurotransmission involves the
+following steps: synthesis, storage, release, and receptor binding of norepinephrine, followed by removal of the
+neurotransmitter from the synaptic gap (Figure 6.3).
+Figure 6.3 Synthesis and release of norepinephrine from the adrenergic neuron. DOPA =
+dihydroxyphenylalanine; MAO = monoamine oxidase; NE = norepinephrine; SNRI =
+serotonin–norepinephrine reuptake inhibitor.
+1.  Synthesis of norepinephrine
+Tyrosine is transported by a carrier into the adrenergic neuron, where it is hydroxylated to dihydroxyphenylalanine
+(DOPA) by tyrosine hydroxylase. This is the rate-limiting step in the formation of norepinephrine. DOPA is then
+decarboxylated by the enzyme aromatic L-amino acid decarboxylase to form dopamine in the presynaptic neuron.
+2.  Storage of norepinephrine in vesicles
+Dopamine is then transported into synaptic vesicles by an amine transporter system. This carrier system is blocked
+by reserpine (see Chapter 7). Next, dopamine is hydroxylated to form norepinephrine by the enzyme dopamine β-
+hydroxylase.
+3.  Release of norepinephrine
+An action potential arriving at the nerve junction triggers an influx of calcium ions from the extracellular fluid into
+the cytoplasm of the neuron. The increase in calcium causes synaptic vesicles to fuse with the cell membrane and to
+undergo exocytosis and expel their contents into the synapse. Drugs such as guanethidine block this release.
+4.  Binding to receptors
+Norepinephrine released from the synaptic vesicles diffuses into the synaptic space and binds to postsynaptic
+214
+www.webofpharma.com
+receptors on the effector organ or to presynaptic receptors on the nerve ending. Binding of norepinephrine to
+receptors triggers a cascade of events within the cell, resulting in the formation of intracellular second messengers
+that act as links (transducers) in the communication between the neurotransmitter and the action generated within the
+effector cell. Adrenergic receptors use both the cyclic adenosine monophosphate (cAMP) second messenger system
+and the phosphatidylinositol cycle to transduce the signal into an effect. Norepinephrine also binds to presynaptic
+receptors (mainly α2 subtype) that modulate the release of the neurotransmitter.
+5.  Removal of norepinephrine
+Norepinephrine may 1) diffuse out of the synaptic space and enter the systemic circulation, 2) be metabolized to
+inactive metabolites by catechol-O-methyltransferase (COMT) in the synaptic space, or 3) undergo reuptake back
+into the neuron. The reuptake by the neuronal membrane involves a sodium–chloride (Na+/Cl−)–dependent
+norepinephrine transporter that can be inhibited by tricyclic antidepressants (TCAs), such as imipramine; by
+serotonin–norepinephrine reuptake inhibitors such as duloxetine; or by cocaine. Reuptake of norepinephrine into the
+presynaptic neuron is the primary mechanism for termination of its effects.
+6.  Potential fates of recaptured norepinephrine
+Once norepinephrine reenters the adrenergic neuron, it may be taken up into synaptic vesicles via the amine
+transporter system and be sequestered for release by another action potential, or it may persist in a protected pool in
+the cytoplasm. Alternatively, norepinephrine can be oxidized by monoamine oxidase (MAO) present in neuronal
+mitochondria.
+215
+www.webofpharma.com
+B.  Adrenergic receptors (adrenoceptors)
+In the sympathetic nervous system, several classes of adrenoceptors can be distinguished pharmacologically. Two
+main families of receptors, designated α and β, are classified based on response to the adrenergic agonists
+epinephrine, norepinephrine, and isoproterenol. Both the α and β receptor types have a number of specific receptor
+subtypes. Alterations in the primary structure of the receptors influence their affinity for various agents.
+1.  α-Adrenoceptors
+The α-adrenoceptors show a weak response to the synthetic agonist isoproterenol, but they are responsive to the
+naturally occurring catecholamines epinephrine and norepinephrine (Figure 6.4). For α receptors, the rank order of
+potency and affinity is epinephrine ≥ norepinephrine >> isoproterenol. The α-adrenoceptors are divided into two
+subtypes, α1 and α2, based on their affinities for α agonists and antagonists. For example, α1 receptors have a higher
+affinity for phenylephrine than α2 receptors. Conversely, the drug clonidine selectively binds to α2 receptors and has
+less effect on α1 receptors.
+216
+www.webofpharma.com
+Figure 6.4 Types of adrenergic receptors.
+a.  α1 Receptors
+These receptors are present on the postsynaptic membrane of the effector organs and mediate many of the classic
+effects, originally designated as α-adrenergic, involving constriction of smooth muscle. Activation of α1 receptors
+initiates a series of reactions through the G-protein activation of phospholipase C, ultimately resulting in the
+generation of second messengers inositol-1,4,5-trisphosphate (IP3) and diacylglycerol (DAG). IP3 initiates the
+release of Ca2+ from the endoplasmic reticulum into the cytosol, and DAG turns on other proteins within the cell
+(Figure 6.5).
+217
+www.webofpharma.com
+Figure 6.5 Second messengers mediate the effects of α receptors. DAG = diacylglycerol;
+IP3 = inositol trisphosphate; ATP = adenosine triphosphate; cAMP = cyclic adenosine
+monophosphate.
+b.  α2 Receptors
+These receptors are located primarily on sympathetic presynaptic nerve endings and control the release of
+norepinephrine. When a sympathetic adrenergic nerve is stimulated, a portion of the released norepinephrine “circles
+back” and reacts with α2 receptors on the presynaptic membrane (Figure 6.5). Stimulation of α2 receptors causes
+feedback inhibition and inhibits further release of norepinephrine from the stimulated adrenergic neuron. This
+inhibitory action serves as a local mechanism for modulating norepinephrine output when there is high sympathetic
+218
+www.webofpharma.com
+activity. [Note: In this instance, by inhibiting further output of norepinephrine from the adrenergic neuron, these
+receptors are acting as inhibitory autoreceptors.] α2 Receptors are also found on presynaptic parasympathetic
+neurons. Norepinephrine released from a presynaptic sympathetic neuron can diffuse to and interact with these
+receptors, inhibiting acetylcholine release. [Note: In these instances, these receptors are behaving as inhibitory
+heteroreceptors.] This is another mechanism to modulate autonomic activity in a given area. In contrast to α1
+receptors, the effects of binding at α2 receptors are mediated by inhibition of adenylyl cyclase and by a fall in the
+levels of intracellular cAMP.
+c.  Further subdivisions
+The α1 and α2 receptors are further divided into α1A, α1B, α1C, and α1D and into α2A, α2B, and α2C. This extended
+classification is necessary for understanding the selectivity of some drugs. For example, tamsulosin is a selective α1A
+antagonist that is used to treat benign prostatic hyperplasia. The drug has fewer cardiovascular side effects because it
+targets α1A subtype receptors found primarily in the urinary tract and prostate gland and does not affect the α1B
+subtype found in the blood vessels.
+2.  β-Adrenoceptors
+Responses of β receptors differ from those of α receptors and are characterized by a strong response to
+isoproterenol, with less sensitivity to epinephrine and norepinephrine (Figure 6.4). For β receptors, the rank order of
+potency is isoproterenol > epinephrine > norepinephrine. The β-adrenoceptors can be subdivided into three major
+subgroups, β1, β2, and β3, based on their affinities for adrenergic agonists and antagonists. β1 receptors have
+approximately equal affinities for epinephrine and norepinephrine, whereas β2 receptors have a higher affinity for
+epinephrine than for norepinephrine. Thus, tissues with a predominance of β2 receptors (such as the vasculature of
+skeletal muscle) are particularly responsive to the effects of circulating epinephrine released by the adrenal medulla.
+Binding of a neurotransmitter at any of the three types of β receptors results in activation of adenylyl cyclase and
+increased concentrations of cAMP within the cell.
+3.  Distribution of receptors
+Adrenergically innervated organs and tissues usually have a predominant type of receptor. For example, tissues such
+as the vasculature of skeletal muscle have both α1 and β2 receptors, but the β2 receptors predominate. Other tissues
+may have one type of receptor almost exclusively. For example, the heart contains predominantly β1 receptors.
+4.  Characteristic responses mediated by adrenoceptors
+It is useful to organize the physiologic responses to adrenergic stimulation according to receptor type, because many
+drugs preferentially stimulate or block one type of receptor. Figure 6.6 summarizes the most prominent effects
+mediated by the adrenoceptors. As a generalization, stimulation of α1 receptors characteristically produces
+vasoconstriction (particularly in skin and abdominal viscera) and an increase in total peripheral resistance and blood
+pressure. Stimulation of β1 receptors characteristically causes cardiac stimulation (increase in heart rate and
+contractility), whereas stimulation of β2 receptors produces vasodilation (in skeletal muscle vascular beds) and
+smooth muscle relaxation. β3 Receptors are involved in lipolysis (along with β1), and also have effects on the
+detrusor muscle of the bladder.
+Figure 6.6 Major effects mediated by α- and β-adrenoceptors.
+5.  Desensitization of receptors
+Prolonged exposure to the catecholamines reduces the responsiveness of these receptors, a phenomenon known as
+desensitization. Three mechanisms have been suggested to explain this phenomenon: 1) sequestration of the
+receptors so that they are unavailable for interaction with the ligand; 2) down-regulation, that is, a disappearance of
+the receptors either by destruction or by decreased synthesis; and 3) an inability to couple to G-protein, because the
+receptor has been phosphorylated on the cytoplasmic side.
+219
+www.webofpharma.com
+220
+www.webofpharma.com
+III.  Characteristics of Adrenergic Agonists
+Most adrenergic drugs are derivatives of β-phenylethylamine (Figure 6.7). Substitutions on the benzene ring or on
+the ethylamine side chains produce a variety of compounds with varying abilities to differentiate between α and β
+receptors and to penetrate the CNS. Two important structural features of these drugs are 1) the number and location
+of OH substitutions on the benzene ring and 2) the nature of the substituent on the amino nitrogen.
+221
+www.webofpharma.com
+222
+www.webofpharma.com
+Figure 6.7 Structures of several important adrenergic agonists. Drugs containing the
+catechol ring are shown in yellow.
+223
+www.webofpharma.com
+A.  Catecholamines
+Sympathomimetic amines that contain the 3,4-dihydroxybenzene group (such as epinephrine, norepinephrine,
+isoproterenol, and dopamine) are called catecholamines. These compounds share the following properties:
+1.  High potency
+Catecholamines show the highest potency in directly activating α or β receptors.
+2.  Rapid inactivation
+Catecholamines are metabolized by COMT postsynaptically and by MAO intraneuronally, by COMT and MAO in
+the gut wall, and by MAO in the liver. Thus, catecholamines have only a brief period of action when given
+parenterally, and they are inactivated (ineffective) when administered orally.
+3.  Poor penetration into the CNS
+Catecholamines are polar and, therefore, do not readily penetrate into the CNS. Nevertheless, most catecholamines
+have some clinical effects (anxiety, tremor, and headaches) that are attributable to action on the CNS.
+224
+www.webofpharma.com
+B.  Noncatecholamines
+Compounds lacking the catechol hydroxyl groups have longer half-lives, because they are not inactivated by COMT.
+These include phenylephrine, ephedrine, and amphetamine (Figure 6.7). These agents are poor substrates for MAO
+(an important route of metabolism) and, thus, show a prolonged duration of action. Increased lipid solubility of
+many of the noncatecholamines (due to lack of polar hydroxyl groups) permits greater access to the CNS.
+225
+www.webofpharma.com
+C.  Substitutions on the amine nitrogen
+The nature of the substituent on the amine nitrogen is important in determining β selectivity of the adrenergic
+agonist. For example, epinephrine, with a –CH3 substituent on the amine nitrogen, is more potent at β receptors than
+norepinephrine, which has an unsubstituted amine. Similarly, isoproterenol, which has an isopropyl substituent –
+CH(CH3)2 on the amine nitrogen (Figure 6.7), is a strong β agonist with little α activity (Figure 6.4).
+226
+www.webofpharma.com
+D.  Mechanism of action of adrenergic agonists
+1.  Direct-acting agonists
+These drugs act directly on α or β receptors, producing effects similar to those that occur following stimulation of
+sympathetic nerves or release of epinephrine from the adrenal medulla (Figure 6.8). Examples of direct-acting
+agonists include epinephrine, norepinephrine, isoproterenol, dopamine, and phenylephrine.
+Figure 6.8 Sites of action of direct-, indirect-, and mixed-acting adrenergic agonists.
+2.  Indirect-acting agonists
+These agents may block the reuptake of norepinephrine or cause the release of norepinephrine from the cytoplasmic
+pools or vesicles of the adrenergic neuron (Figure 6.8). The norepinephrine then traverses the synapse and binds to α
+or β receptors. Examples of reuptake inhibitors and agents that cause norepinephrine release include cocaine and
+227
+www.webofpharma.com
+amphetamine, respectively.
+3.  Mixed-action agonists
+Ephedrine and its stereoisomer, pseudoephedrine, both stimulate adrenoceptors directly and enhance release of
+norepinephrine from the adrenergic neuron (Figure 6.8).
+228
+www.webofpharma.com
+IV.  Direct-Acting Adrenergic Agonists
+Direct-acting agonists bind to adrenergic receptors on effector organs without interacting with the presynaptic
+neuron. As a group, these agents are widely used in clinical practice.
+229
+www.webofpharma.com
+A.  Epinephrine
+Epinephrine [ep-i-NEF-rin] is one of the four catecholamines (epinephrine, norepinephrine, dopamine, and
+dobutamine) commonly used in therapy. The first three are naturally occurring neurotransmitters, and the latter is a
+synthetic compound. In the adrenal medulla, norepinephrine is methylated to yield epinephrine, which is stored in
+chromaffin cells along with norepinephrine. On stimulation, the adrenal medulla releases about 80% epinephrine
+and 20% norepinephrine directly into the circulation. Epinephrine interacts with both α and β receptors. At low
+doses, β effects (vasodilation) on the vascular system predominate, whereas at high doses, α effects
+(vasoconstriction) are the strongest.
+1.  Actions
+a.  Cardiovascular
+The major actions of epinephrine are on the cardiovascular system. Epinephrine strengthens the contractility of the
+myocardium (positive inotrope: β1 action) and increases its rate of contraction (positive chronotrope: β1 action).
+Therefore, cardiac output increases. These effects increase oxygen demands on the myocardium. Epinephrine
+activates β1 receptors on the kidney to cause renin release. Renin is an enzyme involved in the production of
+angiotensin II, a potent vasoconstrictor. Epinephrine constricts arterioles in the skin, mucous membranes, and
+viscera (α effects), and it dilates vessels going to the liver and skeletal muscle (β2 effects). These combined effects
+result in a decrease in renal blood flow. Therefore, the cumulative effect is an increase in systolic blood pressure,
+coupled with a slight decrease in diastolic pressure due to β2 receptor–mediated vasodilation in the skeletal muscle
+vascular bed (Figure 6.9).
+230
+www.webofpharma.com
+Figure 6.9 Cardiovascular effects of intravenous infusion of low doses of epinephrine.
+b.  Respiratory
+Epinephrine causes powerful bronchodilation by acting directly on bronchial smooth muscle (β2 action). It also
+inhibits the release of allergy mediators such as histamine from mast cells.
+231
+www.webofpharma.com
+c.  Hyperglycemia
+Epinephrine has a significant hyperglycemic effect because of increased glycogenolysis in the liver (β2 effect),
+increased release of glucagon (β2 effect), and a decreased release of insulin (α2 effect).
+d.  Lipolysis
+Epinephrine initiates lipolysis through agonist activity on the β receptors of adipose tissue. Increased levels of
+cAMP stimulate a hormone-sensitive lipase, which hydrolyzes triglycerides to free fatty acids and glycerol.
+2.  Therapeutic uses
+a.  Bronchospasm
+Epinephrine is the primary drug used in the emergency treatment of respiratory conditions when
+bronchoconstriction has resulted in diminished respiratory function. Thus, in treatment of anaphylactic shock,
+epinephrine is the drug of choice and can be lifesaving in this setting. Within a few minutes after subcutaneous
+administration, respiratory function greatly improves.
+a.  Anaphylactic shock
+Epinephrine is the drug of choice for the treatment of type I hypersensitivity reactions (including anaphylaxis) in
+response to allergens.
+a.  Cardiac arrest
+Epinephrine may be used to restore cardiac rhythm in patients with cardiac arrest.
+d.  Local anesthesia
+Local anesthetic solutions may contain low concentrations (for example, 1:100,000 parts) of epinephrine.
+Epinephrine greatly increases the duration of local anesthesia by producing vasoconstriction at the site of injection.
+Epinephrine also reduces systemic absorption of the local anesthetic and promotes local hemostasis.
+e.  Intraocular surgery
+Epinephrine is used in the induction and maintenance of mydriasis during intraocular surgery.
+3.  Pharmacokinetics
+Epinephrine has a rapid onset but a brief duration of action (due to rapid degradation). The preferred route for
+anaphylaxis in the outpatient setting is intramuscular (anterior thigh) due to rapid absorption. In emergencies,
+epinephrine is given intravenously (IV) for the most rapid onset of action. It may also be given subcutaneously, by
+endotracheal tube, or by inhalation (Figure 6.10). It is rapidly metabolized by MAO and COMT, and the metabolites
+metanephrine and vanillylmandelic acid are excreted in urine.
+Figure 6.10 Pharmacokinetics of epinephrine. CNS = central nervous system.
+232
+www.webofpharma.com
+4.  Adverse effects
+Epinephrine can produce adverse CNS effects that include anxiety, fear, tension, headache, and tremor. It can trigger
+cardiac arrhythmias, particularly if the patient is receiving digoxin. Epinephrine can also induce pulmonary edema
+due to increased afterload caused by vasoconstrictive properties of the drug. Patients with hyperthyroidism may
+have an increased production of adrenergic receptors in the vasculature, leading to an enhanced response to
+epinephrine, and the dose must be reduced in these individuals. Inhalation anesthetics also sensitize the heart to the
+effects of epinephrine, which may lead to tachycardia. Epinephrine increases the release of endogenous stores of
+glucose. In diabetic patients, dosages of insulin may have to be increased. Nonselective β-blockers prevent
+vasodilatory effects of epinephrine on β2 receptors, leaving α receptor stimulation unopposed. This may lead to
+increased peripheral resistance and increased blood pressure.
+233
+www.webofpharma.com
+B.  Norepinephrine
+Because norepinephrine [nor-ep-ih-NEF-rin] is the neurotransmitter in the adrenergic neurons, it should,
+theoretically, stimulate all types of adrenergic receptors. However, when administered in therapeutic doses, the α-
+adrenergic receptor is most affected.
+1.  Cardiovascular actions
+a.  Vasoconstriction
+Norepinephrine causes a rise in peripheral resistance due to intense vasoconstriction of most vascular beds,
+including the kidney (α1 effect). Both systolic and diastolic blood pressures increase (Figure 6.11). [Note:
+Norepinephrine causes greater vasoconstriction than epinephrine, because it does not induce compensatory
+vasodilation via β2 receptors on blood vessels supplying skeletal muscles. The weak β2 activity of norepinephrine
+also explains why it is not useful in the treatment of bronchospasm or anaphylaxis.]
+234
+www.webofpharma.com
+235
+www.webofpharma.com
+Figure 6.11 Cardiovascular effects of intravenous infusion of norepinephrine.
+b.  Baroreceptor reflex
+Norepinephrine increases blood pressure, and this stimulates the baroreceptors, inducing a rise in vagal activity. The
+increased vagal activity produces a reflex bradycardia, which is sufficient to counteract the local actions of
+norepinephrine on the heart, although the reflex compensation does not affect the positive inotropic effects of the
+drug (Figure 6.11). When atropine, which blocks the transmission of vagal effects, is given before norepinephrine,
+stimulation of the heart by norepinephrine is evident as tachycardia.
+2.  Therapeutic uses
+Norepinephrine is used to treat shock (for example, septic shock), because it increases vascular resistance and,
+therefore, increases blood pressure. It has no other clinically significant uses.
+3.  Pharmacokinetics
+Norepinephrine is given IV for rapid onset of action. The duration of action is 1 to 2 minutes, following the end of
+the infusion. It is rapidly metabolized by MAO and COMT, and inactive metabolites are excreted in the urine.
+4.  Adverse effects
+These are similar to epinephrine. In addition, norepinephrine is a potent vasoconstrictor and may cause blanching
+and sloughing of skin along an injected vein. If extravasation (leakage of drug from the vessel into tissues
+surrounding the injection site) occurs, it can cause tissue necrosis. It should not be administered in peripheral veins,
+if possible. Impaired circulation from norepinephrine may be treated with the α receptor antagonist phentolamine.
+Alternatives to phentolamine include intradermal terbutaline and topical nitroglycerin.
+236
+www.webofpharma.com
+C.  Isoproterenol
+Isoproterenol [eye-soe-proe-TER-e-nole] is a direct-acting synthetic catecholamine that stimulates both β1- and β2-
+adrenergic receptors. Its nonselectivity is a disadvantage and the reason why it is rarely used therapeutically. Its
+action on α receptors is insignificant. Isoproterenol produces intense stimulation of the heart (β1 effect), increasing
+heart rate, contractility, and cardiac output (Figure 6.12). It is as active as epinephrine in this action. Isoproterenol
+also dilates the arterioles of skeletal muscle (β2 effect), resulting in decreased peripheral resistance. Because of its
+cardiac stimulatory action, it may increase systolic blood pressure slightly, but it greatly reduces mean arterial and
+diastolic blood pressures (Figure 6.12). Isoproterenol is also a potent bronchodilator (β2 effect). The adverse effects
+of isoproterenol are similar to the β receptor–related side effects of epinephrine.
+237
+www.webofpharma.com
+238
+www.webofpharma.com
+Figure 6.12 Cardiovascular effects of intravenous infusion of isoproterenol.
+239
+www.webofpharma.com
+D.  Dopamine
+Dopamine [DOE-pa-meen], the immediate metabolic precursor of norepinephrine, occurs naturally in the CNS in
+the basal ganglia, where it functions as a neurotransmitter, as well as in the adrenal medulla. Dopamine can activate
+α- and β-adrenergic receptors. For example, at higher doses, it causes vasoconstriction by activating α1 receptors,
+whereas at lower doses, it stimulates β1 cardiac receptors. In addition, D1 and D2 dopaminergic receptors, distinct
+from the α- and β-adrenergic receptors, occur in the peripheral mesenteric and renal vascular beds, where binding of
+dopamine produces vasodilation. D2 receptors are also found on presynaptic adrenergic neurons, where their
+activation interferes with norepinephrine release.
+1.  Actions
+a.  Cardiovascular
+Dopamine exerts a stimulatory effect on the β1 receptors of the heart, having both positive inotropic and
+chronotropic effects (Figure 6.13). At very high doses, dopamine activates α1 receptors on the vasculature, resulting
+in vasoconstriction.
+240
+www.webofpharma.com
+241
+www.webofpharma.com
+Figure 6.13 Clinically important actions of isoproterenol and dopamine.
+b.  Renal and visceral
+Dopamine dilates renal and splanchnic arterioles by activating dopaminergic receptors, thereby increasing blood
+flow to the kidneys and other viscera (Figure 6.13). These receptors are not affected by α- or β-blocking drugs, and
+in the past, low-dose (“renal-dose”) dopamine was often used in the prevention or treatment of acute renal failure.
+However, more recent data suggest there is limited clinical utility in the renal protective effects of dopamine.
+2.  Therapeutic uses
+Dopamine can be used for cardiogenic and septic shock and is given by continuous infusion. It raises blood pressure
+by stimulating the β1 receptors on the heart to increase cardiac output, and α1 receptors on blood vessels to increase
+total peripheral resistance. It enhances perfusion to the kidney and splanchnic areas, as described above. Increased
+blood flow to the kidney enhances the glomerular filtration rate and causes diuresis. By contrast, norepinephrine can
+diminish blood supply to the kidney and may reduce renal function. Dopamine is also used to treat hypotension,
+severe heart failure, and bradycardia unresponsive to other treatments.
+3.  Adverse effects
+An overdose of dopamine produces the same effects as sympathetic stimulation. Dopamine is rapidly metabolized
+by MAO or COMT, and its adverse effects (nausea, hypertension, and arrhythmias) are, therefore, short lived.
+242
+www.webofpharma.com
+E.  Fenoldopam
+Fenoldopam [fen-OL-de-pam] is an agonist of peripheral dopamine D1 receptors. It is used as a rapid-acting
+vasodilator to treat severe hypertension in hospitalized patients, acting on coronary arteries, kidney arterioles, and
+mesenteric arteries. Fenoldopam is a racemic mixture, and the R-isomer is the active component. It undergoes
+extensive first-pass metabolism and has a 10-minute elimination half-life after IV infusion. Headache, flushing,
+dizziness, nausea, vomiting, and tachycardia (due to vasodilation) may occur with this agent.
+243
+www.webofpharma.com
+F.  Dobutamine
+Dobutamine [doe-BYOO-ta-meen] is a synthetic, direct-acting catecholamine that is primarily a β1 receptor agonist
+with minor β2 and α1 effects. It increases heart rate and cardiac output with few vascular effects. Dobutamine is used
+to increase cardiac output in acute heart failure (see Chapter 18), as well as for inotropic support after cardiac
+surgery. The drug increases cardiac output and does not elevate oxygen demands of the myocardium as much as
+other sympathomimetic drugs. Dobutamine should be used with caution in atrial fibrillation, because it increases
+atrioventricular (AV) conduction. Other adverse effects are similar to epinephrine. Tolerance may develop with
+prolonged use.
+244
+www.webofpharma.com
+G.  Oxymetazoline
+Oxymetazoline [OX-ee-mee-TAZ-ih-leen] is a direct-acting synthetic adrenergic agonist that stimulates both α1- and
+α2-adrenergic receptors. Oxymetazoline is found in many over-the-counter nasal spray decongestants, as well as in
+ophthalmic drops for the relief of redness of the eyes associated with swimming, colds, and contact lenses.
+Oxymetazoline directly stimulates α receptors on blood vessels supplying the nasal mucosa and conjunctiva, thereby
+producing vasoconstriction and decreasing congestion. It is absorbed in the systemic circulation regardless of the
+route of administration and may produce nervousness, headaches, and trouble sleeping. Local irritation and sneezing
+may occur with intranasal administration. Use for greater than 3 days is not recommended, as rebound congestion
+and dependence may occur.
+245
+www.webofpharma.com
+H.  Phenylephrine
+Phenylephrine [fen-ill-EF-reen] is a direct-acting, synthetic adrenergic drug that binds primarily to α1 receptors.
+Phenylephrine is a vasoconstrictor that raises both systolic and diastolic blood pressures. It has no effect on the heart
+itself but, rather, induces reflex bradycardia when given parenterally, making it useful in the treatment of
+paroxysmal supraventricular tachycardia. The drug is used to treat hypotension in hospitalized or surgical patients
+(especially those with a rapid heart rate). Large doses can cause hypertensive headache and cardiac irregularities.
+Phenylephrine acts as a nasal decongestant when applied topically or taken orally. Although data suggest it may not
+be as effective, phenylephrine has replaced pseudoephedrine in many oral decongestants, since pseudoephedrine has
+been misused to make methamphetamine. Phenylephrine is also used in ophthalmic solutions for mydriasis.
+246
+www.webofpharma.com
+I.  Midodrine
+Midodrine, a prodrug, is metabolized to the pharmacologically active desglymidodrine. It is a selective α1 agonist,
+which acts in the periphery to increase arterial and venous tone. Midodrine is indicated for the treatment of
+orthostatic hypotension. The drug should be given three times daily, with doses at 3- or 4-hour intervals. To avoid
+supine hypertension, doses within 4 hours of bedtime are not recommended.
+247
+www.webofpharma.com
+J.  Clonidine
+Clonidine [KLOE-ni-deen] is an α2 agonist used for the treatment of hypertension. It can also be used to minimize
+symptoms of withdrawal from opiates, tobacco smoking, and benzodiazepines. Both clonidine and the α2 agonist
+guanfacine [GWAHN-fa-seen] may be used in the management of attention deficit hyperactivity disorder. Clonidine
+acts centrally on presynaptic α2 receptors to produce inhibition of sympathetic vasomotor centers, decreasing
+sympathetic outflow to the periphery. The most common side effects of clonidine are lethargy, sedation,
+constipation, and xerostomia. Abrupt discontinuation must be avoided to prevent rebound hypertension. Clonidine
+and another α2 agonist methyldopa are discussed with antihypertensives in Chapter 16.
+248
+www.webofpharma.com
+K.  Albuterol, metaproterenol, and terbutaline
+Albuterol [al-BYOO-ter-ole], metaproterenol [MET-a-proe-TER-e-nol], and terbutaline [ter-BYOO-te-leen] are
+short-acting β2 agonists (SABAs) used primarily as bronchodilators and administered by a metered-dose inhaler
+(Figure 6.14). Albuterol is the SABA of choice for the management of acute asthma symptoms, because it is more
+selective for β2 receptors than metaproterenol. Inhaled terbutaline is no longer available in the United States, but is
+still used in other countries. Injectable terbutaline is used off-label as a uterine relaxant to suppress premature labor,
+and use for this indication should not exceed 72 hours. One of the most common side effects of these agents is
+tremor, but patients tend to develop tolerance to this effect. Other side effects include restlessness, apprehension,
+and anxiety. When these drugs are administered orally, they may cause tachycardia or arrhythmia (due to β1 receptor
+activation), especially in patients with underlying cardiac disease. Monoamine oxidase inhibitors (MAOIs) also
+increase the risk of adverse cardiovascular effects, and concomitant use should be avoided.
+249
+www.webofpharma.com
+Figure 6.14 Onset and duration of bronchodilation effects of inhaled adrenergic agonists.
+250
+www.webofpharma.com
+251
+www.webofpharma.com
+L.  Salmeterol, formoterol, and indacaterol
+Salmeterol [sal-ME-ter-ole], formoterol [for-MOH-ter-ole], arformoterol (the [R,R]-enantiomer of formoterol), and
+indacaterol [IN-da-KA-ter-ol] are long-acting β2 selective agonists (LABAs) used for the management of
+respiratory disorders such as asthma and chronic obstructive pulmonary disease (see Chapter 39). A single dose by a
+metered-dose inhalation device, such as a dry powder inhaler, provides sustained bronchodilation over 12 hours,
+compared with less than 3 hours for albuterol. Unlike formoterol, however, salmeterol has a somewhat delayed
+onset of action (Figure 6.14). LABAs are not recommended as monotherapy for the treatment of asthma, because
+they have been shown to increase the risk of asthma-related deaths; however, these agents are highly efficacious
+when combined with an asthma controller medication such as an inhaled corticosteroid.
+252
+www.webofpharma.com
+M.  Mirabegron
+Mirabegron [mir-a-BEG-ron] is a β3 agonist that relaxes the detrusor smooth muscle and increases bladder capacity.
+It is used for patients with overactive bladder. Mirabegron may increase blood pressure and should not be used in
+patients with uncontrolled hypertension. It increases levels of digoxin and inhibits the CYP2D6 isozyme, which may
+enhance the effects of other medications metabolized by this pathway (for example, metoprolol).
+253
+www.webofpharma.com
+V.  Indirect-Acting Adrenergic Agonists
+Indirect-acting adrenergic agonists cause the release, inhibit the reuptake, or inhibit the degradation of epinephrine
+or norepinephrine (Figure 6.8). They potentiate the effects of epinephrine or norepinephrine produced endogenously,
+but do not directly affect postsynaptic receptors.
+254
+www.webofpharma.com
+A.  Amphetamine
+The marked central stimulatory action of amphetamine [am-FET-a-meen] is often mistaken by drug abusers as its
+only action. However, the drug can also increase blood pressure significantly by α1 agonist action on the
+vasculature, as well as β1 stimulatory effects on the heart. Its actions are mediated primarily through an increase in
+nonvesicular release of catecholamines such as dopamine and norepinephrine from nerve terminals. Thus,
+amphetamine is an indirect-acting adrenergic drug. The actions and therapeutic uses of amphetamine and its
+derivatives are discussed with CNS stimulants (see Chapter 15).
+255
+www.webofpharma.com
+B.  Tyramine
+Tyramine [TIE-ra-meen] is not a clinically useful drug, but it is important because it is found in fermented foods,
+such as aged cheese and Chianti wine. It is a normal by-product of tyrosine metabolism. Normally, it is oxidized by
+MAO in the gastrointestinal tract, but if the patient is taking MAOIs, it can precipitate serious vasopressor episodes.
+Like amphetamines, tyramine can enter the nerve terminal and displace stored norepinephrine. The released
+catecholamine then acts on adrenoceptors.
+256
+www.webofpharma.com
+C.  Cocaine
+Cocaine [koe-KANE] is unique among local anesthetics in having the ability to block the sodium–chloride (Na+/Cl
+−)–dependent norepinephrine transporter required for cellular uptake of norepinephrine into the adrenergic neuron.
+Consequently, norepinephrine accumulates in the synaptic space, resulting in enhanced sympathetic activity and
+potentiation of the actions of epinephrine and norepinephrine. Therefore, small doses of the catecholamines produce
+greatly magnified effects in an individual taking cocaine. In addition, the duration of action of epinephrine and
+norepinephrine is increased. Like amphetamines, it can increase blood pressure by α1 agonist actions and β
+stimulatory effects. Cocaine as a drug of abuse is discussed in Chapter 45.
+257
+www.webofpharma.com
+VI.  Mixed-Action Adrenergic Agonists
+Ephedrine [eh-FED-rin] and pseudoephedrine [soo-doe-eh-FED-rin] are mixed-action adrenergic agents. They not
+only enhance release of stored norepinephrine from nerve endings (Figure 6.8) but also directly stimulate both α and
+β receptors. Thus, a wide variety of adrenergic actions ensue that are similar to those of epinephrine, although less
+potent. Ephedrine and pseudoephedrine are not catecholamines and are poor substrates for COMT and MAO.
+Therefore, these drugs have a long duration of action. Ephedrine and pseudoephedrine have excellent absorption
+after oral administration and penetrate the CNS, but pseudoephedrine has fewer CNS effects. Ephedrine is
+eliminated largely unchanged in urine, and pseudoephedrine undergoes incomplete hepatic metabolism before
+elimination in urine. Ephedrine raises systolic and diastolic blood pressures by vasoconstriction and cardiac
+stimulation and it is indicated in anesthesia-induced hypotension. Ephedrine produces bronchodilation, but it is less
+potent and slower acting than epinephrine or isoproterenol. It was previously used to prevent asthma attacks but has
+been replaced by more effective medications. Ephedrine produces a mild stimulation of the CNS. This increases
+alertness, decreases fatigue, and prevents sleep. It also improves athletic performance. [Note: The clinical use of
+ephedrine is declining because of the availability of better, more potent agents that cause fewer adverse effects.
+Ephedrine-containing herbal supplements (mainly ephedra-containing products) have been banned by the U.S. Food
+and Drug Administration because of life-threatening cardiovascular reactions.] Oral pseudoephedrine is primarily
+used to treat nasal and sinus congestion. Pseudoephedrine has been illegally used to produce methamphetamine.
+Therefore, products containing pseudoephedrine have certain restrictions and must be kept behind the sales counter
+in the United States. Important characteristics of the adrenergic agonists are summarized in Figures 6.15 to 6.17.
+258
+www.webofpharma.com
+259
+www.webofpharma.com
+Figure 6.15 Some adverse effects observed with adrenergic agonists.
+Figure 6.16 Summary of β-adrenergic receptors. AV = atrioventricular; GI =
+gastrointestinal.
+260
+www.webofpharma.com
+Figure 6.17 Summary of the therapeutic uses of adrenergic agonists. ADHD = attention
+deficit hyperactivity disorder; CNS = central nervous system.
+261
+www.webofpharma.com
+6.1
+6.2
+6.3
+6.4
+6.5
+6.6
+Study Questions
+Choose the ONE best answer.
+Which of the following is correct regarding adrenergic neurotransmission?
+A.  Norepinephrine is the major neurotransmitter released from sympathetic nerve terminals.
+B.  Norepinephrine is mainly released from the adrenal glands.
+C.  Tricyclic antidepressants and cocaine prevent the release of norepinephrine from the nerve terminals.
+D.  Monoamine oxidase (MAO) converts dopamine to norepinephrine in the nerve terminal.
+Correct answer = A. Norepinephrine (NE) is the major neurotransmitter released from sympathetic nerve
+terminals. Epinephrine, not norepinephrine, is mainly released from the adrenal glands. Tricyclic antidepressants
+(TCAs) and cocaine inhibit the reuptake of norepinephrine into the sympathetic nerve terminals, but they do not
+prevent the release of NE. Dopamine is converted to norepinephrine by dopamine β-hydroxylase, not by MAO.
+Which of the following adrenergic drugs is used in the treatment of overactive bladder?
+A.  Epinephrine
+B.  Dobutamine
+C.  Phenylephrine
+D.  Mirabegron
+Correct answer = D. Detrusor muscles in the urinary bladder wall have β3 receptors. Stimulation of these
+receptors relaxes the urinary bladder wall and relieves overactive bladder. Mirabegron is a β3 agonist and
+therefore used in treating overactive bladder. None of the other drugs listed have β3 agonist activity.
+Which of the following classes of adrenergic agents has utility in the management of hypertension?
+A.  α1 Agonist
+B.  α2 Agonist
+C.  β1 Agonist
+D.  β3 Agonist
+Correct answer = B. α2 Agonists activate α2 receptors located in the presynaptic terminal of sympathetic neurons
+and cause a reduction in the release of norepinephrine from sympathetic nerve terminals. This leads to a reduction
+in blood pressure. α2 Agonists such as clonidine and methyldopa are therefore used as antihypertensive agents. α1
+Agonists cause vasoconstriction, and β1 agonists cause increased cardiac output and renin release, so these agents
+may increase blood pressure. β3 Agonists are not used in the management of hypertension.
+Which of the following is correct regarding responses mediated by adrenergic receptors?
+A.  Stimulation of α1 receptors increases blood pressure.
+B.  Stimulation of sympathetic presynaptic α2 receptors increases norepinephrine release.
+C.  Stimulation of β2 receptors increases heart rate (tachycardia).
+D.  Stimulation of β2 receptors causes bronchoconstriction.
+Correct answer = A. Stimulation of α1 receptors, mostly found in the blood vessels, causes vasoconstriction and
+an increase in blood pressure. Stimulation of α2 receptors on the sympathetic presynaptic terminal reduces the
+release of norepinephrine. β2 receptors are not found in the heart, so activation of β2 receptors does not affect
+heart rate. Stimulation of β2 receptors found in the bronchial tissues causes bronchodilation, not
+bronchoconstriction.
+An asthma patient was given a nonselective β agonist to relieve bronchoconstriction. Which adverse effect
+would you expect in this patient?
+A.  Bradycardia
+B.  Tachycardia
+C.  Hypotension (reduction in blood pressure)
+D.  Worsening bronchoconstriction
+Correct answer = B. A nonselective β agonist activates both β1 and β2 receptors. β1 Activation causes an increase
+in heart rate (tachycardia), contractility, and subsequent increase in blood pressure. It relieves bronchoconstriction
+because of the β2 receptor activation.
+A 22-year-old male is brought to the emergency room with suspected cocaine overdose. Which of the
+following symptoms is most likely in this patient?
+A.  Hypertension
+B.  Bronchoconstriction
+262
+www.webofpharma.com
+6.7
+6.8
+6.9
+6.10
+C.  Bradycardia
+D.  Miosis (constriction of pupil)
+Correct answer = A. Cocaine is an indirect adrenergic agonist that prevents the reuptake of norepinephrine into
+the nerve terminals, thus increasing the levels of NE in the synaptic cleft. The increase in NE leads to an increase
+in blood pressure (hypertension), tachycardia (not bradycardia), mydriasis (not miosis), and other symptoms of
+sympathetic overactivity.
+A 12-year-old boy with a peanut allergy is brought to the emergency room after accidental consumption of
+peanuts. He is in anaphylactic shock. Which of the following drugs is most appropriate to treat this patient?
+A.  Norepinephrine
+B.  Phenylephrine
+C.  Dobutamine
+D.  Epinephrine
+Correct answer = D. Norepinephrine has more α agonistic effects and activates mainly α1, α2, and β1 receptors.
+Epinephrine has more β agonistic effects and activates mainly α1, α2, β1, and β2 receptors. Phenylephrine has
+predominantly α effects and activates mainly α1 receptors. Dobutamine mainly activates β1 receptors and has no
+significant effects on β2 receptors. Thus, epinephrine is the drug of choice in anaphylactic shock that can both
+stimulate the heart (β1 activation) and dilate bronchioles (β2 activation).
+An elderly patient is brought to the emergency room with a blood pressure of 76/60 mm Hg, tachycardia, and
+low cardiac output. He is diagnosed with acute heart failure. Which of the following drugs is most
+appropriate to improve his cardiac function?
+A.  Epinephrine
+B.  Fenoldopam
+C.  Dobutamine
+D.  Isoproterenol
+Correct answer = C. Among the choices, the ideal drug to increase contractility in acute heart failure is
+dobutamine, since it is a selective β1-adrenergic agonist. Fenoldopam is a dopamine agonist used to treat severe
+hypertension. The other drugs are nonselective adrenergic agonists that could cause unwanted side effects.
+Which of the following adrenergic agonists is commonly present in nasal sprays available over-the-counter
+(OTC) to treat nasal congestion?
+A.  Clonidine
+B.  Albuterol
+C.  Oxymetazoline
+D.  Formoterol
+Correct answer = C. Drugs with selective α1 agonistic activity are commonly used as nasal decongestants because
+of their ability to cause vasoconstriction in the nasal vessels. Oxymetazoline is an α1 agonist and therefore the
+preferred drug among the choices as a nasal decongestant. Clonidine is an α2 agonist, albuterol is a β2 agonist, and
+formoterol is a long-acting β2 agonist.
+A patient who has hypertension and mild asthma attacks bought a herbal remedy for asthma online. He does
+not take any prescription medications for asthma, but takes a β1-selective blocker for hypertension. The
+herbal remedy relieves the asthma attacks, but his blood pressure seems to increase despite the β-blocker
+therapy. Which of the following drugs is most likely present in the herbal remedy?
+A.  Phenylephrine
+B.  Norepinephrine
+C.  Ephedrine
+D.  Salmeterol
+Correct answer = C. Both ephedrine and salmeterol can relieve asthma symptoms, as they activate β2 receptors in
+the bronchioles and cause bronchodilation. However, salmeterol is a selective β2 agonist and should not increase
+blood pressure. By contrast, ephedrine stimulates the release of norepinephrine and acts as a direct agonist at α-
+and β-adrenergic receptors, thus causing an increase in blood pressure. Phenylephrine (a nonselective α agonist)
+does not cause bronchodilation, so it would not relieve asthma symptoms. Norepinephrine is a nonselective
+adrenergic agonist that does not have any stimulatory effects on β2 receptors. In addition, norepinephrine is not
+active when given orally.
+263
+www.webofpharma.com
+264
+www.webofpharma.com
+7
+Adrenergic Antagonists
+Rajan Radhakrishnan and Sandhya Jinesh
+265
+www.webofpharma.com
+I.  Overview
+The adrenergic antagonists (also called adrenergic blockers or sympatholytics) bind to adrenoceptors but do not
+trigger the usual receptor-mediated intracellular effects. These drugs act by either reversibly or irreversibly attaching
+to the adrenoceptors, thus preventing activation by endogenous or exogenous agonists. Like the agonists, the
+adrenergic antagonists are classified according to their relative affinities for α or β receptors in the sympathetic
+nervous system. Numerous adrenergic antagonists have important roles in clinical medicine, primarily to treat
+diseases associated with the cardiovascular system. [Note: Antagonists that block dopamine receptors are most
+important in the central nervous system (CNS) and are, therefore, considered in that section.] The adrenergic
+antagonists discussed in this chapter are summarized in Figure 7.1.
+266
+www.webofpharma.com
+Figure 7.1 Summary of blocking agents and drugs affecting neurotransmitter uptake or
+release.
+267
+www.webofpharma.com
+268
+www.webofpharma.com
+II.  α-Adrenergic Blocking Agents
+α-Adrenergic blocking agents antagonize the subtype(s) of α-adrenergic receptors (α1 or α2), depending on the
+specificity of the agent for the receptor subtype(s). Drugs that block α1-adrenoceptors profoundly affect blood
+pressure. Because normal sympathetic control of the vasculature occurs in large part through agonist actions on α1-
+adrenergic receptors, blockade of these receptors reduces the sympathetic tone of the blood vessels, resulting in
+decreased peripheral vascular resistance. This lowered blood pressure induces reflex tachycardia. The magnitude of
+the response depends on the sympathetic tone of the individual when the agent is given. Selective α2-adrenergic
+blockers have limited clinical utility.
+269
+www.webofpharma.com
+A.  Phenoxybenzamine
+Phenoxybenzamine [fen-ox-ee-BEN-za-meen] is a nonselective, noncompetitive blocker of α1- and α2-adrenergic
+receptors.
+1.  Actions
+a.  Cardiovascular effects
+The drug prevents α1 receptor vasoconstriction of peripheral blood vessels caused by endogenous catecholamines,
+which leads to decreased peripheral resistance and resultant reflex tachycardia. However, by blocking presynaptic α2
+receptors on the sympathetic nerve terminals in the heart, phenoxybenzamine causes an increase in the release of
+norepinephrine, which in turn increases heart rate and cardiac output (mediated by β1 receptors). This may also lead
+to cardiac arrhythmias and anginal pain. Thus, the drug has been unsuccessful in maintaining lowered blood
+pressure in hypertension, and it is no longer used for this purpose.
+b.  Epinephrine reversal
+All α-adrenergic blockers reverse the α agonist actions of epinephrine. For example, the vasoconstrictive action of
+epinephrine is interrupted, but vasodilation of other vascular beds caused by stimulation of β2 receptors is not
+blocked. Therefore, in the presence of phenoxybenzamine, the systemic blood pressure decreases in response to
+epinephrine (Figure 7.2). [Note: The actions of norepinephrine are not reversed but are diminished because
+norepinephrine lacks significant β agonist action on the vasculature.] Phenoxybenzamine has no effect on the actions
+of isoproterenol, which is a pure β agonist (Figure 7.2).
+Figure 7.2 Summary of effects of adrenergic blockers on the changes in blood pressure
+induced by isoproterenol, epinephrine, and norepinephrine.
+270
+www.webofpharma.com
+2.  Therapeutic uses
+Phenoxybenzamine is used in the treatment of sweating and hypertension associated with pheochromocytoma, a
+catecholamine-secreting tumor of cells derived from the adrenal medulla. Phenoxybenzamine is sometimes effective
+in treating Raynaud disease and frostbite.
+3.  Adverse effects
+Phenoxybenzamine can cause postural hypotension, nasal stuffiness, nausea, and vomiting. It may inhibit
+ejaculation. It may also induce reflex tachycardia, which is mediated by the baroreceptor reflex. Phenoxybenzamine
+should be used with caution in patients with cerebrovascular or cardiovascular disease.
+271
+www.webofpharma.com
+B.  Phentolamine
+In contrast to phenoxybenzamine, phentolamine [fen-TOLE-a-meen] produces a competitive block of α1 and α2
+receptors. Effects last for approximately 4 hours after a single injection. Pharmacological effects of phentolamine
+are very similar to those of phenoxybenzamine. It is used for the diagnosis and short-term management of
+pheochromocytoma. It is also used locally to prevent dermal necrosis following extravasation of norepinephrine.
+Phentolamine is useful to treat hypertensive crisis due to abrupt withdrawal of clonidine or ingestion of tyramine-
+containing foods in patients taking monoamine oxidase inhibitors.
+272
+www.webofpharma.com
+C.  Prazosin, terazosin, and doxazosin
+Prazosin [PRAY-zoe-sin], terazosin [ter-AY-zoe-sin], and doxazosin [dox-AY-zoe-sin] are selective competitive
+blockers of the α1 receptor. In contrast to phenoxybenzamine and phentolamine, they are useful in the treatment of
+hypertension. [Note: Tamsulosin [tam-SUE-loh-sin], alfuzosin [al-FYOO-zoe-sin], and silodosin [sye-LOE-doe-sin]
+are examples of other selective α1 antagonists indicated for the treatment of benign prostatic hyperplasia (see
+Chapter 41).] Metabolism leads to inactive products that are excreted in urine except for those of doxazosin, which
+appear in feces. Doxazosin is the longest acting of these drugs.
+1.  Mechanism of action
+These agents decrease peripheral vascular resistance and lower blood pressure by causing relaxation of both arterial
+and venous smooth muscle. Unlike phenoxybenzamine and phentolamine, these drugs cause minimal changes in
+cardiac output, renal blood flow, and glomerular filtration rate. Tamsulosin, alfuzosin, and silodosin have less
+pronounced effects on blood pressure because they are less selective for α1B receptors found in the blood vessels and
+more selective for α1A receptors in the prostate and bladder. Blockade of the α1A receptors decreases tone in the
+smooth muscle of the bladder neck and prostate and improves urine flow.
+2.  Therapeutic uses
+Individuals with elevated blood pressure treated with one of these drugs do not become tolerant to its action.
+However, the first dose of these drugs may produce an exaggerated orthostatic hypotensive response (Figure 7.3)
+that can result in syncope (fainting). This action, termed a “first-dose” effect, may be minimized by adjusting the
+first dose to one-third or one-fourth of the normal dose and by giving the drug at bedtime. These drugs may cause
+modest improvement in lipid profiles and glucose metabolism in hypertensive patients. Because of inferior
+cardiovascular outcomes as compared to other antihypertensives, α1 antagonists are not used as monotherapy for the
+treatment of hypertension (see Chapter 16).
+Figure 7.3 First dose of α1 receptor blocker may produce an orthostatic hypotensive
+response that can result in syncope (fainting).
+3.  Adverse effects
+α1-Blockers such as prazosin and doxazosin may cause dizziness, a lack of energy, nasal congestion, headache,
+drowsiness, and orthostatic hypotension (although to a lesser degree than that observed with phenoxybenzamine and
+phentolamine). An additive antihypertensive effect occurs when α1 antagonists are given with vasodilators such as
+nitrates or PDE-5 inhibitors (for example, sildenafil), thereby necessitating cautious dose titration and use at the
+lowest possible doses. These agents may cause “floppy iris syndrome,” a condition in which the iris billows in
+response to intraoperative eye surgery. Figure 7.4 summarizes some adverse effects observed with α-blockers.
+273
+www.webofpharma.com
+Figure 7.4 Some adverse effects commonly observed with α-adrenergic blocking agents.
+274
+www.webofpharma.com
+D.  Yohimbine
+Yohimbine [yo-HIM-bean] is a selective competitive α2-blocker that works at the level of the CNS to increase
+sympathetic outflow to the periphery. It is found as a component of the bark of the yohimbe tree (Pausinystalia
+yohimbe) and has been used as a sexual stimulant and in the treatment of erectile dysfunction. Its use in the
+treatment of these disorders is not recommended due to lack of demonstrated efficacy.
+275
+www.webofpharma.com
+III.  β-Adrenergic Blocking Agents
+All of the clinically available β-blockers are competitive antagonists. Nonselective β-blockers act at both β1 and β2
+receptors, whereas cardioselective β antagonists primarily block β1 receptors. [Note: There are no clinically useful
+β2 selective antagonists.] These drugs also differ in intrinsic sympathomimetic activity (ISA), CNS effects, blockade
+of sympathetic receptors, vasodilation, and pharmacokinetics (Figure 7.5). Although all β-blockers lower blood
+pressure, they do not induce postural hypotension, because the α-adrenoceptors remain functional. Therefore, normal
+sympathetic control of the vasculature is maintained. β-Blockers are effective in treating systemic as well as portal
+hypertension, angina, cardiac arrhythmias, myocardial infarction, heart failure, hyperthyroidism, and glaucoma.
+They are also used for the prophylaxis of migraine headaches. [Note: The names of all β-blockers end in “-olol”
+except for labetalol and carvedilol.]
+Figure 7.5 Elimination half-lives for some β-blockers.
+276
+www.webofpharma.com
+A.  Propranolol: a nonselective β antagonist
+Propranolol [proe-PRAN-oh-lole] is the prototype β-adrenergic antagonist and blocks both β1 and β2 receptors with
+equal affinity. Sustained-release preparations for once-a-day dosing are available. Nonselective β-blockers,
+including propranolol, have the ability to block the actions of isoproterenol (β1, β2 agonist) on the cardiovascular
+system. Thus, in the presence of a β-blocker, isoproterenol does not produce cardiac stimulation (β1 mediated) or
+reductions in mean arterial pressure and diastolic pressure (β2 mediated; Figure 7.2). [Note: In the presence of a
+nonselective β-blocker, epinephrine no longer lowers diastolic blood pressure or stimulates the heart, but its
+vasoconstrictive action (mediated by α receptors) remains unimpaired. The actions of norepinephrine on the
+cardiovascular system are mediated primarily by α receptors and are, therefore, mostly unaffected.]
+1.  Actions
+a.  Cardiovascular
+Propranolol diminishes cardiac output, having both negative inotropic and chronotropic effects (Figure 7.6). It
+directly depresses sinoatrial and atrioventricular nodal activity. The resulting bradycardia usually limits the dose of
+the drug. During exercise or stress, when the sympathetic nervous system is activated, β-blockers attenuate the
+expected increase in heart rate. Cardiac output, workload, and oxygen consumption are decreased by blockade of β1
+receptors, and these effects are useful in the treatment of angina (see Chapter 20). The β-blockers are effective in
+attenuating supraventricular cardiac arrhythmias, but generally are not effective against ventricular arrhythmias
+(except those induced by exercise).
+277
+www.webofpharma.com
+278
+www.webofpharma.com
+Figure 7.6 Actions of propranolol and other β-blockers.
+b.  Peripheral vasoconstriction
+Nonselective blockade of β receptors prevents β2-mediated vasodilation in skeletal muscles, increasing peripheral
+vascular resistance (Figure 7.6). The reduction in cardiac output produced by all β-blockers leads to decreased blood
+pressure, which triggers a reflex peripheral vasoconstriction that is reflected in reduced blood flow to the periphery.
+In patients with hypertension, total peripheral resistance returns to normal or decreases with long-term use of
+propranolol as a result of down regulation of the β receptors. There is a gradual reduction of both systolic and
+diastolic blood pressures in hypertensive patients.
+c.  Bronchoconstriction
+Blocking β2 receptors in the lungs of susceptible patients causes contraction of the bronchiolar smooth muscle
+(Figure 7.6). This can precipitate an exacerbation in patients with chronic obstructive pulmonary disease (COPD) or
+asthma. Therefore, β-blockers, particularly nonselective ones, are contraindicated in patients with asthma and should
+be avoided in COPD.
+d.  Disturbances in glucose metabolism
+β-Blockade leads to decreased glycogenolysis and decreased glucagon secretion. Therefore, if propranolol is given
+to a diabetic patient receiving insulin, careful monitoring of blood glucose is essential, because pronounced
+hypoglycemia may occur after insulin injection. β-Blockers also attenuate the normal physiologic response to
+hypoglycemia. [Note: Diaphoresis with hypoglycemia still occurs, as this is mediated through the neurotransmitter
+acetylcholine.]
+2.  Therapeutic uses
+a.  Hypertension
+Propranolol does not reduce blood pressure in people with normal blood pressure. Propranolol lowers blood
+pressure in hypertension by several different mechanisms of action. Decreased cardiac output is the primary
+mechanism, but inhibition of renin release from the kidney, decrease in total peripheral resistance with long-term
+use, and decreased sympathetic outflow from the CNS also contribute to the antihypertensive effects (see Chapter
+16).
+b.  Angina pectoris
+Propranolol decreases the oxygen requirement of heart muscle and, therefore, is effective in reducing chest pain on
+exertion that is common in angina. Propranolol is therefore useful in the management of chronic stable angina.
+c.  Myocardial infarction
+Propranolol and other β-blockers have a protective effect on the myocardium. Thus, patients who have had one
+myocardial infarction seem to be protected against a second heart attack by prophylactic use of β-blockers. In
+addition, administration of a β-blocker immediately following a myocardial infarction reduces infarct size and early
+mortality. The mechanism for these effects may be a reduction in the actions of circulating catecholamines that
+increase the oxygen demand in an already ischemic heart muscle. Propranolol also reduces the incidence of sudden
+arrhythmic death after myocardial infarction.
+d.  Migraine
+Propranolol is effective in reducing migraine episodes when used prophylactically (see Chapter 37). It is one of the
+more useful β-blockers for this indication, due to its lipophilic nature that allows it to penetrate the CNS. [Note: For
+the acute management of migraine, serotonin agonists such as sumatriptan are used, as well as other drugs.]
+e.  Hyperthyroidism
+Propranolol and other β-blockers are effective in blunting the widespread sympathetic stimulation that occurs in
+hyperthyroidism. In acute hyperthyroidism (thyroid storm), β-blockers may be lifesaving in protecting against
+serious cardiac arrhythmias.
+3.  Pharmacokinetics
+After oral administration, propranolol is almost completely absorbed. It is subject to first-pass effect, and only about
+25% of an administered dose reaches the circulation. The volume of distribution of propranolol is quite large (4
+L/kg), and the drug readily crosses the blood–brain barrier due to its high lipophilicity. Propranolol is extensively
+metabolized, and most metabolites are excreted in the urine.
+4.  Adverse effects
+a.  Bronchoconstriction
+Propranolol has the potential to cause significant bronchoconstriction due to blockade of β2 receptors (Figure 7.7).
+Death by asphyxiation has been reported for patients with asthma who inadvertently received the drug. Therefore,
+propranolol is contraindicated in patients with COPD or asthma.
+279
+www.webofpharma.com
+Figure 7.7 Adverse effects commonly observed in individuals treated with propranolol.
+b.  Arrhythmias
+Treatment with β-blockers must never be stopped abruptly because of the risk of precipitating cardiac arrhythmias,
+which may be severe. The β-blockers must be tapered off gradually over a period of at least a few weeks. Long-term
+treatment with a β antagonist leads to up-regulation of the β receptor. On suspension of therapy, the increased
+receptors can precipitate worsened angina or hypertension through action of endogenous catecholamines on the up-
+regulated β receptors.
+c.  Sexual impairment
+Impaired sexual activity has been reported in male patients taking propranolol. The reasons for this are not clear and
+may be independent of β receptor blockade. However, β-blockers do not affect ejaculation (mediated by α
+receptors).
+d.  Metabolic disturbances
+280
+www.webofpharma.com
+β-Blockade leads to decreased glycogenolysis and decreased glucagon secretion. Fasting hypoglycemia may occur.
+In addition, β-blockers can prevent the counterregulatory effects of catecholamines during hypoglycemia. Thus, the
+perception of symptoms of hypoglycemia such as tremor, tachycardia, and nervousness are blunted by β-blockers. A
+major role of β receptors is to mobilize energy molecules such as free fatty acids. [Note: Lipases in fat cells are
+activated mainly by β receptor stimulation, leading to the metabolism of triglycerides into free fatty acids.] Patients
+administered nonselective β-blockers may have increased triglycerides and reduced high-density lipoprotein (“good”
+cholesterol) through β-blockade. These effects on the serum lipid profile may be less pronounced with the use of β1-
+selective antagonists such as metoprolol.
+e.  CNS effects
+Propranolol has numerous CNS-mediated effects, including depression, dizziness, lethargy, fatigue, weakness,
+visual disturbances, hallucinations, short-term memory loss, emotional lability, vivid dreams (including nightmares),
+and depression. Fewer CNS effects may be seen with more hydrophilic β-blockers (for example, atenolol) because
+they do not cross the blood–brain barrier as readily.
+f.  Drug interactions
+Drugs that interfere with, or inhibit, the metabolism of propranolol, such as cimetidine, fluoxetine, paroxetine, and
+ritonavir, may potentiate its antihypertensive effects. Conversely, those that stimulate or induce its metabolism, such
+as barbiturates, phenytoin, and rifampin, can decrease its effects. Nonselective β-blockers such as propranolol may
+prevent the rescue effects of epinephrine in anaphylaxis.
+281
+www.webofpharma.com
+B.  Nadolol and timolol: nonselective β antagonists
+Nadolol [NAH-doh-lole] and timolol [TIM-o-lole] also block β1- and β2-adrenoceptors and are more potent than
+propranolol. Nadolol has a very long duration of action (Figure 7.5). Timolol reduces the production of aqueous
+humor in the eye. It is used topically in the treatment of chronic open-angle glaucoma.
+1.  Treatment of glaucoma
+β-Blockers, such as topically applied timolol, are effective in diminishing intraocular pressure in glaucoma (Figure
+7.8). This occurs by decreasing the secretion of aqueous humor by the ciliary body. Carteolol [kar-TEE-oh-lol],
+levobunolol [lee-voe-BYOO-noe-lole], and metipranolol [met-i-PRAN-oh-lol] are nonselective β antagonists,
+whereas betaxolol [be-TAKS-oh-lol] is a β1-selective agent. Unlike the cholinergic drugs, these agents neither affect
+the ability of the eye to focus for near vision nor change pupil size. When administered intraocularly, the onset is
+about 30 minutes, and the effects last for 12 to 24 hours. The β-blockers are only used for chronic management of
+glaucoma. In an acute attack of glaucoma, pilocarpine is still the drug of choice for emergency lowering of
+intraocular pressure. Other agents used in the treatment of glaucoma are summarized in Figure 7.8.
+Figure 7.8 Classes of drugs used to treat glaucoma.
+282
+www.webofpharma.com
+C.  Acebutolol, atenolol, betaxolol, bisoprolol, esmolol, metoprolol,
+and nebivolol: selective β1 antagonists
+Drugs that preferentially block the β1 receptors minimize the unwanted bronchoconstriction (β2 effect) seen with use
+of nonselective agents in asthma patients. Cardioselective β-blockers, such as acebutolol [a-se-BYOO-toe-lole],
+atenolol [a-TEN-oh-lole], and metoprolol [me-TOE-proe-lole], antagonize β1 receptors at doses 50- to 100-fold less
+than those required to block β2 receptors. This cardioselectivity is most pronounced at low doses and is lost at high
+doses. [Note: Because β1 selectivity of these agents is lost at high doses, they may antagonize β2 receptors.]
+1.  Actions
+These drugs lower blood pressure in hypertension and increase exercise tolerance in angina (Figure 7.6). Esmolol
+[EZ-moe-lole] has a very short half-life (Figure 7.5) due to metabolism of an ester linkage. It is only available
+intravenously and is used to control blood pressure or heart rhythm in critically ill patients and those undergoing
+surgery or diagnostic procedures. In addition to its cardioselective β-blockade, nebivolol [ne-BIV-oh-lole] releases
+nitric oxide from endothelial cells and causes vasodilation. In contrast to propranolol, the cardioselective β-blockers
+have fewer effects on pulmonary function, peripheral resistance, and carbohydrate metabolism. Nevertheless, asthma
+patients treated with these agents must be carefully monitored to make certain that respiratory activity is not
+compromised. Because these drugs have less effect on peripheral vascular β2 receptors, coldness of extremities
+(Raynaud phenomenon), a common side effect of β-blockers, is less frequent.
+2.  Therapeutic uses
+The cardioselective β-blockers are useful in hypertensive patients with impaired pulmonary function. These agents
+are also first-line therapy for chronic stable angina. Bisoprolol and the extended-release formulation of metoprolol
+are indicated for the management of chronic heart failure.
+283
+www.webofpharma.com
+D.  Acebutolol and pindolol: antagonists with partial agonist
+activity
+1.  Actions
+a.  Cardiovascular
+Acebutolol (β1-selective antagonist) and pindolol (nonselective β-blocker) [PIN-doe-lole] are not pure antagonists.
+These drugs can also weakly stimulate both β1 and β2 receptors (Figure 7.9) and are said to have ISA. These partial
+agonists stimulate the β receptor to which they are bound, yet they inhibit stimulation by the more potent
+endogenous catecholamines, epinephrine and norepinephrine. The result of these opposing actions is a diminished
+effect on reduction of cardiac rate and cardiac output compared to that of β-blockers without ISA.
+284
+www.webofpharma.com
+285
+www.webofpharma.com
+Figure 7.9 Comparison of agonists, antagonists, and partial agonists of β-adrenoceptors.
+b.  Decreased metabolic effects
+β-Blockers with ISA minimize the disturbances of lipid and carbohydrate metabolism that are seen with other β-
+blockers. For example, these agents do not decrease plasma HDL levels.
+2.  Therapeutic use
+β-Blockers with ISA are effective in hypertensive patients with moderate bradycardia, because a further decrease in
+heart rate is less pronounced with these drugs. [Note: β-blockers with ISA are not used for stable angina or
+arrhythmias due to their partial agonist effect.] Overall, β-blockers with ISA are infrequently used in clinical
+practice. Figure 7.10 summarizes some of the indications for β-blockers.
+286
+www.webofpharma.com
+287
+www.webofpharma.com
+Figure 7.10 Some clinical applications of β-blockers. AV = atrioventricular.
+288
+www.webofpharma.com
+E.  Labetalol and carvedilol: antagonists of both α- and β-
+adrenoceptors
+1.  Actions
+Labetalol [lah-BET-a-lole] and carvedilol [CAR-ve-dil-ol] are nonselective β-blockers with concurrent α1-blocking
+actions that produce peripheral vasodilation, thereby reducing blood pressure. They contrast with the other β-
+blockers that produce initial peripheral vasoconstriction, and these agents are, therefore, useful in treating
+hypertensive patients for whom increased peripheral vascular resistance is undesirable. Carvedilol also decreases
+lipid peroxidation and vascular wall thickening, effects that have benefit in heart failure.
+2.  Therapeutic use in hypertension and heart failure
+Labetalol is used as an alternative to methyldopa in the treatment of pregnancy-induced hypertension. Intravenous
+labetalol is also used to treat hypertensive emergencies, because it can rapidly lower blood pressure (see Chapter
+16). β-Blockers should not be given to patients with an acute exacerbation of heart failure, as they can worsen the
+condition. However, carvedilol as well as metoprolol and bisoprolol are beneficial in patients with stable chronic
+heart failure. These agents work by blocking the effects of sympathetic stimulation on the heart, which causes
+worsening heart failure over time (see Chapter 18).
+3.  Adverse effects
+Orthostatic hypotension and dizziness are associated with α1-blockade. Figure 7.11 summarizes the receptor
+specificities and uses of the β-adrenergic antagonists.
+Figure 7.11 Summary of β-adrenergic antagonists. NO = nitric oxide. 1Acebutolol and
+pindolol are partial agonists, as well. 2Bisoprolol, metoprolol, and carvedilol are also
+used for the treatment of heart failure.
+289
+www.webofpharma.com
+IV.  Drugs Affecting Neurotransmitter Release or Uptake
+Some agents act on the adrenergic neuron, either to interfere with neurotransmitter release from storage vesicles or
+to alter the uptake of the neurotransmitter into the adrenergic neuron. However, due to the advent of newer and more
+effective agents with fewer side effects, these agents are seldom used therapeutically. Reserpine [re-SER-peen] is
+one of the remaining agents in this category.
+Reserpine, a plant alkaloid, blocks the Mg2+/adenosine triphosphate–dependent transport of biogenic amines
+(norepinephrine, dopamine, and serotonin) from the cytoplasm into storage vesicles in the adrenergic nerve
+terminals in all body tissues. This causes the ultimate depletion of biogenic amines. Sympathetic function, in
+general, is impaired because of decreased release of norepinephrine. Reserpine has a slow onset, a long duration of
+action, and effects that persist for many days after discontinuation. It has been used for the management of
+hypertension but has largely been replaced with newer agents with better side effect profiles and fewer drug
+interactions. It is also indicated in agitated psychotic states such as schizophrenia to relieve symptoms.
+290
+www.webofpharma.com
+7.1
+7.2
+7.3
+7.4
+7.5
+Study Questions
+Choose the ONE best answer.
+A 60-year-old patient started a new antihypertensive medication. His blood pressure is well controlled, but
+he complains of fatigue, drowsiness, and fainting when he gets up from the bed (orthostatic hypotension).
+Which of the following drugs is he most likely taking?
+A.  Metoprolol
+B.  Propranolol
+C.  Prazosin
+D.  Alfuzosin
+Correct answer = C. Because they block α1-mediated vasoconstriction, α-blockers (prazosin) are more likely to
+cause orthostatic hypotension, as compared to β-blockers (metoprolol, propranolol). Alfuzosin is a more selective
+antagonist for α1A receptors in the prostate and bladder and is less likely to cause hypotension than prazosin.
+A 30-year-old male patient was brought to the ER with amphetamine overdose. He presented with high
+blood pressure and arrhythmias. Which drug is the most appropriate to treat the cardiovascular symptoms of
+amphetamine overdose in this patient?
+A.  Metoprolol
+B.  Prazosin
+C.  Labetalol
+D.  Nebivolol
+Correct answer = C. Amphetamine is an indirect adrenergic agonist that mainly enhances the release of
+norepinephrine from peripheral sympathetic neurons. Therefore, it activates all types of adrenergic receptors (that
+is, α and β receptors) and causes an increase in blood pressure. Since both α and β receptors are activated
+indirectly by amphetamine, α-blockers (prazosin) or β-blockers (metoprolol, nebivolol) alone cannot relieve the
+cardiovascular effects of amphetamine poisoning. Labetalol blocks both α1 and beta receptors and can minimize
+the cardiovascular effects of amphetamine overdose.
+A new antihypertensive drug was tested in an animal model of hypertension. The drug when given alone
+reduces blood pressure in the animal. Norepinephrine when given in the presence of this drug did not cause
+any significant change in blood pressure or heart rate in the animal. The mechanism of action of the new
+drug is similar to which of the following agents?
+A.  Doxazosin
+B.  Clonidine
+C.  Atenolol
+D.  Carvedilol
+Correct answer = D. Norepinephrine activates both α1 and β1 receptors and causes an increase in heart rate and
+blood pressure. A drug that prevents the increase in blood pressure caused by norepinephrine should be similar to
+carvedilol that antagonizes both α1 and β1 receptors. Doxazosin is an α1 antagonist, clonidine is an α2 agonist, and
+atenolol is a β antagonist, and these drugs cannot completely prevent the cardiovascular effects of norepinephrine.
+A β-blocker was prescribed for hypertension in a patient with asthma. After a week of treatment, the asthma
+attacks got worse, and the patient was asked to stop taking the β-blocker. Which β-blocker would you
+suggest as an alternative that is less likely to worsen the asthma?
+A.  Propranolol
+B.  Metoprolol
+C.  Labetalol
+D.  Carvedilol
+Correct answer = B. The patient was most likely given a nonselective β-blocker (antagonizes both β1 and β2
+receptors) that made the asthma worse due to β2 antagonism. An alternative is to prescribe a cardioselective
+(antagonizes only β1) β-blocker that does not antagonize β2 receptors in the bronchioles. Metoprolol is a
+cardioselective β-blocker. Propranolol, labetalol, and carvedilol are nonselective β-blockers and could worsen the
+asthma.
+A 70-year-old male is treated with doxazosin for overflow incontinence due to his enlarged prostate. He
+complains of dizzy spells while getting up from bed at night. Which drug would you suggest as an alternative
+that may not cause dizziness?
+A.  Propranolol
+B.  Phentolamine
+C.  Tamsulosin
+D.  Terazosin
+291
+www.webofpharma.com
+7.6
+7.7
+7.8
+7.9
+7.10
+Correct answer = C. Dizziness in this elderly patient could be due to orthostatic hypotension caused by doxazosin.
+Tamsulosin is an α1 antagonist that is more selective to the α1 receptor subtype (α1A) present in the prostate and
+less selective to the α1 receptor subtype (α1B) present in the blood vessels. Therefore, tamsulosin should not affect
+blood pressure significantly and may not cause dizziness. Terazosin and phentolamine antagonize both these
+subtypes and cause significant hypotension as a side effect. Propranolol is a nonselective beta-blocker that is not
+indicated in overflow incontinence.
+A 50-year-old male was in anaphylactic shock after being stung by a hornet. The medical team tried to
+reverse the bronchoconstriction and hypotension using epinephrine; however, the patient did not fully
+respond to the treatment. The patient’s wife mentioned that he is taking a prescription medication for blood
+pressure. Which medication is he most likely taking that contributed to a reduced response to epinephrine?
+A.  Doxazosin
+B.  Propranolol
+C.  Metoprolol
+D.  Acebutolol
+Correct answer = B. Epinephrine reverses hypotension by activating β1 receptors and relieves bronchoconstriction
+by activating β2 receptors in anaphylaxis. Since epinephrine was not effective in reversing hypotension or
+bronchoconstriction in this patient, it could be assumed that the patient was on a nonselective β-blocker
+(propranolol). Doxazosin (α1-blocker), metoprolol, or acebutolol (both β1-selective blockers) would not have
+completely prevented the effects of epinephrine.
+Which of the following is correct regarding α-adrenergic blockers?
+A.  α-Adrenergic blockers are used in the treatment of hypotension in anaphylactic shock.
+B.  α-Adrenergic blockers are used in the treatment of benign prostatic hyperplasia (BPH).
+C.  α-Adrenergic blockers may cause bradycardia.
+D.  α-Adrenergic blockers reduce the frequency of urination.
+Correct answer = B. α-Adrenergic blockers are used in the treatment of BPH because of their relaxant effect on
+prostate smooth muscles. Being antihypertensive agents, they are not useful in treating hypotension in
+anaphylaxis. α-Adrenergic blockers generally cause reflex tachycardia (not bradycardia) due to the significant
+drop in blood pressure caused by them. They increase (not reduce) the frequency of urination by relaxing the
+internal sphincter of the urinary bladder, which is controlled by α1 receptors.
+Which of the following is correct regarding β-blockers?
+A.  Treatment with β-blockers should not be stopped abruptly.
+B.  Propranolol is a cardioselective β-blocker.
+C.  Cardioselective β-blockers worsen asthma.
+D.  β-Blockers decrease peripheral resistance by causing vasorelaxation.
+Correct answer = A. If β-blocker therapy is stopped abruptly, that could cause angina and rebound hypertension.
+This could be due to the up-regulation of β receptors in the body. β-Blockers do not cause direct vasorelaxation.
+Therefore, they do not decrease peripheral resistance with short-term use. Propranolol is a nonselective β-blocker
+(not cardioselective). Cardioselective β-blockers antagonize only β1 receptors and do not worsen asthma, as they
+do not antagonize β2 receptors.
+Which of the following drugs is commonly used topically in the treatment of glaucoma?
+A.  Esmolol
+B.  Timolol
+C.  Silodosin
+D.  Yohimbine
+Correct answer = B. β-Blockers reduce the formation of aqueous humor in the eye and therefore reduce
+intraocular pressure, thus relieving glaucoma. Timolol is a nonselective β-blocker that is commonly used topically
+to treat glaucoma. Esmolol is a short-acting β-blocker that is used intravenously for hypertension or arrhythmias.
+Silodosin is an α1 antagonist used for BPH, and yohimbine is a α2 antagonist used for sexual dysfunction.
+Which of the following drugs has the highest potential to worsen orthostatic hypotension when given
+together with prazosin?
+A.  Propranolol
+B.  Atenolol
+C.  Nebivolol
+D.  Labetalol
+Correct answer = D. Labetalol is a nonselective β-blocker with α1-blocking activity. Prazosin causes orthostatic
+hypotension due to its α1-blockade, which could be enhanced by adding labetalol. Propranolol, atenolol and
+292
+www.webofpharma.com
+nebivolol do not have α1-blocking effects.
+293
+www.webofpharma.com
+UNIT III
+Drugs Affecting the Central Nervous System
+294
+www.webofpharma.com
+8
+Drugs for Neurodegenerative Diseases
+Jose A. Rey
+295
+www.webofpharma.com
+I.  Overview
+Most drugs that affect the central nervous system (CNS) act by altering some step in the neurotransmission process.
+Drugs affecting the CNS may act presynaptically by influencing the production, storage, release, or termination of
+action of neurotransmitters. Other agents may activate or block postsynaptic receptors. This chapter provides an
+overview of the CNS, with a focus on those neurotransmitters that are involved in the actions of the clinically useful
+CNS drugs. These concepts are useful in understanding the etiology and treatment strategies for the
+neurodegenerative disorders that respond to drug therapy: Parkinson disease, Alzheimer disease, multiple sclerosis
+(MS), and amyotrophic lateral sclerosis (ALS) (Figure 8.1).
+296
+www.webofpharma.com
+Figure 8.1 Summary of agents used in the treatment of Parkinson disease, Alzheimer
+disease, multiple sclerosis, and amyotrophic lateral sclerosis.
+297
+www.webofpharma.com
+II.  Neurotransmission in the CNS
+The basic functioning of neurons in the CNS is similar to that of the autonomic nervous system (ANS) described in
+Chapter 3. For example, transmission of information in both the CNS and in the periphery involves the release of
+neurotransmitters that diffuse across the synaptic cleft to bind to specific receptors on the postsynaptic neuron. In
+both systems, the recognition of the neurotransmitter by the membrane receptor of the postsynaptic neuron triggers
+intracellular changes. However, several major differences exist between neurons in the peripheral ANS and those in
+the CNS. The circuitry of the CNS is more complex than that of the ANS, and the number of synapses in the CNS is
+far greater. The CNS, unlike the peripheral ANS, contains networks of inhibitory neurons that are constantly active
+in modulating the rate of neuronal transmission. In addition, the CNS communicates through the use of multiple
+neurotransmitters, whereas the ANS uses only two primary neurotransmitters, acetylcholine, and norepinephrine.
+298
+www.webofpharma.com
+III.  Synaptic Potentials
+In the CNS, receptors in most synapses are coupled to ion channels. Binding of the neurotransmitter to the
+postsynaptic membrane receptors results in a rapid but transient opening of ion channels. Open channels allow
+specific ions inside and outside the cell membrane to flow down their concentration gradients. The resulting change
+in the ionic composition across the membrane of the neuron alters the postsynaptic potential, producing either
+depolarization or hyperpolarization of the postsynaptic membrane, depending on the specific ions and the direction
+of their movement.
+299
+www.webofpharma.com
+A.  Excitatory pathways
+Neurotransmitters can be classified as either excitatory or inhibitory, depending on the nature of the action they
+elicit. Stimulation of excitatory neurons causes a movement of ions that results in a depolarization of the
+postsynaptic membrane. These excitatory postsynaptic potentials (EPSP) are generated by the following: 1)
+Stimulation of an excitatory neuron causes the release of neurotransmitters, such as glutamate or acetylcholine,
+which bind to receptors on the postsynaptic cell membrane. This causes a transient increase in the permeability of
+sodium (Na+) ions. 2) The influx of Na+ causes a weak depolarization, or EPSP, that moves the postsynaptic
+potential toward its firing threshold. 3) If the number of stimulated excitatory neurons increases, more excitatory
+neurotransmitter is released. This ultimately causes the EPSP depolarization of the postsynaptic cell to pass a
+threshold, thereby generating an all-or-none action potential. [Note: The generation of a nerve impulse typically
+reflects the activation of synaptic receptors by thousands of excitatory neurotransmitter molecules released from
+many nerve fibers.] Figure 8.2 shows an example of an excitatory pathway.
+Figure 8.2 Binding of the excitatory neurotransmitter, acetylcholine, causes
+300
+www.webofpharma.com
+depolarization of the neuron.
+301
+www.webofpharma.com
+B.  Inhibitory pathways
+Stimulation of inhibitory neurons causes movement of ions that results in a hyperpolarization of the postsynaptic
+membrane. These inhibitory postsynaptic potentials (IPSP) are generated by the following: 1) Stimulation of
+inhibitory neurons releases neurotransmitters, such as γ-aminobutyric acid (GABA) or glycine, which bind to
+receptors on the postsynaptic cell membrane. This causes a transient increase in the permeability of specific ions,
+such as potassium (K+) and chloride (Cl−). 2) The influx of Cl− and efflux of K+ cause a weak hyperpolarization, or
+IPSP, that moves the postsynaptic potential away from its firing threshold. This diminishes the generation of action
+potentials. Figure 8.3 shows an example of an inhibitory pathway.
+302
+www.webofpharma.com
+303
+www.webofpharma.com
+Figure 8.3 Binding of the inhibitory neurotransmitter, γ-aminobutyric acid (GABA),
+causes hyperpolarization of the neuron.
+304
+www.webofpharma.com
+C.  Combined effects of the EPSP and IPSP
+Most neurons in the CNS receive both EPSP and IPSP input. Thus, several different types of neurotransmitters may
+act on the same neuron, but each binds to its own specific receptor. The overall action is the summation of the
+individual actions of the various neurotransmitters on the neuron. The neurotransmitters are not uniformly
+distributed in the CNS but are localized in specific clusters of neurons, the axons of which may synapse with
+specific regions of the brain. Many neuronal tracts, thus, seem to be chemically coded, and this may offer greater
+opportunity for selective pharmacological modulation of certain neuronal pathways.
+305
+www.webofpharma.com
+IV.  Neurodegenerative Diseases
+Neurodegenerative diseases of the CNS include Parkinson disease, Alzheimer disease, MS, and ALS. These
+devastating illnesses are characterized by the progressive loss of selected neurons in discrete brain areas, resulting in
+characteristic disorders of movement, cognition, or both.
+306
+www.webofpharma.com
+V.  Overview of Parkinson Disease
+Parkinsonism is a progressive neurological disorder of muscle movement, characterized by tremors, muscular
+rigidity, bradykinesia, and postural and gait abnormalities. Most cases involve people over the age of 65, among
+whom the incidence is about 1 in 100 individuals.
+307
+www.webofpharma.com
+A.  Etiology
+The cause of Parkinson disease is unknown for most patients. The disease is correlated with destruction of
+dopaminergic neurons in the substantia nigra with a consequent reduction of dopamine actions in the corpus
+striatum, parts of the basal ganglia system that are involved in motor control.
+1.  Substantia nigra
+The substantia nigra, part of the extrapyramidal system, is the source of dopaminergic neurons (shown in red in
+Figure 8.4) that terminate in the neostriatum. Each dopaminergic neuron makes thousands of synaptic contacts
+within the neostriatum and therefore modulates the activity of a large number of cells. These dopaminergic
+projections from the substantia nigra fire tonically rather than in response to specific muscular movements or
+sensory input. Thus, the dopaminergic system appears to serve as a tonic, sustaining influence on motor activity,
+rather than participating in specific movements.
+Figure 8.4 Role of substantia nigra in Parkinson disease. ACh = acetylcholine; DA =
+dopamine; GABA = γ-aminobutyric acid.
+2.  Neostriatum
+Normally, the neostriatum is connected to the substantia nigra by neurons (shown in orange in Figure 8.4) that
+secrete the inhibitory transmitter GABA at their termini. In turn, cells of the substantia nigra send neurons back to
+the neostriatum, secreting the inhibitory transmitter dopamine at their termini. This mutual inhibitory pathway
+normally maintains a degree of inhibition of both areas. In Parkinson disease, destruction of cells in the substantia
+nigra results in the degeneration of the nerve terminals that secrete dopamine in the neostriatum. Thus, the normal
+inhibitory influence of dopamine on cholinergic neurons in the neostriatum is significantly diminished, resulting in
+overproduction, or a relative overactivity, of acetylcholine by the stimulatory neurons (shown in green in Figure
+308
+www.webofpharma.com
+8.4). This triggers a chain of abnormal signaling, resulting in loss of the control of muscle movements.
+3.  Secondary parkinsonism
+Drugs such as the phenothiazines and haloperidol, whose major pharmacologic action is blockade of dopamine
+receptors in the brain, may produce parkinsonian symptoms (also called pseudoparkinsonism). These drugs should
+be used with caution in patients with Parkinson disease.
+309
+www.webofpharma.com
+B.  Strategy of treatment
+In addition to an abundance of inhibitory dopaminergic neurons, the neostriatum is also rich in excitatory
+cholinergic neurons that oppose the action of dopamine (Figure 8.4). Many of the symptoms of parkinsonism reflect
+an imbalance between the excitatory cholinergic neurons and the greatly diminished number of inhibitory
+dopaminergic neurons. Therapy is aimed at restoring dopamine in the basal ganglia and antagonizing the excitatory
+effect of cholinergic neurons, thus reestablishing the correct dopamine/acetylcholine balance.
+310
+www.webofpharma.com
+VI.  Drugs Used in Parkinson Disease
+Many currently available drugs aim to maintain CNS dopamine levels, or signaling, as constant as possible. These
+agents offer temporary relief from the symptoms of the disorder, but they do not arrest or reverse the neuronal
+degeneration caused by the disease.
+311
+www.webofpharma.com
+A.  Levodopa and carbidopa
+Levodopa [lee-voe-DOE-pa] is a metabolic precursor of dopamine (Figure 8.5). It restores dopaminergic
+neurotransmission in the neostriatum by enhancing the synthesis of dopamine in the surviving neurons of the
+substantia nigra. In early disease, the number of residual dopaminergic neurons in the substantia nigra (typically
+about 20% of normal) is adequate for conversion of levodopa to dopamine. Thus, in new patients, the therapeutic
+response to levodopa is consistent, and the patient rarely complains that the drug effects “wear off.” Unfortunately,
+with time, the number of neurons decreases, and fewer cells are capable of converting exogenously administered
+levodopa to dopamine. Consequently, motor control fluctuation develops. Relief provided by levodopa is only
+symptomatic, and it lasts only while the drug is present in the body.
+Figure 8.5 Synthesis of dopamine from levodopa in the absence and presence of
+carbidopa, an inhibitor of dopamine decarboxylase in the peripheral tissues. (GI =
+gastrointestinal.)
+1.  Mechanism of action
+a.  Levodopa
+Dopamine does not cross the blood–brain barrier, but its immediate precursor, levodopa, is actively transported into
+the CNS and converted to dopamine (Figure 8.5). Levodopa must be administered with carbidopa [kar-bi-DOE-pa].
+Without carbidopa, much of the drug is decarboxylated to dopamine in the periphery, resulting in diminished effect,
+nausea, vomiting, cardiac arrhythmias, and hypotension.
+b.  Carbidopa
+Carbidopa, a dopamine decarboxylase inhibitor, diminishes the metabolism of levodopa in the periphery, thereby
+increasing the availability of levodopa to the CNS. The addition of carbidopa lowers the dose of levodopa needed
+by four- to five-fold and, consequently, decreases the severity of adverse effects arising from peripherally formed
+dopamine.
+2.  Therapeutic uses
+Levodopa in combination with carbidopa is an efficacious drug regimen for the treatment of Parkinson disease. It
+decreases rigidity, tremors, and other symptoms of parkinsonism. In approximately two-thirds of patients with
+Parkinson disease, levodopa–carbidopa substantially reduces the severity of symptoms for the first few years of
+treatment. Patients typically experience a decline in response during the 3rd to 5th year of therapy. Withdrawal from
+the drug must be gradual.
+3.  Absorption and metabolism
+The drug is absorbed rapidly from the small intestine (when empty of food). Levodopa has an extremely short half-
+life (1 to 2 hours), which causes fluctuations in plasma concentration. This may produce fluctuations in motor
+response, which generally correlate with the plasma concentration of levodopa, or perhaps give rise to the more
+troublesome “on–off” phenomenon, in which the motor fluctuations are not related to plasma levels in a simple way.
+Motor fluctuations may cause the patient to suddenly lose normal mobility and experience tremors, cramps, and
+immobility. Ingestion of meals, particularly if high in protein, interferes with the transport of levodopa into the CNS.
+Thus, levodopa should be taken on an empty stomach, typically 30 minutes before a meal.
+4.  Adverse effects
+312
+www.webofpharma.com
+a.  Peripheral effects
+Anorexia, nausea, and vomiting occur because of stimulation of the chemoreceptor trigger zone (Figure 8.6).
+Tachycardia and ventricular extrasystole result from dopaminergic action on the heart. Hypotension may also
+develop. Adrenergic action on the iris causes mydriasis. In some individuals, blood dyscrasias and a positive
+reaction to the Coombs test are seen. Saliva and urine may turn brownish color because of the melanin pigment
+produced from catecholamine oxidation.
+313
+www.webofpharma.com
+Figure 8.6 Adverse effects of levodopa.
+b.  CNS effects
+314
+www.webofpharma.com
+Visual and auditory hallucinations and abnormal involuntary movements (dyskinesias) may occur. These effects are
+the opposite of parkinsonian symptoms and reflect overactivity of dopamine in the basal ganglia. Levodopa can also
+cause mood changes, depression, psychosis, and anxiety.
+5.  Interactions
+The vitamin pyridoxine (B6) increases the peripheral breakdown of levodopa and diminishes its effectiveness
+(Figure 8.7). Concomitant administration of levodopa and nonselective monoamine oxidase inhibitors (MAOIs),
+such as phenelzine, can produce a hypertensive crisis caused by enhanced catecholamine production. Therefore,
+concomitant administration of these agents is contraindicated. In many psychotic patients, levodopa exacerbates
+symptoms, possibly through the buildup of central catecholamines. Cardiac patients should be carefully monitored
+for the possible development of arrhythmias. Antipsychotic drugs are generally contraindicated in Parkinson disease,
+because they potently block dopamine receptors and may augment parkinsonian symptoms. However, low doses of
+atypical antipsychotics, such as quetiapine or clozapine, are sometimes used to treat levodopa-induced psychotic
+symptoms.
+Figure 8.7 Some drug interactions observed with levodopa. MAO = monoamine oxidase.
+315
+www.webofpharma.com
+B.  Selegiline, rasagiline, and safinamide
+Selegiline [seh-LEDGE-ah-leen], also called deprenyl [DE-pre-nill], selectively inhibits monoamine oxidase (MAO)
+type B, the enzyme that metabolizes dopamine. It does not inhibit MAO type A (metabolizes norepinephrine and
+serotonin) unless given above recommended doses, where it loses its selectivity. By decreasing the metabolism of
+dopamine, selegiline increases dopamine levels in the brain (Figure 8.8). When selegiline is administered with
+levodopa, it enhances the actions of levodopa and substantially reduces the required dose. Unlike nonselective
+MAOIs, selegiline at recommended doses has little potential for causing hypertensive crises. However, the drug
+loses selectivity at high doses, and there is a risk for severe hypertension. Selegiline is metabolized to
+methamphetamine and amphetamine, whose stimulating properties may produce insomnia if the drug is
+administered later than mid-afternoon. Rasagiline [ra-SA-gi-leen], an irreversible and selective inhibitor of brain
+MAO type B, has five times the potency of selegiline. Unlike selegiline, rasagiline is not metabolized to an
+amphetamine-like substance. Safinamide [sa-FIN-a-mide] is also a selective inhibitor of MAO type B indicated for
+use as an adjunct to levodopa–carbidopa.
+Figure 8.8 Action of selegiline (deprenyl) in dopamine metabolism. (MAO B =
+monoamine oxidase type B.)
+316
+www.webofpharma.com
+C.  Catechol-O-methyltransferase inhibitors
+Normally, the methylation of levodopa by catechol-O-methyltransferase (COMT) to 3-O-methyldopa is a minor
+pathway for levodopa metabolism. However, when peripheral dopamine decarboxylase activity is inhibited by
+carbidopa, a significant concentration of 3-O-methyldopa is formed that competes with levodopa for active transport
+into the CNS (Figure 8.9). Entacapone [en-TAK-a-pone] and tolcapone [TOLE-ka-pone] selectively and reversibly
+inhibit COMT. Inhibition of COMT by these agents leads to decreased plasma concentrations of 3-O-methyldopa,
+increased central uptake of levodopa, and greater concentrations of brain dopamine. Both of these agents reduce the
+symptoms of “wearing-off” phenomena seen in patients on levodopa–carbidopa. The two drugs differ primarily in
+their pharmacokinetic and adverse effect profiles.
+Figure 8.9 Effect of entacapone on dopa concentration in the central nervous system
+(CNS). COMT = catechol-O- methyltransferase.
+1.  Pharmacokinetics
+Oral absorption of both drugs occurs readily and is not influenced by food. They are extensively bound to plasma
+albumin, with a limited volume of distribution. Tolcapone has a relatively long duration of action (probably due to
+its affinity for the enzyme) compared to entacapone, which requires more frequent dosing. Both drugs are
+extensively metabolized and eliminated in feces and urine. The dosage may need to be adjusted in patients with
+moderate or severe cirrhosis.
+2.  Adverse effects
+Both drugs exhibit adverse effects that are observed in patients taking levodopa–carbidopa, including diarrhea,
+postural hypotension, nausea, anorexia, dyskinesias, hallucinations, and sleep disorders. Most seriously, fulminating
+hepatic necrosis is associated with tolcapone use. Therefore, it should be used, along with appropriate hepatic
+function monitoring, only in patients in whom other modalities have failed. Entacapone does not exhibit this toxicity
+and has largely replaced tolcapone in clinical practice.
+317
+www.webofpharma.com
+D.  Dopamine receptor agonists
+This group of antiparkinsonian compounds includes bromocriptine [broe-moe-KRIP-teen], an ergot derivative, and
+the nonergot drugs, ropinirole [roe-PIN-i-role], pramipexole [pra-mi-PEX-ole], rotigotine [ro-TIG-oh-teen], and
+apomorphine [A-poe-more-feen]. These agents have a longer duration of action than that of levodopa and are
+effective in patients exhibiting fluctuations in response to levodopa. Initial therapy with these drugs is associated
+with less risk of developing dyskinesias and motor fluctuations as compared to patients started on levodopa.
+Bromocriptine, pramipexole, and ropinirole are effective in patients with Parkinson disease complicated by motor
+fluctuations and dyskinesias. However, these drugs are ineffective in patients who have not responded to levodopa.
+Apomorphine is an injectable dopamine agonist that is used in severe and advanced stages of the disease to
+supplement oral medications. Adverse effects severely limit the utility of the dopamine agonists (Figure 8.10).
+318
+www.webofpharma.com
+Figure 8.10 Some adverse effects of dopamine agonists.
+1.  Bromocriptine
+319
+www.webofpharma.com
+The actions of the ergot derivative bromocriptine are similar to those of levodopa, except that hallucinations,
+confusion, delirium, nausea, and orthostatic hypotension are more common, whereas dyskinesia is less prominent. In
+psychiatric illness, bromocriptine may cause the mental condition to worsen. It should be used with caution in
+patients with a history of myocardial infarction or peripheral vascular disease due to the risk of vasospasm. Because
+bromocriptine is an ergot derivative, it has the potential to cause pulmonary and retroperitoneal fibrosis.
+2.  Apomorphine, pramipexole, ropinirole, and rotigotine
+These are nonergot dopamine agonists that are approved for the treatment of Parkinson disease. Ropinirole is also
+indicated for the treatment of restless legs syndrome. Pramipexole and ropinirole are orally active agents.
+Apomorphine and rotigotine are available in injectable and transdermal delivery systems, respectively. Apomorphine
+is used for acute management of the hypomobility “off” phenomenon in advanced Parkinson disease. Rotigotine is
+administered as a once-daily transdermal patch that provides even drug levels over 24 hours. These agents alleviate
+the motor deficits in patients who have never taken levodopa and also in patients with advanced Parkinson disease
+who are treated with levodopa. Dopamine agonists may delay the need to use levodopa in early Parkinson disease
+and may decrease the dose of levodopa in advanced Parkinson disease. Unlike the ergotamine derivatives, these
+agents do not exacerbate peripheral vascular disorders or cause fibrosis. Nausea, hallucinations, insomnia, dizziness,
+constipation, and orthostatic hypotension are adverse effects of these drugs, but dyskinesias are less frequent than
+with levodopa (Figure 8.11). Pramipexole is mainly excreted unchanged in the urine, and dosage adjustments are
+needed in renal dysfunction. The fluoroquinolone antibiotics and other inhibitors of the cytochrome P450 (CYP450)
+1A2 isoenzyme (for example, fluvoxamine) may inhibit the metabolism of ropinirole, requiring an adjustment in
+ropinirole dosage. Figure 8.12 summarizes some properties of dopamine agonists.
+320
+www.webofpharma.com
+Figure 8.11 Motor complications in patients treated with levodopa or dopamine agonists.
+Figure 8.12 Pharmacokinetic properties of dopamine agonists pramipexole, ropinirole,
+and rotigotine. Vd = volume of distribution. 1Increases to 12 hours in patients older than
+65 years. 2Less than 10% excreted unchanged. 3Administered as a once-daily transdermal
+patch.
+321
+www.webofpharma.com
+322
+www.webofpharma.com
+E.  Amantadine
+It was accidentally discovered that the antiviral drug amantadine [a-MAN-ta-deen] has an antiparkinsonian action.
+Amantadine has several effects on a number of neurotransmitters implicated in parkinsonism, including increasing
+the release of dopamine, blocking cholinergic receptors, and inhibiting the N-methyl-D-aspartate (NMDA) type of
+glutamate receptors. The drug may cause restlessness, agitation, confusion, and hallucinations, and, at high doses, it
+may induce acute toxic psychosis. Orthostatic hypotension, urinary retention, peripheral edema, and dry mouth also
+may occur. Amantadine is less efficacious than levodopa, and tolerance develops more readily. However,
+amantadine has fewer adverse effects.
+323
+www.webofpharma.com
+F.  Antimuscarinic agents
+The antimuscarinic agents are much less efficacious than levodopa and play only an adjuvant role in
+antiparkinsonism therapy. The actions of benztropine [BENZ-troe-peen] and trihexyphenidyl [tri-hex-ee-FEN-i-dill]
+are similar, although individual patients may respond more favorably to one drug or the other. Blockade of
+cholinergic transmission produces effects similar to augmentation of dopaminergic transmission, since it helps to
+correct the imbalance in the dopamine/acetylcholine activity (Figure 8.4). These agents can induce mood changes
+and confusion, and produce xerostomia, constipation, and visual problems typical of muscarinic blockers (see
+Chapter 5). They interfere with gastrointestinal peristalsis and are contraindicated in patients with glaucoma,
+prostatic hyperplasia, or pyloric stenosis.
+324
+www.webofpharma.com
+VII.  Drugs Used in Alzheimer Disease
+Dementia of the Alzheimer type has three distinguishing features: 1) accumulation of senile plaques (β-amyloid
+accumulations), 2) formation of numerous neurofibrillary tangles, and 3) loss of cortical neurons, particularly
+cholinergic neurons. Current therapies aim to either improve cholinergic transmission within the CNS or prevent
+excitotoxic actions resulting from overstimulation of NMDA-glutamate receptors in selected areas of the brain.
+Pharmacologic intervention for Alzheimer disease is only palliative and provides modest short-term benefit. None of
+the available therapeutic agents alter the underlying neurodegenerative process.
+325
+www.webofpharma.com
+A.  Acetylcholinesterase inhibitors
+Numerous studies have linked the progressive loss of cholinergic neurons and, presumably, cholinergic transmission
+within the cortex to the memory loss that is a hallmark symptom of Alzheimer disease. It is postulated that inhibition
+of acetylcholinesterase (AChE) within the CNS improves cholinergic transmission, at least at those neurons that are
+still functioning. The reversible AChE inhibitors approved for the treatment of Alzheimer disease include donepezil
+[doe-NE-peh-zil], galantamine [ga-LAN-ta-meen], and rivastigmine [ri-va-STIG-meen]. These agents have some
+selectivity for AChE in the CNS, as compared to the periphery. Galantamine may also augment the action of
+acetylcholine at nicotinic receptors in the CNS. At best, these compounds may provide a modest reduction in the
+rate of loss of cognitive functioning in Alzheimer patients. Rivastigmine is the only agent approved for the
+management of dementia associated with Parkinson disease and also the only AChE inhibitor available as a
+transdermal formulation. Rivastigmine is hydrolyzed by AChE to a carbamylated metabolite and has no interactions
+with drugs that alter the activity of CYP450 enzymes. The other agents are substrates for CYP450 and have a
+potential for such interactions. Common adverse effects include nausea, diarrhea, vomiting, anorexia, tremors,
+bradycardia, and muscle cramps (Figure 8.13).
+326
+www.webofpharma.com
+327
+www.webofpharma.com
+Figure 8.13 Adverse effects of AChE inhibitors.
+328
+www.webofpharma.com
+B.  NMDA receptor antagonist
+Stimulation of glutamate receptors in the CNS appears to be critical for the formation of certain memories.
+However, overstimulation of glutamate receptors, particularly of the NMDA type, may result in excitotoxic effects
+on neurons and is suggested as a mechanism for neurodegenerative or apoptotic (programmed cell death) processes.
+Binding of glutamate to the NMDA receptor assists in the opening of an ion channel that allows Ca2+ to enter the
+neuron. Excess intracellular Ca2+ can activate a number of processes that ultimately damage neurons and lead to
+apoptosis. Memantine [meh-MAN-teen] is an NMDA receptor antagonist indicated for moderate to severe
+Alzheimer disease. It acts by blocking the NMDA receptor and limiting Ca2+ influx into the neuron, such that toxic
+intracellular levels are not achieved. Memantine is well tolerated, with few dose-dependent adverse events. Expected
+adverse effects, such as confusion, agitation, and restlessness, are often indistinguishable from the symptoms of
+Alzheimer disease. Given its different mechanism of action and possible neuroprotective effects, memantine is often
+given in combination with an AChE inhibitor.
+329
+www.webofpharma.com
+VIII.  Drugs Used in Multiple Sclerosis
+MS is an autoimmune inflammatory demyelinating disease of the CNS. The course of MS is variable. For some, MS
+may consist of one or two acute neurologic episodes. In others, it is a chronic, relapsing, or progressive disease that
+may span 10 to 20 years. Historically, corticosteroids (for example, dexamethasone and prednisone) have been used
+to treat acute exacerbations of the disease. Chemotherapeutic agents, such as cyclophosphamide and azathioprine,
+have also been used.
+330
+www.webofpharma.com
+A.  Disease-modifying therapies
+Drugs currently approved for MS are indicated to decrease relapse rates or, in some cases, to prevent accumulation
+of disability. The major target of these medications is to modify the immune response through inhibition of white
+blood cell–mediated inflammatory processes that eventually lead to myelin sheath damage and decreased or
+inappropriate axonal communication between cells.
+1.  Interferon b1a and interferon b1b
+The immunomodulatory effects of interferon [in-ter-FEER-on] help to diminish the inflammatory responses that
+lead to demyelination of the axon sheaths. Adverse effects of these medications may include depression, local
+injection site reactions, increases in hepatic enzymes, and flu-like symptoms.
+2.  Glatiramer
+Glatiramer [gluh-TEER-a-mur] is a synthetic polypeptide that resembles myelin protein and may act as a decoy to
+T-cell attack. Some patients experience a postinjection reaction that includes flushing, chest pain, anxiety, and
+itching. It is usually self-limiting.
+3.  Fingolimod
+Fingolimod [fin-GO-li-mod] is an oral drug that alters lymphocyte migration, resulting in fewer lymphocytes in the
+CNS. Fingolimod may cause first-dose bradycardia and is associated with an increased risk of infection and macular
+edema.
+4.  Teriflunomide
+Teriflunomide [te-ree-FLOO-no-mide] is an oral pyrimidine synthesis inhibitor that leads to a lower concentration of
+active lymphocytes in the CNS. Teriflunomide may cause elevated liver enzymes. It should be avoided in pregnancy.
+5.  Dimethyl fumarate
+Dimethyl fumarate [dye-METH-il FOO-ma-rate] is an oral agent that may alter the cellular response to oxidative
+stress to reduce disease progression. Flushing and abdominal pain are the most common adverse events.
+6.  Monoclonal antibodies
+Alemtuzumab [AL-em-TOOZ-ue-mab], daclizumab [dah-KLIH-zyoo-mab], natalizumab [na-ta-LIZ-oo-mab], and
+ocrelizumab [OK-re-LIZ-ue-mab] are monoclonal antibodies indicated for the treatment of MS. Ocrelizumab is the
+first agent to be approved for primary progressive forms of the disease. These agents can be associated with
+significant toxicities, such as progressive multifocal leukoencephalopathy with natalizumab, serious infections with
+daclizumab and alemtuzumab, and autoimmune disorders with alemtuzumab. As such, these agents may be reserved
+for patients who have failed other therapies.
+331
+www.webofpharma.com
+B.  Symptomatic treatment
+Many different classes of drugs are used to manage symptoms of MS such as spasticity, constipation, bladder
+dysfunction, and depression. Dalfampridine [DAL-fam-pre-deen], an oral potassium channel blocker, improves
+walking speeds in patients with MS. It is the first drug approved for this use.
+332
+www.webofpharma.com
+IX.  Drugs Used in Amyotrophic Lateral Sclerosis
+ALS is characterized by progressive degeneration of motor neurons, resulting in the inability to initiate or control
+muscle movement. Riluzole [RIL-ue-zole] and edaravone [e-DAR-a-vone] are indicated for the management of
+ALS. Riluzole, an oral NMDA receptor antagonist, is believed to act by inhibiting glutamate release and blocking
+sodium channels. Riluzole may improve survival time in patients suffering from ALS. Edaravone is an intravenous
+free radical scavenger and antioxidant that may slow the progression of ALS.
+333
+www.webofpharma.com
+8.1
+8.2
+8.3
+8.4
+8.5
+8.6
+Study Questions
+Choose the ONE best answer.
+A 75-year-old man with moderate Parkinson disease is no longer responding to anticholinergic treatment for
+his tremors and bradykinesia. Which combination of antiparkinsonian drugs is an appropriate treatment plan?
+A.  Amantadine, carbidopa, and entacapone
+B.  Levodopa, carbidopa, and entacapone
+C.  Pramipexole, carbidopa, and entacapone
+D.  Ropinirole, carbidopa, and selegiline
+Correct answer = B. To reduce the dose of levodopa and its peripheral side effects, the peripheral decarboxylase
+inhibitor, carbidopa, is coadministered. As a result of this combination, more levodopa is available for
+metabolism by catechol-O-methyltransferase (COMT) to 3-O-methyldopa, which competes with levodopa for the
+active transport processes into the CNS. By administering entacapone (an inhibitor of COMT), the competing
+product is not formed, and more levodopa enters the brain. The other choices are not appropriate because neither
+peripheral decarboxylase, nor COMT, nor monoamine oxidase metabolizes amantadine or the direct-acting
+dopamine agonists ropinirole and pramipexole; thus carbidopa and entacapone should only be given with
+levodopa, otherwise they are not contributing to the clinical response of the patient.
+Peripheral adverse effects of levodopa, including nausea, hypotension, and cardiac arrhythmias, can be
+diminished by including which drug in the therapy?
+A.  Amantadine
+B.  Ropinirole
+C.  Carbidopa
+D.  Entacapone
+Correct answer = C. Carbidopa inhibits the peripheral decarboxylation of levodopa to dopamine, thereby
+diminishing the gastrointestinal and cardiovascular side effects of levodopa. The other agents listed do not
+ameliorate adverse effects of levodopa.
+Which antiparkinsonian drug may cause vasospasm?
+A.  Amantadine
+B.  Bromocriptine
+C.  Entacapone
+D.  Ropinirole
+Correct answer = B. Bromocriptine is a dopamine receptor agonist that may cause vasospasm. It is
+contraindicated in patients with peripheral vascular disease. Ropinirole directly stimulates dopamine receptors,
+but it does not cause vasospasm. The other drugs do not act directly on dopamine receptors.
+Modest improvement in the memory of patients with Alzheimer disease may occur with drugs that increase
+transmission at which receptor?
+A.  Adrenergic
+B.  Cholinergic
+C.  Dopaminergic
+D.  Serotonergic
+Correct answer = B. AChE inhibitors, such as galantamine, increase cholinergic transmission in the CNS and may
+cause a modest delay in the progression of Alzheimer disease. Increased transmission at the other types of
+receptors listed does not result in improved memory.
+A 70-year-old woman with moderate to severe dementia of the Alzheimer type has been treated with an
+acetylcholinesterase inhibitor for 6 months at maximum dosing with minimal effect. Which medication is a
+glutamate receptor antagonist that could provide added benefit for management of her moderate to severe
+symptoms of Alzheimer disease?
+A.  Rivastigmine
+B.  Pramipexole
+C.  Memantine
+D.  Galantamine
+Correct answer = C. When combined with an acetylcholinesterase inhibitor, memantine has modest efficacy in
+keeping patients with Alzheimer disease at or above baseline for at least 6 months and may delay disease
+progression. It is currently not approved for mild cognitive impairment or mild AD.
+An 80-year-old male patient with moderate Alzheimer disease had a short trial of an oral medication for
+Alzheimer disease and experienced frequent nausea, along with difficulty swallowing the medication. Which
+agent is best for management of Alzheimer disease in this patient?
+334
+www.webofpharma.com
+8.7
+8.8
+8.9
+8.10
+A.  Rivastigmine
+B.  Donepezil
+C.  Memantine
+D.  Rotigotine
+Correct answer = A. Rivastigmine is the only agent available as a transdermal delivery system (patch) for the
+treatment of Alzheimer disease. It may also be used for dementia associated with Parkinson disease. Daily use of
+the rivastigmine patch provides steady drug levels to treat Alzheimer disease, with a possible reduced incidence
+of nausea. Rotigotine is available as a transdermal delivery system; however, it is indicated for Parkinson disease
+and not for Alzheimer disease.
+Which medication would benefit a 55-year-old female patient recently diagnosed with amyotrophic lateral
+sclerosis (ALS)?
+A.  Pramipexole
+B.  Galantamine
+C.  Riluzole
+D.  Glatiramer
+Correct answer = C. Riluzole is approved for the debilitating and lethal illness of ALS. It is used to, ideally, delay
+the progression and need for ventilator support in severe patients. It is believed to work by decreasing the release
+of glutamate from the presynaptic terminal.
+A 48-year-old woman with relapsing multiple sclerosis has had intolerable adverse reactions to interferon
+beta (depression) and dimethyl fumarate (angioedema) and now requires an alternative treatment option.
+Which medication is most appropriate for this patient?
+A.  Riluzole
+B.  Rotigotine
+C.  Teriflunomide
+D.  Galantamine
+Correct answer = C. Teriflunomide is believed to exert its disease modifying and anti-inflammatory effects by
+inhibiting the enzyme dihydroorotate dehydrogenase to reduce pyrimidine synthesis. Teriflunomide may provide
+an alternative treatment option with a different side effect profile compared to the prior two attempted treatments.
+The other agents are not indicated for the treatment of multiple sclerosis.
+Which agent may cause tremors as an adverse effect and, thus, should be used with caution in patients with
+Parkinson disease, even though it is also indicated for the treatment of dementia associated with Parkinson
+disease?
+A.  Benztropine
+B.  Rotigotine
+C.  Rivastigmine
+D.  Dimethyl fumarate
+Correct answer = C. Though rivastigmine is an acetylcholinesterase inhibitor, which can cause tremors as an
+adverse effect, its use is not contraindicated in patients with Parkinson disease, as this agent is also the only
+medication approved for dementia associated with Parkinson disease. It should be used with caution, as it may
+worsen the parkinsonian-related tremors. A risk–benefit discussion should occur with the patient and the
+caregiver before rivastigmine is used.
+A 50-year-old male patient with secondary progressive multiple sclerosis reports continued difficulty
+walking and the distance that he can walk before being overcome by fatigue. Which agent may be beneficial
+to improve walking speed and disability in this patient?
+A.  Dalfampridine
+B.  Donepezil
+C.  Riluzole
+D.  Bromocriptine
+Correct answer = A. Dalfampridine is a potassium channel blocker that exerts its therapeutic effect in multiple
+sclerosis via potassium channel blockade and has been proven to improve walking speed and disability in patients
+with multiple sclerosis. It is the only agent that is indicated to improve walking speed in patients with MS. The
+other agents are not indicated for the treatment of multiple sclerosis.
+335
+www.webofpharma.com
+9
+Anxiolytic and Hypnotic Drugs
+Jose A. Rey
+336
+www.webofpharma.com
+I.  Overview
+Disorders involving anxiety are among the most common mental disorders. Anxiety is an unpleasant state of
+tension, apprehension, or uneasiness (a fear that arises from either a known or an unknown source). The physical
+symptoms of severe anxiety are similar to those of fear (such as tachycardia, sweating, trembling, and palpitations)
+and involve sympathetic activation. Episodes of mild anxiety are common life experiences and do not warrant
+treatment. However, severe, chronic, debilitating anxiety may be treated with antianxiety drugs (sometimes called
+anxiolytics) and/or some form of psychotherapy. Because many antianxiety drugs also cause some sedation, they
+may be used clinically as both anxiolytic and hypnotic (sleep-inducing) agents. Figure 9.1 summarizes the anxiolytic
+and hypnotic agents. Some antidepressants are also indicated for certain anxiety disorders; however, they are
+discussed with the antidepressants (see Chapter 10).
+337
+www.webofpharma.com
+338
+www.webofpharma.com
+Figure 9.1 Summary of anxiolytic and hypnotic drugs.
+339
+www.webofpharma.com
+II.  Benzodiazepines
+Benzodiazepines are widely used anxiolytic drugs. They have largely replaced barbiturates and meprobamate in the
+treatment of anxiety and insomnia, because benzodiazepines are generally considered to be safer and more effective
+(Figure 9.2). Though benzodiazepines are commonly used, they are not necessarily the best choice for anxiety or
+insomnia. Certain antidepressants with anxiolytic action, such as the selective serotonin reuptake inhibitors (SSRIs),
+are preferred in many cases, and nonbenzodiazepine hypnotics and antihistamines may be preferable for insomnia.
+Figure 9.2 Ratio of lethal dose to effective dose for morphine (an opioid, see Chapter
+14), chlorpromazine (an antipsychotic, see Chapter 11), and the anxiolytic, hypnotic
+drugs, phenobarbital and diazepam.
+340
+www.webofpharma.com

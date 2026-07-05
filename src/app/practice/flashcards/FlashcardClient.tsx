@@ -37,7 +37,7 @@ export default function FlashcardClient({
   const answerText = isFlashcard
     ? (question?.correct_answer || question?.explanation)
     : (opts.find(o => o.startsWith(question?.correct_answer + '.') || o.startsWith(question?.correct_answer + ' '))
-        ?.replace(/^[A-D][\.\s]\s*/, '') ?? question?.explanation)
+        ?.replace(/^[A-E][\.\s]\s*/, '') ?? question?.explanation)
 
   // Dynamic card height so long answers don't overflow
   const answerLen = answerText?.length ?? 0

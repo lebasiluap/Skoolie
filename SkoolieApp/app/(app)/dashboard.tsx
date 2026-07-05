@@ -1,0 +1,532 @@
+import { useCallback, useEffect, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Animated } from 'react-native'
+import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
+import { router, useFocusEffect } from 'expo-router'
+import { useScreenEntrance } from '@/hooks/useScreenEntrance'
+import { effectiveStreak as computeEffectiveStreak, streakColors, computeFreezeConsumption } from '@/lib/streak'
+import { StreakTracker } from '@/components/ui/StreakTracker'
+import { Ionicons } from '@expo/vector-icons'
+import Svg, { Circle } from 'react-native-svg'
+import { SkeletonList } from '@/components/ui/Skeleton'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/hooks/useTheme'
+import { useThemeMode } from '@/contexts/ThemeContext'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import { TopBar } from '@/components/ui/TopBar'
+import { TopicIcon } from '@/components/ui/TopicIcon'
+import { topicColor } from '@/constants/topics'
+import { PRACTITIONER_TITLES } from '@/constants/professions'
+import { tierProgress, tierMeta } from '@/lib/tiers'
+import { nextBarrage, barrageDay } from '@/lib/barrage'
+import { rescheduleAll } from '@/lib/notifications'
+import { preloadSounds } from '@/lib/sounds'
+import { IntroGate } from '@/components/ui/IntroGate'
+import type { UserProfile } from '@/types'
+
+function getDisplayName(profile: UserProfile): string {
+  if (profile.study_year === 'practitioner') {
+    const title = PRACTITIONER_TITLES[profile.profession]
+    if (title) return `${title} ${profile.full_name}`
+  }
+  return profile.full_name
+}
+
+const XP_PER_LEVEL = 400
+
+function formatSessionTime(iso: string): string {
+  const d = new Date(iso)
+  const today = new Date()
+  const yesterday = new Date(Date.now() - 86400000)
+  const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  if (d.toDateString() === today.toDateString()) return `Today · ${timeStr}`
+  if (d.toDateString() === yesterday.toDateString()) return `Yesterday · ${timeStr}`
+  return `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · ${timeStr}`
+}
+
+interface SessionData {
+  score: number
+  question_ids: string[]
+  xp_earned: number
+  started_at: string
+  mode?: string | null
+  topic?: string | null
+}
+
+const MODE_META: Record<string, { label: string; icon: string }> = {
+  mcq: { label: 'MCQ', icon: 'list' },
+  flashcard: { label: 'Flashcards', icon: 'duplicate' },
+  case_study: { label: 'Cases', icon: 'clipboard' },
+  rapid_fire: { label: 'Rapid Fire', icon: 'flash' },
+  barrage: { label: 'Barrage 2×', icon: 'flash' },
+}
+
+export default function DashboardScreen() {
+  const C = useTheme()
+  const { isDark } = useThemeMode()
+  const { user, profile, refreshProfile } = useAuth()
+  const entrance = useScreenEntrance()
+  const [sessions, setSessions] = useState<SessionData[]>([])
+  const [statTotals, setStatTotals] = useState({ answered: 0, attempts: 0, correct: 0 })
+  const [todayCount, setTodayCount] = useState(0)   // questions answered today — feeds the daily goal ring
+  const [topicActivity, setTopicActivity] = useState<{ topic: string; count: number }[]>([])
+  const [weekXp, setWeekXp] = useState(0)
+  // Surprise Barrage — deterministic daily window; claimed defaults true to avoid banner flash
+  const [claimedSlots, setClaimedSlots] = useState<Set<number>>(new Set([0, 1]))  // default full to avoid banner flash
+  const [barrageTotal, setBarrageTotal] = useState(0)   // completed barrages (freeze every 5)
+  const [, tick] = useState(0)
+  useEffect(() => { const iv = setInterval(() => tick(t => t + 1), 30_000); return () => clearInterval(iv) }, [])
+  const [refreshing, setRefreshing] = useState(false)
+  const [booted, setBooted] = useState(false)   // first load done — gates the activity skeleton
+  const [greeting, setGreeting] = useState('Good morning')
+  // Pixel-perfect half-card width: content − 2×padding(18) − 1×gap(12), divided by 2.
+  // Live (not module-scope) so rotation/split-screen/tablets re-layout correctly.
+  const { contentWidth } = useResponsive()
+  const HALF_CARD = (contentWidth - 18 * 2 - 12) / 2
+
+  useEffect(() => {
+    const h = new Date().getHours()
+    setGreeting(h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening')
+    preloadSounds()   // warm the SFX players so the first tap isn't silent
+  }, [])
+
+  // Reload recent sessions AND the in-memory profile each time the dashboard
+  // regains focus, so XP/level/streak update after a quiz completed elsewhere.
+  useFocusEffect(useCallback(() => {
+    loadSessions()
+    refreshProfile()
+  }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function loadSessions() {
+    if (!user) return
+
+    // Streak-freeze auto-consumption: if missed days are fully covered by
+    // banked freezes, spend them — the streak survives (frozen days go blue).
+    if (profile) {
+      const freezeUpd = computeFreezeConsumption(profile)
+      if (freezeUpd) {
+        supabase.from('user_profiles').update(freezeUpd).eq('id', user.id).then(() => refreshProfile())
+      }
+    }
+
+    // This week's league XP (week_start = ISO Monday, matching Postgres date_trunc('week')).
+    const now = new Date()
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+    const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
+    supabase.from('league_standings').select('week_xp').eq('user_id', user.id).eq('week_start', weekStart).maybeSingle()
+      .then(({ data }) => setWeekXp(data?.week_xp ?? 0))
+    // One query: total completed barrages (freeze every 5th) + today's claimed slots
+    supabase.from('barrage_claims').select('day, slot', { count: 'exact' }).eq('user_id', user.id)
+      .then(({ data, count }) => {
+        const total = count ?? 0
+        setBarrageTotal(total)
+        const slots = new Set<number>((data ?? []).filter((r: any) => r.day === barrageDay()).map((r: any) => r.slot ?? 0))
+        setClaimedSlots(slots)
+        // Rebuild local mascot nudges from fresh state (streak rescue, lapse,
+        // barrage-live, league deadline). Best-effort — never blocks the UI.
+        if (profile) {
+          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+          const today = new Date()
+          const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+          rescheduleAll({
+            userId: user.id,
+            streak,
+            practicedToday: profile.last_active_date === todayKey,
+            claimedSlotsToday: [...slots],
+            barragesToFreeze: 5 - (total % 5),
+            prefs: profile.notif_prefs,
+          })
+        }
+      })
+    try {
+    const [{ data: recent }, { data: allSess }] = await Promise.all([
+      supabase
+        .from('quiz_sessions')
+        .select('score, question_ids, xp_earned, started_at, mode, topic')
+        .eq('user_id', user.id)
+        .order('started_at', { ascending: false })
+        .limit(4),
+      supabase
+        .from('quiz_sessions')
+        .select('question_ids, score, started_at')
+        .eq('user_id', user.id)
+        .order('started_at', { ascending: false })
+        .limit(200),
+    ])
+
+    setSessions(recent ?? [])
+
+    // All-time stats (same 200-session window the Progress page uses) — not just
+    // the 4 recent sessions, so the Dashboard tiles match the Progress page.
+    const statsRows = allSess ?? []
+    const answeredIds = statsRows.flatMap((s: any) => s.question_ids ?? [])
+    setStatTotals({
+      answered: new Set(answeredIds).size,                 // distinct questions — repeats don't inflate
+      attempts: answeredIds.length,                        // total attempts — used for accuracy
+      correct: statsRows.reduce((sum: number, s: any) => sum + (s.score ?? 0), 0),
+    })
+
+    // Daily goal — questions answered today (any mode; repeats count: effort is effort)
+    const todayStr = new Date().toDateString()
+    setTodayCount(statsRows
+      .filter((r: any) => r.started_at && new Date(r.started_at).toDateString() === todayStr)
+      .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
+
+    const allIds: string[] = (allSess ?? []).flatMap((s: any) => s.question_ids ?? [])
+    if (allIds.length > 0) {
+      const { data: qs } = await supabase.rpc('get_question_meta', { p_ids: allIds.slice(0, 500) })
+      const counts: Record<string, number> = {}
+      for (const q of (qs ?? [])) counts[q.topic] = (counts[q.topic] ?? 0) + 1
+      const sorted = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([topic, count]) => ({ topic, count }))
+      setTopicActivity(sorted)
+    }
+    } catch (e) {
+      console.warn('dashboard load failed', e)
+    } finally {
+      setBooted(true)
+    }
+  }
+
+  async function onRefresh() {
+    setRefreshing(true)
+    try { await loadSessions() } finally { setRefreshing(false) }
+  }
+
+  if (!profile) return null
+
+  const effectiveStreak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+  const sc = streakColors(effectiveStreak, isDark)
+  const xpInLevel = profile.xp % XP_PER_LEVEL
+  const xpToNext = XP_PER_LEVEL - xpInLevel
+
+  const profLabel = profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)
+  const yearStr = profile.study_year ? ` · ${profile.study_year.replace('year', 'Year ')}` : ''
+
+  // All-time stats (matches the Progress page's session window).
+  // "Questions" = distinct questions answered; accuracy = correct / total attempts.
+  const totalAnswered = statTotals.answered
+  const avgAccuracy = statTotals.attempts > 0 ? Math.round((statTotals.correct / statTotals.attempts) * 100) : 0
+
+
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <TopBar title="Dashboard" />
+
+      {/* One-time system explanations, staged so they never stack */}
+      <IntroGate introKey="streak" when={effectiveStreak >= 1} />
+      <IntroGate introKey="freeze" when={(profile.streak_freezes ?? 0) > 0 || (profile.frozen_dates?.length ?? 0) > 0} />
+      <IntroGate introKey="barrage" when={!!user && !!nextBarrage(user.id, claimedSlots) && nextBarrage(user.id, claimedSlots)!.status === 'live'} />
+
+      <Animated.View style={[{ flex: 1 }, entrance]}>
+      <ScrollView
+        contentContainerStyle={[s.scroll, { paddingBottom: 32, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.teal} />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Greeting + streak badge */}
+        <View style={s.greetingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.greetingHi, { color: C.textSoft }]}>{greeting},</Text>
+            <Text style={[s.greetingName, { color: C.text }]}>{getDisplayName(profile)} 👋</Text>
+          </View>
+          {effectiveStreak > 0 && (
+            <View style={[s.streakBadge, { backgroundColor: sc.fill + '22' }]}>
+              <Ionicons name="flame" size={16} color={sc.text} />
+              <Text style={[s.streakBadgeText, { color: sc.text }]}>{effectiveStreak}-day streak</Text>
+            </View>
+          )}
+        </View>
+
+        {/* DAILY GOAL — the "what now?" anchor: 10 questions keeps the streak alive.
+            (Barrage banner below outranks it visually while a window is live.) */}
+        {(() => {
+          const GOAL = 10
+          const done = Math.min(todayCount, GOAL)
+          const met = todayCount >= GOAL
+          const r = 26, sw = 6, circ = 2 * Math.PI * r
+          return (
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/(app)/practice/mcq', params: { smartStart: '1', from: 'dashboard' } } as any)}
+              activeOpacity={0.85}
+              style={[s.goalCard, { backgroundColor: C.surface, borderColor: met ? C.green : C.border, ...C.shadow }]}
+            >
+              <View style={s.goalRingWrap}>
+                <Svg width={64} height={64} viewBox="0 0 64 64">
+                  <Circle cx={32} cy={32} r={r} stroke={C.surface3} strokeWidth={sw} fill="none" />
+                  <Circle
+                    cx={32} cy={32} r={r}
+                    stroke={met ? C.green : C.teal} strokeWidth={sw} fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${circ}`}
+                    strokeDashoffset={circ * (1 - done / GOAL)}
+                    transform="rotate(-90 32 32)"
+                  />
+                </Svg>
+                <Text style={[s.goalRingNum, { color: met ? C.green : C.teal }]}>{met ? '✓' : todayCount}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.goalTitle, { color: C.text }]}>
+                  {met ? "Today's goal hit! 🎉" : `${GOAL - todayCount} more to today's goal`}
+                </Text>
+                <Text style={[s.goalSub, { color: C.textSoft }]}>
+                  {met ? 'Streak is safe — everything extra is bonus XP.' : '10 questions a day keeps the streak alive.'}
+                </Text>
+              </View>
+              <View style={[s.goalBtn, { backgroundColor: met ? C.greenTint : C.teal }]}>
+                <Text style={[s.goalBtnText, { color: met ? C.green : C.onTeal }]}>{met ? 'Keep going' : 'Start'}</Text>
+              </View>
+            </TouchableOpacity>
+          )
+        })()}
+
+        {/* Surprise Barrage — live window banner / upcoming teaser (2 windows/day) */}
+        {(() => {
+          if (!user) return null
+          const P = isDark ? '#9D93E3' : '#7C6FCD'
+          const onP = isDark ? '#151038' : '#FFFFFF'
+          const bw = nextBarrage(user.id, claimedSlots)
+          if (!bw) return null
+          if (bw.status === 'live') return (
+            <TouchableOpacity
+              onPress={() => router.push({ pathname: '/(app)/practice/rapidfire', params: { barrage: '1', slot: String(bw.slot) } } as any)}
+              activeOpacity={0.85}
+              style={[s.barrageBanner, { backgroundColor: P, ...C.shadowLg }]}
+            >
+              <View style={[s.barrageIcon, { backgroundColor: onP + '26' }]}>
+                <Ionicons name="flash" size={22} color={onP} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.barrageTitle, { color: onP }]}>SURPRISE BARRAGE · LIVE</Text>
+                <Text style={[s.barrageSub, { color: onP + 'D9' }]}>
+                  2× XP — ends in {bw.minutesLeft} min · {5 - (barrageTotal % 5) === 1 ? 'this one earns a 🧊 freeze!' : `${5 - (barrageTotal % 5)} more to a 🧊 freeze`}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={onP} />
+            </TouchableOpacity>
+          )
+          if (bw.status === 'upcoming') return (
+            <View style={[s.barrageTeaser, { backgroundColor: P + '18', borderColor: P + '55' }]}>
+              <Ionicons name="flash-outline" size={15} color={P} />
+              <Text style={[s.barrageTeaserText, { color: C.textSoft }]}>
+                {claimedSlots.size > 0 ? 'Another' : 'A'} Surprise Barrage strikes {bw.slot === 1 ? 'later today' : 'sometime today'} — catch it for <Text style={{ color: P, fontFamily: 'Nunito_800ExtraBold' }}>2× XP</Text>
+              </Text>
+            </View>
+          )
+          return null
+        })()}
+
+        {/* Rank card — TIER is the headline (what you're becoming); weekly XP is the
+            competitive number; level is just the lifetime odometer, kept small.
+            Chrome stays on theme tokens — the tier's own color lives only in the badge. */}
+        {(() => {
+          const tp = tierProgress(profile.tier_score ?? 0, profile.tier ?? 0)
+          const tm = tierMeta(tp.tier)
+          return (
+            <View style={[s.levelCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+              <View style={s.levelRow}>
+                <View style={[s.levelIconBox, { backgroundColor: C.tealTint }]}>
+                  <Ionicons name={tm.icon as any} size={22} color={C.teal} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.levelTitle, { color: C.text }]}>{tm.name}</Text>
+                  <Text style={[s.levelSub, { color: C.textSoft }]}>{profLabel}{yearStr}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={[s.weekXpVal, { color: C.teal }]}>{weekXp.toLocaleString()} XP</Text>
+                  <Text style={[s.weekXpLabel, { color: C.textFaint }]}>this week</Text>
+                </View>
+              </View>
+              <ProgressBar progress={tp.pct} height={10} color={C.teal} style={{ marginTop: 14 }} />
+              <Text style={[s.xpCaption, { color: C.textFaint }]}>
+                {tp.need - tp.have} to {tp.next.name} — broad practice counts double
+              </Text>
+
+              {/* Level — lifetime odometer, deliberately quiet (text only, no bar) */}
+              <View style={[s.rankSection, { borderTopColor: C.border }]}>
+                <View style={s.rankRow}>
+                  <Text style={[s.rankLabel, { color: C.textFaint }]}>LEVEL {profile.level}</Text>
+                  <Text style={[s.rankLabel, { color: C.textFaint }]}>{xpInLevel} / {XP_PER_LEVEL} XP · {xpToNext} to Lv.{profile.level + 1}</Text>
+                </View>
+              </View>
+            </View>
+          )
+        })()}
+
+        {/* Streak — Duolingo-style milestone tracker */}
+        <StreakTracker streak={effectiveStreak} userId={user?.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} frozenDates={profile.frozen_dates} freezes={profile.streak_freezes} style={{ marginBottom: 22 }} />
+
+        {/* RECENT ACTIVITY — skeleton on first load so the page doesn't jump */}
+        {!booted && sessions.length === 0 && (
+          <>
+            <Text style={[s.eyebrow, { color: C.textFaint }]}>RECENT ACTIVITY</Text>
+            <SkeletonList rows={3} />
+          </>
+        )}
+        {sessions.length > 0 && (
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={[s.eyebrow, { color: C.textFaint, marginBottom: 0 }]}>RECENT ACTIVITY</Text>
+              <TouchableOpacity onPress={() => router.push('/(app)/history' as any)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ fontSize: 12, fontFamily: 'Nunito_700Bold', color: C.teal }}>Time Capsule →</Text>
+              </TouchableOpacity>
+            </View>
+            {sessions.map((sess, i) => {
+              const total = sess.question_ids?.length ?? 0
+              const mm = sess.mode ? MODE_META[sess.mode] : undefined
+              const title = sess.mode ? (sess.topic ?? 'Random') : 'Quiz session'
+              const metaLine = `${mm ? mm.label + ' · ' : ''}${sess.score} / ${total} correct`
+              return (
+                <View key={i} style={[s.activityRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+                  <View style={[s.activityIcon, { backgroundColor: C.greenTint }]}>
+                    <Ionicons name={(mm?.icon ?? 'checkmark') as any} size={16} color={C.green} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.activityTitle, { color: C.text }]} numberOfLines={1}>{title}</Text>
+                    <Text style={[s.activityMeta, { color: C.textFaint }]}>{metaLine}</Text>
+                    <Text style={[s.activityTime, { color: C.textFaint }]}>{formatSessionTime(sess.started_at)}</Text>
+                  </View>
+                  <View style={[s.xpChip, { backgroundColor: C.coralTint }]}>
+                    <Text style={[s.xpChipText, { color: C.coral }]}>+{sess.xp_earned} XP</Text>
+                  </View>
+                </View>
+              )
+            })}
+          </>
+        )}
+
+        {/* YOUR STATS — 2×2 */}
+        <Text style={[s.eyebrow, { color: C.textFaint }]}>YOUR STATS</Text>
+        <View style={s.statsGrid}>
+          {[
+            { val: `${totalAnswered}`,     label: 'Questions',      color: C.teal  },
+            { val: `${avgAccuracy}%`,      label: 'Avg accuracy',   color: C.teal  },
+            { val: `${effectiveStreak}d`,  label: 'Current streak', color: C.coral },
+            { val: `${profile.longest_streak ?? 0}d`, label: 'Longest', color: C.text },
+          ].map(stat => (
+            <View key={stat.label} style={[s.statCard, { width: HALF_CARD, backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+              <Text style={[s.statVal, { color: stat.color }]}>{stat.val}</Text>
+              <Text style={[s.statLabel, { color: C.textFaint }]}>{stat.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* TOPIC PERFORMANCE */}
+        {topicActivity.length > 0 && (
+          <>
+            <Text style={[s.eyebrow, { color: C.textFaint }]}>TOPIC PERFORMANCE</Text>
+            <View style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+              {topicActivity.map((t, i) => {
+                const pct = t.count / topicActivity[0].count
+                const { color: tColor, bgLight: tBg } = topicColor(t.topic)
+                return (
+                  <View
+                    key={t.topic}
+                    style={[s.topicRow, i > 0 && s.topicDivider, i > 0 && { borderTopColor: C.border }]}
+                  >
+                    <View style={[s.topicIconBox, { backgroundColor: tBg }]}>
+                      <TopicIcon topic={t.topic} size={16} color={tColor} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={s.topicLabelRow}>
+                        <Text style={[s.topicName, { color: C.text }]} numberOfLines={1}>{t.topic}</Text>
+                        <Text style={[s.topicPct, { color: tColor }]}>{t.count}q</Text>
+                      </View>
+                      <View style={[s.topicTrack, { backgroundColor: C.surface3 }]}>
+                        <View style={[s.topicFill, { backgroundColor: tColor, width: `${pct * 100}%` as any }]} />
+                      </View>
+                    </View>
+                  </View>
+                )
+              })}
+            </View>
+          </>
+        )}
+      </ScrollView>
+      </Animated.View>
+    </View>
+  )
+}
+
+const s = StyleSheet.create({
+  scroll: { paddingHorizontal: 18, paddingTop: 20 },
+
+  // Greeting
+  greetingRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18, gap: 12 },
+  greetingHi: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', marginBottom: 2 },
+  greetingName: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.3 },
+  streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999 },
+  streakBadgeText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
+
+  // Daily goal hero
+  goalCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 20, borderWidth: 1.5, padding: 14, paddingRight: 16, marginBottom: 14 },
+  goalRingWrap: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center' },
+  goalRingNum: { position: 'absolute', fontSize: 19, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
+  goalTitle: { fontSize: 15.5, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
+  goalSub: { fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', lineHeight: 17 },
+  goalBtn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999 },
+  goalBtnText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
+
+  // Level card (surface, not teal)
+  levelCard: { borderRadius: 20, borderWidth: 1, padding: 20, marginBottom: 14 },
+  levelRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  levelIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  levelTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 2 },
+  levelSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
+  xpLabel: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
+  xpCaption: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', marginTop: 8 },
+  rankSection: { borderTopWidth: 1, marginTop: 14, paddingTop: 12 },
+  barrageBanner: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, padding: 16, marginBottom: 14 },
+  barrageIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  barrageTitle: { fontSize: 13, fontFamily: 'Nunito_900Black', letterSpacing: 0.6 },
+  barrageSub: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', marginTop: 2 },
+  barrageTeaser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14 },
+  barrageTeaserText: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', lineHeight: 18 },
+  weekXpVal: { fontSize: 17, fontFamily: 'Nunito_900Black', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
+  weekXpLabel: { fontSize: 11, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
+  rankRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  rankLabel: { fontSize: 10.5, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7 },
+
+  // Streak card
+  streakCard: { borderRadius: 20, borderWidth: 1.5, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 22 },
+  streakCheck: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  streakCheckBadge: { position: 'absolute', bottom: -3, right: -3, width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  streakTitle: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
+  streakSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', lineHeight: 17 },
+  streakCta: { paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999 },
+  streakCtaText: { color: '#fff', fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
+
+  // Eyebrow labels
+  eyebrow: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7, marginBottom: 12 },
+
+  // Mode grid — icon + label ONLY
+
+  // Recent activity
+  activityRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10, gap: 12 },
+  activityIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  activityTitle: { fontSize: 14, fontFamily: 'Nunito_700Bold' },
+  activityMeta: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
+  activityTime: { fontSize: 11, fontFamily: 'Nunito_600SemiBold', marginTop: 1, opacity: 0.65 },
+  xpChip: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999 },
+  xpChipText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
+
+  // Stats 2×2
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
+  statCard: { borderRadius: 18, borderWidth: 1, padding: 16 },
+  statVal: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, fontVariant: ['tabular-nums'] },
+  statLabel: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 3 },
+
+  // Topic performance
+  topicCard: { borderRadius: 18, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 6, marginBottom: 8 },
+  topicRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  topicDivider: { borderTopWidth: 1 },
+  topicIconBox: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  topicLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  topicName: { fontSize: 13, fontFamily: 'Nunito_700Bold', flex: 1 },
+  topicPct: { fontSize: 12, fontFamily: 'Nunito_700Bold', marginLeft: 6 },
+  topicTrack: { height: 5, borderRadius: 3, overflow: 'hidden' },
+  topicFill: { height: 5, borderRadius: 3 },
+})

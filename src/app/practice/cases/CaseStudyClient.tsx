@@ -13,7 +13,7 @@ interface Props {
 
 type Phase = 'vignette' | 'questions' | 'done'
 
-const OPTION_LETTERS = ['A', 'B', 'C', 'D']
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
 
 function shuffleCases(cases: CaseStudy[]): CaseStudy[] {
   return cases.map(cs => ({
@@ -29,7 +29,7 @@ function shuffleCases(cases: CaseStudy[]): CaseStudy[] {
       const newCorrectIdx = items.findIndex(it => it.origLetter === q.correct_answer)
       return {
         ...q,
-        options: items.map((it, i) => it.text.replace(/^[A-D]\.\s*/, `${OPTION_LETTERS[i]}. `)),
+        options: items.map((it, i) => it.text.replace(/^[A-E]\.\s*/, `${OPTION_LETTERS[i]}. `)),
         correct_answer: OPTION_LETTERS[newCorrectIdx],
       }
     }),
@@ -291,7 +291,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
                   {isReviewing && isAnswer ? '✓' : isReviewing && isChosen ? '✗' : letter}
                 </span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.45, color: textColor }}>
-                  {option.replace(/^[A-D]\.\s*/, '')}
+                  {option.replace(/^[A-E]\.\s*/, '')}
                 </span>
               </button>
             )

@@ -53,8 +53,14 @@ const IconFlask = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="no
 const IconGI = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h6a4 4 0 0 1 0 8H9a4 4 0 0 0 0 8h6"/></svg>
 // Kidney bean — Renal
 const IconKidney = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3C8 3 5 7 5 11c0 3 1.5 5.5 4 7 1 .6 1.5 1.5 1.5 3H14c0-1.5.5-2.4 1.5-3 2.5-1.5 4-4 4-7 0-4-3-8-7.5-8z"/><path d="M10.5 14c.8.3 1.5.5 1.5.5s.7-.2 1.5-.5"/></svg>
-// Syringe — Hospital Pharmacy
+// Syringe — Hospital Pharmacy / Surgery
 const IconSyringe = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2l4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3a1 1 0 0 1-1.4 0l-.6-.6a1 1 0 0 1 0-1.4L17 7"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></svg>
+// Venus symbol — Reproductive System
+const IconVenus = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5"/><line x1="12" y1="13" x2="12" y2="21"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+// Baby face — Paediatrics
+const IconBaby = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4"/><path d="M8 14a6 6 0 0 0-2 4.5V20h12v-1.5A6 6 0 0 0 16 14H8z"/></svg>
+// Virus / pathogen — Immunology, Infectious Diseases
+const IconVirus = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="3" x2="12" y2="5.5"/><line x1="12" y1="18.5" x2="12" y2="21"/><line x1="3" y1="12" x2="5.5" y2="12"/><line x1="18.5" y1="12" x2="21" y2="12"/><line x1="5.6" y1="5.6" x2="7.4" y2="7.4"/><line x1="16.6" y1="16.6" x2="18.4" y2="18.4"/><line x1="18.4" y1="5.6" x2="16.6" y2="7.4"/><line x1="7.4" y1="16.6" x2="5.6" y2="18.4"/></svg>
 
 const TOPIC_ICONS: Record<string, React.ReactNode> = {
   // Core body systems
@@ -77,8 +83,15 @@ const TOPIC_ICONS: Record<string, React.ReactNode> = {
   'Antibiotics':           <IconPill />,
   // Other
   'Infectious Disease':    <IconMicroscope />,
+  'Infectious Diseases':   <IconVirus />,
   'Malaria':               <IconMicroscope />,
   'Pain Management':       <IconThermometer />,
+  // Newer topics
+  'Reproductive System':   <IconVenus />,
+  'Immunology':            <IconVirus />,
+  'Paediatrics':           <IconBaby />,
+  'Dermatology':           <IconThermometer />,
+  'Surgery':               <IconSyringe />,
 }
 
 const DIFFICULTY_STYLE: Record<string, { active: { bg: string; color: string }; label: string }> = {

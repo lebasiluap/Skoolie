@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { AppState } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const SUPABASE_URL = 'https://bqhiwlpmrejvjdljxspy.supabase.co'
@@ -10,6 +11,14 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-
   },
+})
+
+// Supabase's recommended RN pattern: run the token-refresh timer only while
+// the app is foregrounded. Sessions still persist across restarts either way
+// (an expired access token is refreshed on next launch); this just prevents a
+// momentarily-stale token right after a long background stint.
+AppState.addEventListener('change', state => {
+  if (state === 'active') supabase.auth.startAutoRefresh()
+  else supabase.auth.stopAutoRefresh()
 })

@@ -846,6 +846,10 @@ export default function MCQScreen() {
             the action bar down toward the thumb — no dead space at the
             bottom. Long content simply scrolls as before. */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={[s.quizScroll, { flexGrow: 1, paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
+          {/* Ask block: badges + Cappy + bubble travel together, centered in
+              the vertical slack — one composed pocket of whitespace instead
+              of voids above and below. */}
+          <View style={s.askBlock}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
           <View style={s.badgeRow}>
@@ -889,6 +893,7 @@ export default function MCQScreen() {
               </View>
               <Text style={[s.stem, { color: C.text }]}>{q.question_text}</Text>
             </View>
+          </View>
           </View>
 
           {/* Options */}
@@ -1170,13 +1175,14 @@ const s = StyleSheet.create({
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   tagChip: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
   tagText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold' },
-  stemRow: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 18 },
+  askBlock: { flexGrow: 1, justifyContent: 'center', marginBottom: 18 },
+  stemRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stemBubble: { flex: 1, borderRadius: 20, borderWidth: 1, padding: 18 },
   // Full-height wrapper vertically centers the tail on the bubble (and Cappy)
   tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
   bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
   stem: { fontSize: 18, fontFamily: 'Nunito_700Bold', lineHeight: 28 },
-  option: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, padding: 14, marginBottom: 12 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, paddingVertical: 19, paddingHorizontal: 14, marginBottom: 12 },
   optChip: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   optChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 22 },

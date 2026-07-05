@@ -180,13 +180,17 @@ export default function PracticeHubScreen() {
                 key={mode.label}
                 style={[s.modeTile, { width: TILE_W, backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
               >
-                <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
-                  <Ionicons name={mode.icon} size={22} color={clr.fg} />
+                <View style={s.tileHeader}>
+                  <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
+                    <Ionicons name={mode.icon} size={20} color={clr.fg} />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
+                    <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
+                      {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
-                <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
-                  {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
-                </Text>
                 <View style={{ flex: 1 }} />
                 <View style={s.tileActions}>
                   <TouchableOpacity
@@ -254,13 +258,14 @@ const s = StyleSheet.create({
   // Mode cards
   modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
   modeTile: { borderRadius: 20, borderWidth: 1, padding: 14 },
+  tileHeader: { flexDirection: 'row', alignItems: 'center' },
   tileActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
   tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },
   tileBtnText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
-  modeIconBox: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 10 },
-  modeTitle: { fontSize: 16, fontFamily: 'Nunito_800ExtraBold', textAlign: 'center', marginBottom: 2 },
-  modeSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', textAlign: 'center', fontVariant: ['tabular-nums'] },
+  modeIconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  modeTitle: { fontSize: 15.5, fontFamily: 'Nunito_800ExtraBold', marginBottom: 1 },
+  modeSub: { fontSize: 11.5, fontFamily: 'Nunito_600SemiBold', fontVariant: ['tabular-nums'] },
 
 
   // Bookmarks

@@ -841,10 +841,11 @@ export default function MCQScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* flexGrow:0 + flexShrink:1 — the scroll area hugs its content, so the
-            action bar sits right under the last option on short questions
-            instead of leaving a void, yet still yields when content is tall. */}
-        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={[s.quizScroll, { paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
+        {/* flexGrow:1 on the content + flexGrow on the stem card: on tall
+            screens the question card absorbs the slack, pulling options and
+            the action bar down toward the thumb — no dead space at the
+            bottom. Long content simply scrolls as before. */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={[s.quizScroll, { flexGrow: 1, paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
           <View style={s.badgeRow}>
@@ -1160,7 +1161,7 @@ const s = StyleSheet.create({
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   tagChip: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999 },
   tagText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold' },
-  stemCard: { borderRadius: 20, borderWidth: 1, padding: 22, marginBottom: 18 },
+  stemCard: { borderRadius: 20, borderWidth: 1, padding: 22, marginBottom: 18, flexGrow: 1, justifyContent: 'center' },
   stem: { fontSize: 18, fontFamily: 'Nunito_700Bold', lineHeight: 28 },
   option: { flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, padding: 14, marginBottom: 12 },
   optChip: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },

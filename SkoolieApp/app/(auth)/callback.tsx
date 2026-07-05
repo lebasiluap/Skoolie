@@ -8,6 +8,9 @@ import { useTheme } from '@/hooks/useTheme'
 export default function AuthCallbackScreen() {
   const C = useTheme()
   const params = useLocalSearchParams<{ type?: string }>()
+  // Warm-start deep links (app already running) arrive as URL events, not the
+  // initial URL — useURL() covers both, getInitialURL() is the cold-start fallback.
+  const eventUrl = Linking.useURL()
 
   useEffect(() => {
     // Safety net: whatever happens, never leave the user on this spinner.
@@ -15,8 +18,8 @@ export default function AuthCallbackScreen() {
 
     async function handleCallback() {
       try {
-        // Get the full URL that opened this screen
-        const url = await Linking.getInitialURL()
+        // Get the full URL that opened this screen (event URL wins — it's live)
+        const url = eventUrl ?? (await Linking.getInitialURL())
         if (!url) {
           // Warm start / no deep link captured — RootNavigator will route based
           // on whatever session state exists once we leave this screen.
@@ -60,7 +63,7 @@ export default function AuthCallbackScreen() {
 
     handleCallback().finally(() => clearTimeout(bail))
     return () => clearTimeout(bail)
-  }, [])
+  }, [eventUrl])
 
   return (
     <View style={[s.container, { backgroundColor: C.bg }]}>

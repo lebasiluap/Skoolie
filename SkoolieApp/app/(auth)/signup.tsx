@@ -66,7 +66,13 @@ export default function SignupScreen() {
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
       password,
-      options: { data: { full_name: cleanName } },
+      options: {
+        data: { full_name: cleanName },
+        // The confirm link deep-links straight back into the app (auth/callback
+        // screen), which signs the user in and routes to onboarding — never the
+        // website, never "come back and sign in".
+        emailRedirectTo: Linking.createURL('auth/callback'),
+      },
     })
     setLoading(false)
     if (error) {
@@ -153,7 +159,7 @@ export default function SignupScreen() {
             <Text style={[s.confirmBody, { color: C.textSoft }]}>
               We sent a confirmation link to{'\n'}
               <Text style={{ fontFamily: 'Nunito_800ExtraBold', color: C.text }}>{email.trim()}</Text>
-              {'\n\n'}Open it (it may launch your browser), then come back and sign in.
+              {'\n\n'}Tap the link on this phone — it opens Skoolie and signs you in automatically.
             </Text>
             <Button label="Go to sign in" onPress={() => router.replace('/(auth)/login')} fullWidth style={{ marginTop: 20 }} />
             <TouchableOpacity

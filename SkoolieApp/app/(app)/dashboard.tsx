@@ -218,7 +218,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <TopBar title="Dashboard" />
+      <TopBar title="Dashboard" showLogo={false} />
 
       {/* One-time system explanations, staged so they never stack */}
       <IntroGate introKey="streak" when={effectiveStreak >= 1} />

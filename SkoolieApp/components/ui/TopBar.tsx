@@ -17,9 +17,12 @@ import { TimedModeSheet } from '@/components/ui/TimedModeSheet'
 
 interface Props {
   title: string
+  /** Hide the Cappy wordmark — used on Dashboard, where the living,
+   *  state-reactive greeting Cappy sits right below and would duplicate it. */
+  showLogo?: boolean
 }
 
-export function TopBar({ title }: Props) {
+export function TopBar({ title, showLogo = true }: Props) {
   const C = useTheme()
   const { isDark, toggleDark } = useThemeMode()
   const { profile } = useAuth()
@@ -31,7 +34,7 @@ export function TopBar({ title }: Props) {
     <View style={[s.bar, { backgroundColor: C.surface, borderBottomColor: C.border, paddingTop: insets.top }]}>
       <View style={s.inner}>
         <View style={s.left}>
-          <CappyHead size={36} expr="idle" />
+          {showLogo && <CappyHead size={36} expr="idle" />}
           <Text style={[s.title, { color: C.text }]} numberOfLines={1} ellipsizeMode="tail" maxFontSizeMultiplier={1.2}>{title}</Text>
         </View>
         <View style={s.right}>

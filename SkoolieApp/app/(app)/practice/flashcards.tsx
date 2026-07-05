@@ -410,7 +410,11 @@ export default function FlashcardsScreen() {
   })
 
   // Strip "Flashcard:" / "Flash card:" prefix inserted during content generation
-  const cleanBack = (text: string) => text.replace(/^flash\s*card[s]?[:\s]+/i, '').trim()
+  // Data hygiene guards: some imports carried literal "Front:"/"Back:"/
+  // "Flashcard:" prefixes (the DB was cleaned July 2026, these protect
+  // against regressions from future question-bank imports).
+  const cleanBack = (text: string) => text.replace(/^\s*back\s*:\s*/i, '').replace(/^flash\s*card[s]?[:\s]+/i, '').trim()
+  const cleanFront = (text: string) => text.replace(/^\s*front\s*:\s*/i, '').trim()
 
   // Dynamic card top offset — adapts to card height so Noggin always fits below
   // Header (~104px) + action bar (~88px) + safe area = fixed chrome
@@ -686,7 +690,7 @@ export default function FlashcardsScreen() {
             >
               <View style={{ alignItems: 'center' }}>
                 <Text style={s.cardLabel}>QUESTION</Text>
-                <Text style={s.cardText}>{card.front}</Text>
+                <Text style={s.cardText}>{cleanFront(card.front)}</Text>
               </View>
               <View style={s.tapReveal}>
                 <Text style={s.tapRevealText}>Tap to reveal</Text>
@@ -736,7 +740,7 @@ export default function FlashcardsScreen() {
                 <>
                   <View style={{ alignSelf: 'stretch', alignItems: 'center' }}>
                     <Text style={[s.cardLabel, { color: C.textFaint }]}>QUESTION</Text>
-                    <Text style={[s.cardText, { color: C.text }]}>{card.front}</Text>
+                    <Text style={[s.cardText, { color: C.text }]}>{cleanFront(card.front)}</Text>
                   </View>
                   <View style={s.tapReveal}>
                     <Ionicons name="arrow-up-circle-outline" size={17} color={C.textFaint} />

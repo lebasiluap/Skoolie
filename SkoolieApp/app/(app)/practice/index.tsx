@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from '
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { Ionicons } from '@expo/vector-icons'
+import Svg, { Circle } from 'react-native-svg'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode } from '@/contexts/ThemeContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -15,6 +16,7 @@ import { withFilterAnim } from '@/lib/anim'
 import { useResponsive } from '@/hooks/useResponsive'
 import { TimedModeSheet } from '@/components/ui/TimedModeSheet'
 import { formatSecs } from '@/lib/timing'
+import { effectiveStreak as computeEffectiveStreak, streakColors } from '@/lib/streak'
 
 interface Counts {
   mcq: number
@@ -34,6 +36,7 @@ export default function PracticeHubScreen() {
   // carries a topic even when the session was a Random smart start, so anyone
   // who has practiced at all gets a resume row).
   const [lastTopic, setLastTopic] = useState<{ topic: string; mode: string } | null>(null)
+  const [todayCount, setTodayCount] = useState<number | null>(null)   // null until loaded — strip hides meanwhile
   useFocusEffect(useCallback(() => {
     if (!user) return
     supabase
@@ -45,6 +48,19 @@ export default function PracticeHubScreen() {
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.question_type ?? 'mcq' } : null))
+    // Today's answered count — same definition as the dashboard goal ring.
+    supabase
+      .from('quiz_sessions')
+      .select('question_ids, started_at')
+      .eq('user_id', user.id)
+      .order('started_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        const todayStr = new Date().toDateString()
+        setTodayCount((data ?? [])
+          .filter((r: any) => r.started_at && new Date(r.started_at).toDateString() === todayStr)
+          .reduce((n: number, r: any) => n + (r.question_ids?.length ?? 0), 0))
+      })
   }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
   const [timedSheet, setTimedSheet] = useState(false)
   const timedOn = profile?.timed_mode ?? false
@@ -270,6 +286,47 @@ export default function PracticeHubScreen() {
           )
         })()}
 
+        {/* TODAY — the goal, seen from where the work happens */}
+        {todayCount !== null && profile && (() => {
+          const GOAL = 10
+          const done = Math.min(todayCount, GOAL)
+          const met = todayCount >= GOAL
+          const ringColor = met ? C.success : C.teal
+          const r = 15, sw = 4, circ = 2 * Math.PI * r
+          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+          const sc = streakColors(streak, isDark)
+          return (
+            <>
+              <Text style={[s.eyebrow, { color: C.textFaint, marginTop: 22 }]}>TODAY</Text>
+              <View style={[s.todayStrip, { backgroundColor: C.surface, borderColor: C.border }]}>
+                <View style={{ width: 38, height: 38, alignItems: 'center', justifyContent: 'center' }}>
+                  <Svg width={38} height={38} viewBox="0 0 38 38">
+                    <Circle cx={19} cy={19} r={r} stroke={ringColor + '33'} strokeWidth={sw} fill="none" />
+                    <Circle
+                      cx={19} cy={19} r={r}
+                      stroke={ringColor} strokeWidth={sw} fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${circ}`}
+                      strokeDashoffset={circ * (1 - done / GOAL)}
+                      transform="rotate(-90 19 19)"
+                    />
+                  </Svg>
+                  {met && <Ionicons name="checkmark" size={14} color={C.success} style={{ position: 'absolute' }} />}
+                </View>
+                <Text style={[s.todayText, { color: C.textSoft }]}>
+                  <Text style={{ color: C.text, fontFamily: 'Nunito_800ExtraBold' }}>{todayCount} / {GOAL}</Text> questions today
+                </Text>
+                {streak > 0 && (
+                  <View style={[s.todayStreak, { backgroundColor: sc.fill + '22' }]}>
+                    <Ionicons name="flame" size={13} color={sc.text} />
+                    <Text style={[s.todayStreakText, { color: sc.text }]}>{streak}d</Text>
+                  </View>
+                )}
+              </View>
+            </>
+          )
+        })()}
+
       </ScrollView>
       </Animated.View>
       <TimedModeSheet visible={timedSheet} onClose={() => setTimedSheet(false)} />
@@ -310,6 +367,10 @@ const s = StyleSheet.create({
   resumeIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   resumeTitle: { fontSize: 14.5, fontFamily: 'Nunito_700Bold', marginBottom: 1 },
   resumeSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold' },
+  todayStrip: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 14 },
+  todayText: { flex: 1, fontSize: 13.5, fontFamily: 'Nunito_600SemiBold', fontVariant: ['tabular-nums'] },
+  todayStreak: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },
+  todayStreakText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
   tileActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
   tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },

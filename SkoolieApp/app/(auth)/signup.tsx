@@ -94,7 +94,7 @@ export default function SignupScreen() {
         // The app itself detects the confirmation by polling (below) and moves
         // to onboarding on its own — no deep-link browser dialogs, works even
         // when the email is opened on a different device.
-        emailRedirectTo: 'https://skoolie.vercel.app/confirmed',
+        emailRedirectTo: 'https://skoolieapp.com/confirmed',
       },
     })
     setLoading(false)

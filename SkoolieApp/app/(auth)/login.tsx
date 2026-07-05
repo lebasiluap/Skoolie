@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, StyleSheet, Alert
+  KeyboardAvoidingView, Platform, StyleSheet
 } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -39,6 +39,7 @@ export default function LoginScreen() {
   // Inline error instead of native Alerts — calmer, in-context, and never shows
   // raw technical messages to the user.
   const [formError, setFormError] = useState<string | null>(null)
+  const passwordRef = useRef<TextInput>(null)
 
   function friendlyAuthError(msg: string): string {
     if (/invalid login credentials/i.test(msg)) return 'Incorrect email or password. Try again or reset your password.'
@@ -49,7 +50,7 @@ export default function LoginScreen() {
   }
 
   async function handleLogin() {
-    if (!email || !password) { setFormError('Enter your email and password.'); return }
+    if (!email.trim() || !password) { setFormError('Enter your email and password.'); return }
     setFormError(null)
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
@@ -59,43 +60,55 @@ export default function LoginScreen() {
 
   async function handleGoogleLogin() {
     setGoogleLoading(true)
-    // No leading slash — skoolie://auth/callback (2 slashes), not skoolie:///auth/callback (3)
-    const redirectTo = Linking.createURL('auth/callback')
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-      },
-    })
-    if (error) {
-      setGoogleLoading(false)
-      setFormError(friendlyAuthError(error.message))
-      return
-    }
-    if (data?.url) {
-      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
-      if (result.type === 'success') {
-        const url = result.url
-        if (url.includes('access_token=')) {
-          // Implicit flow: parse tokens from URL fragment
-          const fragment = url.split('#')[1] || ''
-          const p = Object.fromEntries(new URLSearchParams(fragment))
-          if (p.access_token) {
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: p.access_token,
-              refresh_token: p.refresh_token || '',
-            })
-            if (sessionError) Alert.alert('Sign-in error', sessionError.message)
-          }
-        } else if (url.split('#')[0].includes('code=')) {
-          // PKCE flow (future-proof)
-          const { error: sessionError } = await supabase.auth.exchangeCodeForSession(url)
-          if (sessionError) Alert.alert('Sign-in error', sessionError.message)
-        }
+    setFormError(null)
+    // try/finally: if the browser is killed mid-flow or any step throws, the
+    // button must never be left permanently stuck on "Opening…".
+    try {
+      // No leading slash — skoolie://auth/callback (2 slashes), not skoolie:///auth/callback (3)
+      const redirectTo = Linking.createURL('auth/callback')
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      })
+      if (error) {
+        setFormError(friendlyAuthError(error.message))
+        return
       }
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
+        if (result.type === 'success') {
+          const url = result.url
+          if (url.includes('access_token=')) {
+            // Implicit flow: parse tokens from URL fragment
+            const fragment = url.split('#')[1] || ''
+            const p = Object.fromEntries(new URLSearchParams(fragment))
+            if (p.access_token && p.refresh_token) {
+              const { error: sessionError } = await supabase.auth.setSession({
+                access_token: p.access_token,
+                refresh_token: p.refresh_token,
+              })
+              if (sessionError) setFormError(friendlyAuthError(sessionError.message))
+            } else {
+              // Never mint a session that can't refresh (missing refresh token
+              // silently logs the user out when the access token expires).
+              setFormError('Google sign-in didn’t complete. Please try again.')
+            }
+          } else if (url.split('#')[0].includes('code=')) {
+            // PKCE flow (future-proof)
+            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(url)
+            if (sessionError) setFormError(friendlyAuthError(sessionError.message))
+          }
+        }
+        // cancel / dismiss: user backed out — no error, no message
+      }
+    } catch (e: any) {
+      setFormError(friendlyAuthError(String(e?.message ?? e)))
+    } finally {
+      setGoogleLoading(false)
     }
-    setGoogleLoading(false)
   }
 
   return (
@@ -130,16 +143,24 @@ export default function LoginScreen() {
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
+          textContentType="username"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
 
         {/* Password row */}
         <View style={s.passwordHeader}>
           <Text style={[s.fieldLabel, { color: C.textFaint }]}>PASSWORD</Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/forgot-password')}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessibilityRole="button"
+          >
             <Text style={[s.forgotLink, { color: C.teal }]}>Forgot?</Text>
           </TouchableOpacity>
         </View>
         <PasswordInput
+          ref={passwordRef}
           containerStyle={{ marginBottom: 20 }}
           inputStyle={[s.input, { backgroundColor: C.surface, borderColor: C.border, color: C.text, marginBottom: 0 }]}
           value={password}
@@ -147,6 +168,9 @@ export default function LoginScreen() {
           placeholder="Enter password"
           placeholderTextColor={C.textFaint}
           autoComplete="password"
+          textContentType="password"
+          returnKeyType="go"
+          onSubmitEditing={handleLogin}
         />
 
         {/* Inline error */}
@@ -173,6 +197,7 @@ export default function LoginScreen() {
           onPress={handleGoogleLogin}
           disabled={googleLoading}
           activeOpacity={0.8}
+          accessibilityRole="button"
           style={[s.googleBtn, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
         >
           <GoogleG />
@@ -184,7 +209,11 @@ export default function LoginScreen() {
         {/* Footer */}
         <View style={s.footer}>
           <Text style={[s.footerText, { color: C.textFaint }]}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
+          <TouchableOpacity
+            onPress={() => router.push('/(auth)/signup')}
+            hitSlop={{ top: 12, bottom: 12, left: 8, right: 12 }}
+            accessibilityRole="button"
+          >
             <Text style={[s.footerLink, { color: C.teal }]}>Sign up</Text>
           </TouchableOpacity>
         </View>

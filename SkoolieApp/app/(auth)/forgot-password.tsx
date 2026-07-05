@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -20,45 +20,53 @@ export default function ForgotPasswordScreen() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
+  // Inline messaging (matches login) — no raw technical strings.
+  const [formError, setFormError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  // Resend cooldown — prevents spam-tapping five emails into a rate limit.
+  const [cooldown, setCooldown] = useState(0)
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
 
-  function prettyError(msg: string): { title: string; body: string } {
-    if (/rate limit/i.test(msg)) {
-      return { title: 'Please wait a moment', body: 'Too many requests. Wait a little while before requesting another code.' }
-    }
-    return { title: 'Error', body: msg }
+  function friendly(msg: string): string {
+    if (/rate limit/i.test(msg)) return 'Too many requests — wait a little while before requesting another code.'
+    if (/network|fetch/i.test(msg)) return 'Connection problem — check your internet and try again.'
+    if (/expired|invalid/i.test(msg)) return 'That code is invalid or has expired — request a new one.'
+    return 'Something went wrong. Please try again.'
   }
 
   async function sendCode() {
-    if (!email.trim()) return Alert.alert('Enter your email')
+    if (!email.trim()) { setFormError('Enter your email first.'); return }
+    setFormError(null); setNotice(null)
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
     setLoading(false)
-    if (error) {
-      const e = prettyError(error.message)
-      Alert.alert(e.title, e.body)
-    } else {
-      setStep('verify')
-    }
+    if (error) setFormError(friendly(error.message))
+    else { setCooldown(30); setStep('verify') }
   }
 
   async function resendCode() {
+    if (cooldown > 0) return
+    setFormError(null); setNotice(null)
+    setCooldown(30)
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
-    if (error) {
-      const e = prettyError(error.message)
-      Alert.alert(e.title, e.body)
-    } else {
-      Alert.alert('Code sent', 'We sent you a new code.')
-    }
+    if (error) { setFormError(friendly(error.message)); setCooldown(0) }
+    else setNotice('New code sent — check your email.')
   }
 
   async function submitNewPassword() {
-    if (!code.trim()) return Alert.alert('Enter the code', 'Check your email for the 6-digit code.')
-    if (!password || !confirm) return Alert.alert('Missing fields', 'Enter and confirm your new password.')
-    if (password.length < 6) return Alert.alert('Weak password', 'Password must be at least 6 characters.')
-    if (password !== confirm) return Alert.alert('Mismatch', 'Passwords do not match.')
+    if (!code.trim()) { setFormError('Enter the 6-digit code from your email.'); return }
+    if (!password || !confirm) { setFormError('Enter and confirm your new password.'); return }
+    if (password.length < 6) { setFormError('Password must be at least 6 characters.'); return }
+    if (password !== confirm) { setFormError('Passwords do not match.'); return }
+    setFormError(null); setNotice(null)
 
     setLoading(true)
     // Verify the email code — this signs the user in with a recovery session.
+    // (RootNavigator deliberately leaves this screen alone while that happens.)
     const { error: verifyError } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
@@ -66,12 +74,13 @@ export default function ForgotPasswordScreen() {
     })
     if (verifyError) {
       setLoading(false)
-      return Alert.alert('Invalid or expired code', verifyError.message)
+      setFormError(friendly(verifyError.message))
+      return
     }
     // Now authenticated → set the new password.
     const { error: updateError } = await supabase.auth.updateUser({ password })
     setLoading(false)
-    if (updateError) return Alert.alert('Error', updateError.message)
+    if (updateError) { setFormError(friendly(updateError.message)); return }
 
     Alert.alert('Password changed', 'Your password has been updated.', [
       { text: 'Continue', onPress: () => router.replace('/(app)/dashboard') },
@@ -84,6 +93,8 @@ export default function ForgotPasswordScreen() {
         <TouchableOpacity
           onPress={() => (step === 'verify' ? setStep('request') : router.back())}
           style={[s.backBtn, { backgroundColor: C.surface2 }]}
+          accessibilityRole="button"
+          accessibilityLabel={step === 'verify' ? 'Back to email entry' : 'Back to sign in'}
         >
           <Text style={[{ color: C.textSoft, fontSize: 18, fontFamily: 'Nunito_700Bold' }]}>←</Text>
         </TouchableOpacity>
@@ -106,10 +117,20 @@ export default function ForgotPasswordScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
+              textContentType="username"
+              returnKeyType="go"
+              onSubmitEditing={sendCode}
             />
+            {formError && (
+              <View style={[s.msgBox, { backgroundColor: C.redTint, borderColor: C.red }]} accessibilityRole="alert">
+                <Text style={[s.msgText, { color: C.red }]}>{formError}</Text>
+              </View>
+            )}
             <Button label="Send code" onPress={sendCode} loading={loading} fullWidth style={{ marginTop: 16 }} />
             <TouchableOpacity
-              onPress={() => (email.trim() ? setStep('verify') : Alert.alert('Enter your email first'))}
+              onPress={() => (email.trim() ? setStep('verify') : setFormError('Enter your email first.'))}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
               style={{ marginTop: 14, alignItems: 'center' }}
             >
               <Text style={[{ color: C.teal, fontFamily: 'Nunito_700Bold', fontSize: 14 }]}>Already have a code?</Text>
@@ -127,6 +148,7 @@ export default function ForgotPasswordScreen() {
               keyboardType="number-pad"
               maxLength={6}
               autoComplete="one-time-code"
+              textContentType="oneTimeCode"
             />
 
             <Text style={[s.label, { color: C.textSoft, marginTop: 16 }]}>New password</Text>
@@ -137,6 +159,7 @@ export default function ForgotPasswordScreen() {
               placeholder="At least 6 characters"
               placeholderTextColor={C.textFaint}
               autoComplete="new-password"
+              textContentType="newPassword"
             />
 
             <Text style={[s.label, { color: C.textSoft, marginTop: 16 }]}>Confirm new password</Text>
@@ -147,11 +170,33 @@ export default function ForgotPasswordScreen() {
               placeholder="Re-enter new password"
               placeholderTextColor={C.textFaint}
               autoComplete="new-password"
+              textContentType="newPassword"
+              returnKeyType="go"
+              onSubmitEditing={submitNewPassword}
             />
 
+            {formError && (
+              <View style={[s.msgBox, { backgroundColor: C.redTint, borderColor: C.red }]} accessibilityRole="alert">
+                <Text style={[s.msgText, { color: C.red }]}>{formError}</Text>
+              </View>
+            )}
+            {notice && (
+              <View style={[s.msgBox, { backgroundColor: C.tealTint, borderColor: C.teal }]}>
+                <Text style={[s.msgText, { color: C.tealDeep }]}>{notice}</Text>
+              </View>
+            )}
+
             <Button label="Change password" onPress={submitNewPassword} loading={loading} fullWidth style={{ marginTop: 20 }} />
-            <TouchableOpacity onPress={resendCode} style={{ marginTop: 14, alignItems: 'center' }}>
-              <Text style={[{ color: C.teal, fontFamily: 'Nunito_700Bold', fontSize: 14 }]}>Resend code</Text>
+            <TouchableOpacity
+              onPress={resendCode}
+              disabled={cooldown > 0}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              style={{ marginTop: 14, alignItems: 'center' }}
+            >
+              <Text style={[{ color: cooldown > 0 ? C.textFaint : C.teal, fontFamily: 'Nunito_700Bold', fontSize: 14 }]}>
+                {cooldown > 0 ? `Resend code (${cooldown}s)` : 'Resend code'}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -168,4 +213,6 @@ const s = StyleSheet.create({
   card: { borderRadius: 24, borderWidth: 1, padding: 24 },
   label: { fontSize: 13, fontFamily: 'Nunito_700Bold', marginBottom: 7 },
   input: { borderRadius: 14, borderWidth: 1.5, padding: 14, fontSize: 15, fontFamily: 'Nunito_600SemiBold' },
+  msgBox: { borderRadius: 12, borderWidth: 1, paddingVertical: 10, paddingHorizontal: 14, marginTop: 14 },
+  msgText: { fontSize: 13.5, fontFamily: 'Nunito_700Bold', lineHeight: 19 },
 })

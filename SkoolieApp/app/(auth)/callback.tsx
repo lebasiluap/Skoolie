@@ -10,11 +10,19 @@ export default function AuthCallbackScreen() {
   const params = useLocalSearchParams<{ type?: string }>()
 
   useEffect(() => {
+    // Safety net: whatever happens, never leave the user on this spinner.
+    const bail = setTimeout(() => router.replace('/(auth)/login'), 8000)
+
     async function handleCallback() {
       try {
         // Get the full URL that opened this screen
         const url = await Linking.getInitialURL()
-        if (!url) return
+        if (!url) {
+          // Warm start / no deep link captured — RootNavigator will route based
+          // on whatever session state exists once we leave this screen.
+          router.replace('/(auth)/login')
+          return
+        }
 
         // Tokens are in the URL fragment (#)
         const fragment = url.split('#')[1] ?? ''
@@ -50,7 +58,8 @@ export default function AuthCallbackScreen() {
       }
     }
 
-    handleCallback()
+    handleCallback().finally(() => clearTimeout(bail))
+    return () => clearTimeout(bail)
   }, [])
 
   return (

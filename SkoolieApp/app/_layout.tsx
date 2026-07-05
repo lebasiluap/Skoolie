@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Text, TextInput } from 'react-native'
+import { Appearance, Text, TextInput, View } from 'react-native'
 import { Stack, router, useSegments } from 'expo-router'
 
 // Accessibility: honor the OS font-size setting but cap scaling at 1.4x so
@@ -24,23 +24,31 @@ import { ToastHost } from '@/components/ui/ToastHost'
 import { CelebrationHost } from '@/components/ui/CelebrationHost'
 
 function RootNavigator() {
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading, profileChecked } = useAuth()
   const { isDark } = useThemeMode()
   const segments = useSegments()
 
   useEffect(() => {
     if (loading) return
     const inAuth = segments[0] === '(auth)'
-    const inApp = segments[0] === '(app)'
+    const authScreen = (segments as string[])[1] as string | undefined
+    // Screens that manage their own session transitions. Password recovery
+    // creates a session mid-flow (verifyOtp) — redirecting the moment it lands
+    // would yank the user away before they can set the new password.
+    const selfRouting = inAuth && (authScreen === 'forgot-password' || authScreen === 'update-password' || authScreen === 'callback')
 
     if (!session) {
       if (!inAuth) router.replace('/(auth)/login')
+    } else if (selfRouting) {
+      // let the screen finish its own flow
     } else if (!profile) {
-      router.replace('/(auth)/onboarding')
+      // Only route to onboarding once a fetch has CONFIRMED the profile is
+      // missing — "fetch failed" must never look like "new user".
+      if (profileChecked && authScreen !== 'onboarding') router.replace('/(auth)/onboarding')
     } else {
       if (inAuth) router.replace('/(app)/dashboard')
     }
-  }, [session, profile, loading])
+  }, [session, profile, loading, profileChecked, segments])
 
   return (
     <>
@@ -63,7 +71,11 @@ export default function RootLayout() {
     Nunito_900Black,
   })
 
-  if (!fontsLoaded) return null
+  if (!fontsLoaded) {
+    // Theme-matched placeholder instead of a white/black flash while fonts load.
+    const dark = Appearance.getColorScheme() === 'dark'
+    return <View style={{ flex: 1, backgroundColor: dark ? '#0C1211' : '#EEF2F1' }} />
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

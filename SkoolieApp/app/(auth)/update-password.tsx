@@ -13,18 +13,22 @@ export default function UpdatePasswordScreen() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   async function handleUpdatePassword() {
-    if (!password || !confirm) return Alert.alert('Missing fields', 'Please fill in both fields.')
-    if (password.length < 6) return Alert.alert('Weak password', 'Password must be at least 6 characters.')
-    if (password !== confirm) return Alert.alert('Mismatch', 'Passwords do not match.')
+    if (!password || !confirm) { setFormError('Please fill in both fields.'); return }
+    if (password.length < 6) { setFormError('Password must be at least 6 characters.'); return }
+    if (password !== confirm) { setFormError('Passwords do not match.'); return }
+    setFormError(null)
 
     setLoading(true)
     const { error } = await supabase.auth.updateUser({ password })
     setLoading(false)
 
     if (error) {
-      Alert.alert('Error', error.message)
+      setFormError(/network|fetch/i.test(error.message)
+        ? 'Connection problem — check your internet and try again.'
+        : 'Couldn\u2019t update your password. Please try again.')
     } else {
       Alert.alert('Password updated', 'Your password has been changed.', [
         { text: 'OK', onPress: () => router.replace('/(app)/dashboard') },
@@ -51,6 +55,7 @@ export default function UpdatePasswordScreen() {
             placeholder="At least 6 characters"
             placeholderTextColor={C.textFaint}
             autoComplete="new-password"
+            textContentType="newPassword"
           />
 
           <Text style={[s.fieldLabel, { color: C.textSoft, marginTop: 4 }]}>Confirm password</Text>
@@ -62,7 +67,16 @@ export default function UpdatePasswordScreen() {
             placeholder="Re-enter new password"
             placeholderTextColor={C.textFaint}
             autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="go"
+            onSubmitEditing={handleUpdatePassword}
           />
+
+          {formError && (
+            <View style={[s.msgBox, { backgroundColor: C.redTint, borderColor: C.red }]} accessibilityRole="alert">
+              <Text style={[s.msgText, { color: C.red }]}>{formError}</Text>
+            </View>
+          )}
 
           <Button
             label="Set new password"
@@ -84,4 +98,6 @@ const s = StyleSheet.create({
   card: { borderRadius: 24, borderWidth: 1, padding: 24 },
   fieldLabel: { fontSize: 13, fontFamily: 'Nunito_700Bold', marginBottom: 7 },
   input: { borderRadius: 14, borderWidth: 1.5, padding: 14, fontSize: 15, fontFamily: 'Nunito_600SemiBold', marginBottom: 16 },
+  msgBox: { borderRadius: 12, borderWidth: 1, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 14 },
+  msgText: { fontSize: 13.5, fontFamily: 'Nunito_700Bold', lineHeight: 19 },
 })

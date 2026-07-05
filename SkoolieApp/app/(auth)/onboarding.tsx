@@ -32,17 +32,24 @@ export default function OnboardingScreen() {
   // Areas of interest — topics for the chosen profession. Empty = "decide for me".
   const [topicOptions, setTopicOptions] = useState<string[]>([])
   const [topicsLoading, setTopicsLoading] = useState(false)
+  const [topicsError, setTopicsError] = useState(false)
   const [interests, setInterests] = useState<Set<string>>(new Set())
+
+  function loadTopics(p: Profession) {
+    setTopicsLoading(true)
+    setTopicsError(false)
+    supabase.rpc('get_question_counts', { p_profession: p, p_question_type: 'mcq', p_access_key: null })
+      .then(({ data, error }) => {
+        setTopicsLoading(false)
+        if (error) { setTopicsError(true); return }
+        const topics = [...new Set(((data ?? []) as any[]).map(r => r.topic).filter(Boolean))].sort() as string[]
+        setTopicOptions(topics)
+      })
+  }
 
   useEffect(() => {
     if (step !== 'interests' || !profession || topicOptions.length > 0) return
-    setTopicsLoading(true)
-    supabase.rpc('get_question_counts', { p_profession: profession, p_question_type: 'mcq', p_access_key: null })
-      .then(({ data }) => {
-        const topics = [...new Set(((data ?? []) as any[]).map(r => r.topic).filter(Boolean))].sort() as string[]
-        setTopicOptions(topics)
-        setTopicsLoading(false)
-      })
+    loadTopics(profession)
   }, [step, profession]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleInterest(t: string) {
@@ -59,13 +66,22 @@ export default function OnboardingScreen() {
     if (p !== profession) {
       setProfession(p)
       setStudyYear(null)
-    } else {
-      setProfession(p)
+      // Topics belong to a profession — switching must invalidate both the
+      // fetched list and any interests picked from the old one.
+      setTopicOptions([])
+      setInterests(new Set())
+      setTopicsError(false)
     }
   }
 
   async function handleFinish(chosenInterests: string[]) {
-    if (!profession || !user) return
+    if (!profession) return
+    if (!user) {
+      Alert.alert('Session expired', 'Please sign in again to continue.', [
+        { text: 'OK', onPress: () => supabase.auth.signOut() },
+      ])
+      return
+    }
     setLoading(true)
     // email and full_name are NOT NULL in user_profiles and have no DB default,
     // and there is no auth.users trigger to backfill them — so they must be
@@ -76,6 +92,9 @@ export default function OnboardingScreen() {
       meta.name?.trim() ||
       user.email?.split('@')[0] ||
       'Student'
+    // NO progress fields here — level/xp/streaks have DB defaults for a fresh
+    // insert, and if a row already exists (e.g. this screen was reached by a
+    // transient fetch failure) the upsert must not zero the user's progress.
     const { error } = await supabase
       .from('user_profiles')
       .upsert({
@@ -86,13 +105,15 @@ export default function OnboardingScreen() {
         study_year: studyYear,
         country: country ?? 'Ghana',
         interests: chosenInterests,
-        level: 1,
-        xp: 0,
-        current_streak: 0,
-        longest_streak: 0,
       })
     setLoading(false)
-    if (error) { Alert.alert('Error', error.message); return }
+    if (error) {
+      Alert.alert(
+        "Couldn't save your profile",
+        'Check your internet connection and try again — your answers here are kept.',
+      )
+      return
+    }
     // Primed notification ask — explain the value BEFORE the one-shot OS dialog.
     Alert.alert(
       'One more thing 🔔',
@@ -151,6 +172,18 @@ export default function OnboardingScreen() {
               ))}
             </View>
             <Button label="Continue" onPress={() => profession && setStep('country')} disabled={!profession} fullWidth style={{ marginTop: 8 }} />
+            {user?.email ? (
+              <TouchableOpacity
+                onPress={() => supabase.auth.signOut()}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                style={{ marginTop: 18, alignItems: 'center' }}
+              >
+                <Text style={[{ color: C.textFaint, fontFamily: 'Nunito_600SemiBold', fontSize: 13 }]}>
+                  Signed in as {user.email} · <Text style={{ color: C.teal, fontFamily: 'Nunito_700Bold' }}>Sign out</Text>
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </>
         ) : step === 'country' ? (
           <>
@@ -235,6 +268,20 @@ export default function OnboardingScreen() {
             <Text style={[s.sub, { color: C.textFaint }]}>We'll match your quick starts to these areas — or let us decide for you</Text>
 
             {topicsLoading && <ActivityIndicator style={{ marginTop: 20 }} color={C.teal} />}
+            {topicsError && (
+              <View style={{ alignItems: 'center', marginTop: 12, gap: 10 }}>
+                <Text style={[{ color: C.textSoft, fontFamily: 'Nunito_600SemiBold', fontSize: 13.5, textAlign: 'center' }]}>
+                  Couldn't load topics — check your connection.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => profession && loadTopics(profession)}
+                  accessibilityRole="button"
+                  style={[s.pill, { backgroundColor: C.surface, borderColor: C.teal }]}
+                >
+                  <Text style={[s.pillText, { color: C.teal }]}>Try again</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <View style={s.pills}>
               {topicOptions.map(t => {
                 const active = interests.has(t)
@@ -253,11 +300,11 @@ export default function OnboardingScreen() {
               })}
             </View>
 
+            {/* Never a dead end: zero picks simply means "decide for me". */}
             <Button
               label={interests.size > 0 ? `Get started (${interests.size} picked)` : 'Get started'}
               onPress={() => handleFinish([...interests])}
               loading={loading}
-              disabled={interests.size === 0}
               fullWidth
               style={{ marginTop: 24 }}
             />

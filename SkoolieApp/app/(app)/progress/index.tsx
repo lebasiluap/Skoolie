@@ -195,8 +195,6 @@ export default function ProgressScreen() {
           const rank = activeList.findIndex(x => x.id === u.id) + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
-          const league = getLeague(u.xp)
-          const tier = streakStatus(liveStreak(u)).current
           const cohort = activeList.length
           // Promotion / relegation zone dividers (weekly, unfiltered view only —
           // profession filtering would misalign the cut lines)
@@ -228,22 +226,18 @@ export default function ProgressScreen() {
                 {rankStyle ? <Text style={{ fontSize: 18 }}>{rankStyle.label}</Text> : <Text style={[s.rankNum, { color: C.textFaint }]}>#{rank}</Text>}
               </View>
               <Avatar name={u.full_name} avatarUrl={u.avatar_url} size={40} />
+              {/* Quiet row: the tier badge is the ONLY colored chip; the XP value
+                  is the ONLY emphasized number. Everything else is neutral. */}
               <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Text style={[s.name, { color: C.text, flexShrink: 1 }]} numberOfLines={1}>
-                    {u.full_name}{isMe ? ' (you)' : ''}
-                  </Text>
-                  {tier && <Ionicons name="flame" size={13} color={tier.color} />}
-                </View>
+                <Text style={[s.name, { color: C.text }]} numberOfLines={1}>
+                  {u.full_name}{isMe ? ' (you)' : ''}
+                </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
                   <TierBadge tier={u.tier ?? 0} size="sm" />
-                  <Text style={[s.leaguePillText, { color: league.color, flexShrink: 1 }]} numberOfLines={1}>{u.profession}</Text>
+                  <Text style={[s.leaguePillText, { color: C.textFaint, flexShrink: 1 }]} numberOfLines={1}>{u.profession}</Text>
                 </View>
               </View>
-              <View style={{ alignItems: 'flex-end', gap: 3 }}>
-                <Text style={[s.xp, { color: C.teal }]}>{u.xp.toLocaleString()} XP</Text>
-                {liveStreak(u) > 0 && <Text style={[s.streak, { color: C.coral }]}>🔥 {liveStreak(u)}d</Text>}
-              </View>
+              <Text style={[s.xp, { color: C.teal }]}>{u.xp.toLocaleString()} XP</Text>
             </TouchableOpacity>
             </View>
           )

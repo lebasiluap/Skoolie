@@ -16,6 +16,9 @@ export type ThemeColors = {
   amber: string; amberTint: string
   coral: string; coralDeep: string; coralTint: string
   gold: string
+  /** Rapid Fire / Barrage accent — the "blitz" identity. Full family so it's
+   *  first-class in both themes instead of hardcoded hex at call sites. */
+  rf: string; rfDeep: string; rfTint: string; onRf: string
   /** Semantic layer (audit #15) — meaning, not hue. Use these for verdicts,
    *  warnings, and errors; keep green/amber/red/coral for mode accents so a
    *  future accent re-skin can't silently change what "wrong" looks like. */
@@ -52,6 +55,10 @@ const lightBase = {
     red: '#DE5249',
     redTint: '#FAE5E3',
     gold: '#DBA431',
+    rf: '#7C6FCD',
+    rfDeep: '#5F53A8',
+    rfTint: '#EDEAF9',
+    onRf: '#FFFFFF',
     shadow: {
       shadowColor: '#102824',
       shadowOffset: { width: 0, height: 8 },
@@ -93,6 +100,10 @@ const darkBase = {
     red: '#EE6A62',
     redTint: '#341D1B',
     gold: '#E6B650',
+    rf: '#9D93E3',
+    rfDeep: '#7C6FCD',
+    rfTint: '#221D3F',
+    onRf: '#151038',
     shadow: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 8 },

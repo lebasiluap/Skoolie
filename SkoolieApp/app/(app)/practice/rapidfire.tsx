@@ -52,9 +52,9 @@ type Screen = 'topics' | 'run' | 'results'
 export default function RapidFireScreen() {
   const C = useTheme()
   const { isDark } = useThemeMode()
-  const P = isDark ? '#9D93E3' : '#7C6FCD'
+  const P = C.rf
   const PTint = P + '22'
-  const onP = isDark ? '#151038' : '#FFFFFF'
+  const onP = C.onRf
   const { user, profile, refreshProfile } = useAuth()
   const { smartStart, barrage, slot } = useLocalSearchParams<{ smartStart?: string; barrage?: string; slot?: string }>()
   // Barrage entry: the FIRST run of this visit is the 2× blitz; "Go again" runs

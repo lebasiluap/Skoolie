@@ -22,8 +22,8 @@ interface Counts {
 export default function PracticeHubScreen() {
   const C = useTheme()
   const { isDark } = useThemeMode()
-  const RF_PURPLE = isDark ? '#9D93E3' : '#7C6FCD'
-  const RF_ON_PURPLE = isDark ? '#151038' : '#FFFFFF'
+  const RF_PURPLE = C.rf
+  const RF_ON_PURPLE = C.onRf
   const { profile } = useAuth()
   const { qSet, setQSet } = useFilters()
   const entrance = useScreenEntrance()
@@ -220,7 +220,7 @@ export default function PracticeHubScreen() {
         {/* Rapid Fire — purple brand accent */}
         <View style={[s.modeCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg }]}>
           <View style={s.modeTop}>
-            <View style={[s.modeIconBox, { backgroundColor: RF_PURPLE + '22' }]}>
+            <View style={[s.modeIconBox, { backgroundColor: C.rfTint }]}>
               <Ionicons name="flash" size={24} color={RF_PURPLE} />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>

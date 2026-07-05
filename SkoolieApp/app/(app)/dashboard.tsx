@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Animated } from 'react-native'
-import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
+import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { effectiveStreak as computeEffectiveStreak, streakColors, computeFreezeConsumption } from '@/lib/streak'
@@ -8,6 +8,8 @@ import { StreakTracker } from '@/components/ui/StreakTracker'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Circle } from 'react-native-svg'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import { CappyHead } from '@/components/mascots/CappyHead'
+import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
@@ -79,10 +81,6 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [booted, setBooted] = useState(false)   // first load done — gates the activity skeleton
   const [greeting, setGreeting] = useState('Good morning')
-  // Pixel-perfect half-card width: content − 2×padding(18) − 1×gap(12), divided by 2.
-  // Live (not module-scope) so rotation/split-screen/tablets re-layout correctly.
-  const { contentWidth } = useResponsive()
-  const HALF_CARD = (contentWidth - 18 * 2 - 12) / 2
 
   useEffect(() => {
     const h = new Date().getHours()
@@ -200,8 +198,6 @@ export default function DashboardScreen() {
 
   const effectiveStreak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
   const sc = streakColors(effectiveStreak, isDark)
-  const xpInLevel = profile.xp % XP_PER_LEVEL
-  const xpToNext = XP_PER_LEVEL - xpInLevel
 
   const profLabel = profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)
   const yearStr = profile.study_year ? ` · ${profile.study_year.replace('year', 'Year ')}` : ''
@@ -227,19 +223,31 @@ export default function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.teal} />}
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting + streak badge */}
-        <View style={s.greetingRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.greetingHi, { color: C.textSoft }]}>{greeting},</Text>
-            <Text style={[s.greetingName, { color: C.text }]}>{getDisplayName(profile)} 👋</Text>
-          </View>
-          {effectiveStreak > 0 && (
-            <View style={[s.streakBadge, { backgroundColor: sc.fill + '22' }]}>
-              <Ionicons name="flame" size={16} color={sc.text} />
-              <Text style={[s.streakBadgeText, { color: sc.text }]}>{effectiveStreak}-day streak</Text>
+        {/* Greeting + idle Cappy who reacts to your state (the app's face lives
+            on the screen you see most — not just inside interruptions) */}
+        {(() => {
+          const todayDone = todayCount >= 10
+          const barrageLive = !!user && nextBarrage(user.id, claimedSlots)?.status === 'live'
+          const streakAtRisk = effectiveStreak > 0 && !todayDone && new Date().getHours() >= 17
+          const expr = barrageLive ? 'wave' : todayDone ? 'happy' : streakAtRisk ? 'thinking' : 'idle'
+          return (
+            <View style={s.greetingRow}>
+              <MascotAnimator expr={expr}>
+                <CappyHead expr={expr} size={52} />
+              </MascotAnimator>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.greetingHi, { color: C.textSoft }]}>{greeting},</Text>
+                <Text style={[s.greetingName, { color: C.text }]}>{getDisplayName(profile)}</Text>
+              </View>
+              {effectiveStreak > 0 && (
+                <View style={[s.streakBadge, { backgroundColor: sc.fill + '22' }]}>
+                  <Ionicons name="flame" size={16} color={sc.text} />
+                  <Text style={[s.streakBadgeText, { color: sc.text }]}>{effectiveStreak}d</Text>
+                </View>
+              )}
             </View>
-          )}
-        </View>
+          )
+        })()}
 
         {/* DAILY GOAL — the "what now?" anchor: 10 questions keeps the streak alive.
             (Barrage banner below outranks it visually while a window is live.) */}
@@ -252,11 +260,15 @@ export default function DashboardScreen() {
             <TouchableOpacity
               onPress={() => router.push({ pathname: '/(app)/practice/mcq', params: { smartStart: '1', from: 'dashboard' } } as any)}
               activeOpacity={0.85}
-              style={[s.goalCard, { backgroundColor: C.surface, borderColor: met ? C.green : C.border, ...C.shadow }]}
+              style={[s.goalCard, {
+                backgroundColor: met ? C.greenTint : C.tealTint,
+                borderColor: met ? C.green : C.teal,
+                ...C.shadowLg,
+              }]}
             >
               <View style={s.goalRingWrap}>
                 <Svg width={64} height={64} viewBox="0 0 64 64">
-                  <Circle cx={32} cy={32} r={r} stroke={C.surface3} strokeWidth={sw} fill="none" />
+                  <Circle cx={32} cy={32} r={r} stroke={met ? C.green + '33' : C.teal + '33'} strokeWidth={sw} fill="none" />
                   <Circle
                     cx={32} cy={32} r={r}
                     stroke={met ? C.green : C.teal} strokeWidth={sw} fill="none"
@@ -269,7 +281,7 @@ export default function DashboardScreen() {
                 <Text style={[s.goalRingNum, { color: met ? C.green : C.teal }]}>{met ? '✓' : todayCount}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.goalTitle, { color: C.text }]}>
+                <Text style={[s.goalTitle, { color: met ? C.green : C.tealDeep }]}>
                   {met ? "Today's goal hit! 🎉" : `${GOAL - todayCount} more to today's goal`}
                 </Text>
                 <Text style={[s.goalSub, { color: C.textSoft }]}>
@@ -286,8 +298,8 @@ export default function DashboardScreen() {
         {/* Surprise Barrage — live window banner / upcoming teaser (2 windows/day) */}
         {(() => {
           if (!user) return null
-          const P = isDark ? '#9D93E3' : '#7C6FCD'
-          const onP = isDark ? '#151038' : '#FFFFFF'
+          const P = C.rf
+          const onP = C.onRf
           const bw = nextBarrage(user.id, claimedSlots)
           if (!bw) return null
           if (bw.status === 'live') return (
@@ -319,40 +331,35 @@ export default function DashboardScreen() {
           return null
         })()}
 
-        {/* Rank card — TIER is the headline (what you're becoming); weekly XP is the
-            competitive number; level is just the lifetime odometer, kept small.
-            Chrome stays on theme tokens — the tier's own color lives only in the badge. */}
+        {/* Tier card — one idea: what you're becoming. The tier's own color owns
+            this moment; weekly XP is a compact chip (its real home is the league);
+            level moved to the stats strip below the fold. */}
         {(() => {
           const tp = tierProgress(profile.tier_score ?? 0, profile.tier ?? 0)
           const tm = tierMeta(tp.tier)
           return (
-            <View style={[s.levelCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/progress' as any)}
+              activeOpacity={0.85}
+              style={[s.levelCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
+            >
               <View style={s.levelRow}>
-                <View style={[s.levelIconBox, { backgroundColor: C.tealTint }]}>
-                  <Ionicons name={tm.icon as any} size={22} color={C.teal} />
+                <View style={[s.levelIconBox, { backgroundColor: tm.color + '22' }]}>
+                  <Ionicons name={tm.icon as any} size={22} color={tm.color} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[s.levelTitle, { color: C.text }]}>{tm.name}</Text>
                   <Text style={[s.levelSub, { color: C.textSoft }]}>{profLabel}{yearStr}</Text>
                 </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={[s.weekXpVal, { color: C.teal }]}>{weekXp.toLocaleString()} XP</Text>
-                  <Text style={[s.weekXpLabel, { color: C.textFaint }]}>this week</Text>
+                <View style={[s.weekChip, { backgroundColor: C.tealTint }]}>
+                  <Text style={[s.weekChipText, { color: C.tealDeep }]}>{weekXp.toLocaleString()} XP · wk</Text>
                 </View>
               </View>
-              <ProgressBar progress={tp.pct} height={10} color={C.teal} style={{ marginTop: 14 }} />
+              <ProgressBar progress={tp.pct} height={10} color={tm.color} style={{ marginTop: 14 }} />
               <Text style={[s.xpCaption, { color: C.textFaint }]}>
                 {tp.need - tp.have} to {tp.next.name} — broad practice counts double
               </Text>
-
-              {/* Level — lifetime odometer, deliberately quiet (text only, no bar) */}
-              <View style={[s.rankSection, { borderTopColor: C.border }]}>
-                <View style={s.rankRow}>
-                  <Text style={[s.rankLabel, { color: C.textFaint }]}>LEVEL {profile.level}</Text>
-                  <Text style={[s.rankLabel, { color: C.textFaint }]}>{xpInLevel} / {XP_PER_LEVEL} XP · {xpToNext} to Lv.{profile.level + 1}</Text>
-                </View>
-              </View>
-            </View>
+            </TouchableOpacity>
           )
         })()}
 
@@ -380,35 +387,33 @@ export default function DashboardScreen() {
               const title = sess.mode ? (sess.topic ?? 'Random') : 'Quiz session'
               const metaLine = `${mm ? mm.label + ' · ' : ''}${sess.score} / ${total} correct`
               return (
-                <View key={i} style={[s.activityRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-                  <View style={[s.activityIcon, { backgroundColor: C.greenTint }]}>
-                    <Ionicons name={(mm?.icon ?? 'checkmark') as any} size={16} color={C.green} />
+                <View key={i} style={[s.activityRow, i > 0 && { borderTopWidth: 1, borderTopColor: C.border }]}>
+                  <View style={[s.activityIcon, { backgroundColor: C.surface2 }]}>
+                    <Ionicons name={(mm?.icon ?? 'checkmark') as any} size={15} color={C.textSoft} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[s.activityTitle, { color: C.text }]} numberOfLines={1}>{title}</Text>
                     <Text style={[s.activityMeta, { color: C.textFaint }]}>{metaLine}</Text>
                     <Text style={[s.activityTime, { color: C.textFaint }]}>{formatSessionTime(sess.started_at)}</Text>
                   </View>
-                  <View style={[s.xpChip, { backgroundColor: C.coralTint }]}>
-                    <Text style={[s.xpChipText, { color: C.coral }]}>+{sess.xp_earned} XP</Text>
-                  </View>
+                  <Text style={[s.xpChipText, { color: C.textSoft }]}>+{sess.xp_earned} XP</Text>
                 </View>
               )
             })}
           </>
         )}
 
-        {/* YOUR STATS — 2×2 */}
+        {/* YOUR STATS — one quiet strip; reference material, not competing cards */}
         <Text style={[s.eyebrow, { color: C.textFaint }]}>YOUR STATS</Text>
-        <View style={s.statsGrid}>
+        <View style={[s.statStrip, { backgroundColor: C.surface, borderColor: C.border }]}>
           {[
-            { val: `${totalAnswered}`,     label: 'Questions',      color: C.teal  },
-            { val: `${avgAccuracy}%`,      label: 'Avg accuracy',   color: C.teal  },
-            { val: `${effectiveStreak}d`,  label: 'Current streak', color: C.coral },
-            { val: `${profile.longest_streak ?? 0}d`, label: 'Longest', color: C.text },
-          ].map(stat => (
-            <View key={stat.label} style={[s.statCard, { width: HALF_CARD, backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-              <Text style={[s.statVal, { color: stat.color }]}>{stat.val}</Text>
+            { val: `${totalAnswered}`,    label: 'Questions' },
+            { val: `${avgAccuracy}%`,     label: 'Accuracy' },
+            { val: `Lv ${profile.level}`, label: 'Level' },
+            { val: `${profile.longest_streak ?? 0}d`, label: 'Best streak' },
+          ].map((stat, i) => (
+            <View key={stat.label} style={[s.statCell, i > 0 && { borderLeftWidth: 1, borderLeftColor: C.border }]}>
+              <Text style={[s.statVal, { color: C.text }]}>{stat.val}</Text>
               <Text style={[s.statLabel, { color: C.textFaint }]}>{stat.label}</Text>
             </View>
           ))}
@@ -455,7 +460,7 @@ const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18, paddingTop: 20 },
 
   // Greeting
-  greetingRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 18, gap: 12 },
+  greetingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, gap: 12 },
   greetingHi: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', marginBottom: 2 },
   greetingName: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.3 },
   streakBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 999 },
@@ -478,17 +483,14 @@ const s = StyleSheet.create({
   levelSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
   xpLabel: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
   xpCaption: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', marginTop: 8 },
-  rankSection: { borderTopWidth: 1, marginTop: 14, paddingTop: 12 },
   barrageBanner: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, padding: 16, marginBottom: 14 },
   barrageIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   barrageTitle: { fontSize: 13, fontFamily: 'Nunito_900Black', letterSpacing: 0.6 },
   barrageSub: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', marginTop: 2 },
   barrageTeaser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14 },
   barrageTeaserText: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', lineHeight: 18 },
-  weekXpVal: { fontSize: 17, fontFamily: 'Nunito_900Black', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
-  weekXpLabel: { fontSize: 11, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
-  rankRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rankLabel: { fontSize: 10.5, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7 },
+  weekChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999 },
+  weekChipText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
 
   // Streak card
   streakCard: { borderRadius: 20, borderWidth: 1.5, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 22 },
@@ -505,17 +507,16 @@ const s = StyleSheet.create({
   // Mode grid — icon + label ONLY
 
   // Recent activity
-  activityRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 10, gap: 12 },
+  activityRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 11, gap: 12 },
   activityIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   activityTitle: { fontSize: 14, fontFamily: 'Nunito_700Bold' },
   activityMeta: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
   activityTime: { fontSize: 11, fontFamily: 'Nunito_600SemiBold', marginTop: 1, opacity: 0.65 },
-  xpChip: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999 },
   xpChipText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
 
   // Stats 2×2
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 },
-  statCard: { borderRadius: 18, borderWidth: 1, padding: 16 },
+  statStrip: { flexDirection: 'row', borderRadius: 16, borderWidth: 1, paddingVertical: 14, marginBottom: 22 },
+  statCell: { flex: 1, alignItems: 'center', gap: 2 },
   statVal: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.5, fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 3 },
 

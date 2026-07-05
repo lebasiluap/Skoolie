@@ -841,7 +841,10 @@ export default function MCQScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={[s.quizScroll, { paddingBottom: 180, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
+        {/* flexGrow:0 + flexShrink:1 — the scroll area hugs its content, so the
+            action bar sits right under the last option on short questions
+            instead of leaving a void, yet still yields when content is tall. */}
+        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={[s.quizScroll, { paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
           <View style={s.badgeRow}>
@@ -1164,7 +1167,9 @@ const s = StyleSheet.create({
   optChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 22 },
   // Submit bar
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 18, paddingTop: 12, borderTopWidth: 1 },
+  // In normal flow (not absolute): follows the options on short questions,
+  // sits at the screen edge when content fills the viewport.
+  bottomBar: { paddingHorizontal: 18, paddingTop: 12 },
   submitBtn: { padding: 16, borderRadius: 999, alignItems: 'center' },
   submitBtnText: { fontSize: 16, fontFamily: 'Nunito_800ExtraBold' },
   // Review bottom sheet (stem stays visible above)

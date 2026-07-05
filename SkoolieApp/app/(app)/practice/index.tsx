@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { TopBar } from '@/components/ui/TopBar'
 import { useFilters, type QSet } from '@/contexts/FiltersContext'
 import { withFilterAnim } from '@/lib/anim'
+import { useResponsive } from '@/hooks/useResponsive'
 import { TimedModeSheet } from '@/components/ui/TimedModeSheet'
 import { formatSecs } from '@/lib/timing'
 
@@ -22,8 +23,6 @@ interface Counts {
 export default function PracticeHubScreen() {
   const C = useTheme()
   const { isDark } = useThemeMode()
-  const RF_PURPLE = C.rf
-  const RF_ON_PURPLE = C.onRf
   const { profile } = useAuth()
   const { qSet, setQSet } = useFilters()
   const entrance = useScreenEntrance()
@@ -81,33 +80,10 @@ export default function PracticeHubScreen() {
   }
 
   const MODES = [
-    {
-      label: 'MCQs',
-      subtitle: 'Multiple choice questions',
-      icon: 'list' as const,
-      href: '/(app)/practice/mcq',
-      count: counts.mcq,
-      unit: 'questions',
-      key: 'teal' as const,
-    },
-    {
-      label: 'Flashcards',
-      subtitle: 'Test your recall',
-      icon: 'duplicate' as const,
-      href: '/(app)/practice/flashcards',
-      count: counts.flashcard,
-      unit: 'cards',
-      key: 'coral' as const,
-    },
-    {
-      label: 'Case Studies',
-      subtitle: 'Clinical scenarios',
-      icon: 'clipboard' as const,
-      href: '/(app)/practice/cases',
-      count: counts.case_study,
-      unit: 'cases',
-      key: 'amber' as const,
-    },
+    { label: 'MCQs',        sub: 'Multiple choice',    icon: 'list' as const,      href: '/(app)/practice/mcq',        count: counts.mcq,        unit: 'questions', key: 'teal' as const },
+    { label: 'Flashcards',  sub: 'Test your recall',   icon: 'duplicate' as const, href: '/(app)/practice/flashcards', count: counts.flashcard,  unit: 'cards',     key: 'coral' as const },
+    { label: 'Cases',       sub: 'Clinical scenarios', icon: 'clipboard' as const, href: '/(app)/practice/cases',      count: counts.case_study, unit: 'cases',     key: 'amber' as const },
+    { label: 'Rapid Fire',  sub: '5 quick · combo XP', icon: 'flash' as const,     href: '/(app)/practice/rapidfire',  count: 0,                 unit: '',          key: 'rf' as const },
   ]
 
   /** 2,662 → "2,600+", 300 → "300+", 47 → "47" (small banks show honest counts) */
@@ -116,12 +92,17 @@ export default function PracticeHubScreen() {
     return `${n}`
   }
 
-  type ModeKey = 'teal' | 'coral' | 'amber'
-  const colorMap: Record<ModeKey, { tint: string; fg: string; deep: string; onFg: string }> = {
-    teal:  { tint: C.tealTint,  fg: C.teal,  deep: C.tealDeep,  onFg: C.onTeal  },
-    coral: { tint: C.coralTint, fg: C.coral, deep: C.coralDeep, onFg: C.onTeal  },
-    amber: { tint: C.amberTint, fg: C.amber, deep: C.amber,     onFg: C.onTeal  },
+  type ModeKey = 'teal' | 'coral' | 'amber' | 'rf'
+  const colorMap: Record<ModeKey, { tint: string; fg: string; onFg: string }> = {
+    teal:  { tint: C.tealTint,  fg: C.teal,  onFg: C.onTeal },
+    coral: { tint: C.coralTint, fg: C.coral, onFg: C.onTeal },
+    amber: { tint: C.amberTint, fg: C.amber, onFg: C.onTeal },
+    rf:    { tint: C.rfTint,    fg: C.rf,    onFg: C.onRf   },
   }
+
+  // Live half-width so rotation/tablets re-layout correctly.
+  const { contentWidth } = useResponsive()
+  const TILE_W = (contentWidth - 18 * 2 - 12) / 2
 
   const Q_SET_OPTS: QSet[] = ['All', 'Global', 'Regional']
 
@@ -188,75 +169,51 @@ export default function PracticeHubScreen() {
           ))}
         </View>
 
-        {/* Mode cards */}
-        {MODES.map(mode => {
-          const clr = colorMap[mode.key]
-          return (
-            <View key={mode.label} style={[s.modeCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg }]}>
-              {/* Top row: icon + title/subtitle + count */}
-              <View style={s.modeTop}>
-                <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
-                  <Ionicons name={mode.icon} size={24} color={clr.fg} />
+        {/* Mode grid — all four in one viewport, no scrolling.
+            Tile tap = Smart start (the primary action); the corner list
+            button opens Browse topics. Both targets are 44pt+. */}
+        <View style={s.modeGrid}>
+          {MODES.map(mode => {
+            const clr = colorMap[mode.key]
+            const isRF = mode.key === 'rf'
+            return (
+              <TouchableOpacity
+                key={mode.label}
+                onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel={`${mode.label} — smart start`}
+                style={[s.modeTile, { width: TILE_W, backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
+              >
+                <View style={s.tileHeader}>
+                  <View style={[s.modeIconBox, { backgroundColor: clr.tint }]}>
+                    <Ionicons name={mode.icon} size={22} color={clr.fg} />
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => router.push(
+                      isRF
+                        ? mode.href as any
+                        : { pathname: mode.href, params: { browseMode: '1' } } as any
+                    )}
+                    hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Browse ${mode.label} topics`}
+                    style={[s.browseBtn, { backgroundColor: C.surface2, borderColor: C.border }]}
+                  >
+                    <Ionicons name="list-outline" size={16} color={C.textSoft} />
+                  </TouchableOpacity>
                 </View>
-                <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text style={[s.modeTitle, { color: C.text }]}>{mode.label}</Text>
-                  <Text style={[s.modeSub, { color: C.textFaint }]}>
-                    {mode.subtitle}
-                    {!loading && mode.count > 0 ? `  ·  ${roughCount(mode.count)} ${mode.unit}` : ''}
-                  </Text>
+                <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
+                <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
+                  {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
+                </Text>
+                <View style={[s.tileCta, { backgroundColor: clr.tint }]}>
+                  <Ionicons name="flash" size={12} color={clr.fg} />
+                  <Text style={[s.tileCtaText, { color: clr.fg }]}>Smart start</Text>
                 </View>
-              </View>
-
-              {/* Buttons */}
-              <View style={s.modeButtons}>
-                <TouchableOpacity
-                  onPress={() => router.push({ pathname: mode.href as any, params: { smartStart: '1' } })}
-                  activeOpacity={0.8}
-                  style={[s.btnPrimary, { backgroundColor: clr.fg }]}
-                >
-                  <Ionicons name="flash" size={14} color={clr.onFg} />
-                  <Text style={[s.btnPrimaryText, { color: clr.onFg }]}>Smart start</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push({ pathname: mode.href, params: { browseMode: '1' } } as any)}
-                  activeOpacity={0.8}
-                  style={[s.btnGhost, { borderColor: C.border }]}
-                >
-                  <Text style={[s.btnGhostText, { color: C.text }]}>Browse topics</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )
-        })}
-
-        {/* Rapid Fire — purple brand accent */}
-        <View style={[s.modeCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg }]}>
-          <View style={s.modeTop}>
-            <View style={[s.modeIconBox, { backgroundColor: C.rfTint }]}>
-              <Ionicons name="flash" size={24} color={RF_PURPLE} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={[s.modeTitle, { color: C.text }]}>Rapid Fire</Text>
-              <Text style={[s.modeSub, { color: C.textFaint }]}>5 quick questions · combo multiplier · bonus XP</Text>
-            </View>
-          </View>
-          <View style={s.modeButtons}>
-            <TouchableOpacity
-              onPress={() => router.push({ pathname: '/(app)/practice/rapidfire', params: { smartStart: '1' } } as any)}
-              activeOpacity={0.8}
-              style={[s.btnPrimary, { backgroundColor: RF_PURPLE }]}
-            >
-              <Ionicons name="flash" size={14} color={RF_ON_PURPLE} />
-              <Text style={[s.btnPrimaryText, { color: RF_ON_PURPLE }]}>Smart start</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => router.push('/(app)/practice/rapidfire' as any)}
-              activeOpacity={0.8}
-              style={[s.btnGhost, { borderColor: C.border }]}
-            >
-              <Text style={[s.btnGhostText, { color: C.text }]}>Pick topic</Text>
-            </TouchableOpacity>
-          </View>
+              </TouchableOpacity>
+            )
+          })}
         </View>
 
       </ScrollView>
@@ -293,17 +250,16 @@ const s = StyleSheet.create({
   segmentLabel: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
 
   // Mode cards
-  modeCard: { borderRadius: 20, borderWidth: 1, padding: 20, marginBottom: 14 },
-  modeTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
+  modeTile: { borderRadius: 20, borderWidth: 1, padding: 14 },
+  tileHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 },
+  browseBtn: { width: 30, height: 30, borderRadius: 9, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  tileCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 9, borderRadius: 999, marginTop: 12 },
+  tileCtaText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
   modeIconBox: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   modeTitle: { fontSize: 17, fontFamily: 'Nunito_800ExtraBold', marginBottom: 3 },
   modeSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },
 
-  modeButtons: { flexDirection: 'row', gap: 10 },
-  btnPrimary: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 13, borderRadius: 100 },
-  btnPrimaryText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
-  btnGhost: { flex: 1, paddingVertical: 13, borderRadius: 100, alignItems: 'center', borderWidth: 1.5 },
-  btnGhostText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
 
   // Bookmarks
 })

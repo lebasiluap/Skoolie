@@ -249,7 +249,7 @@ export default function PracticeHubScreen() {
             : lastTopic.mode === 'case_study' ? 'Cases' : 'MCQs'
           return (
             <>
-              <Text style={[s.eyebrow, { color: C.textFaint }]}>JUMP BACK IN</Text>
+              <Text style={[s.eyebrow, { color: C.textFaint, marginTop: 22 }]}>JUMP BACK IN</Text>
               <TouchableOpacity
                 onPress={() => router.push({ pathname: modeHref, params: { startTopic: lastTopic.topic } } as any)}
                 activeOpacity={0.75}
@@ -307,7 +307,6 @@ const s = StyleSheet.create({
   modeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
   modeTile: { borderRadius: 20, borderWidth: 1, padding: 14 },
   tileHeader: { flexDirection: 'row', alignItems: 'center' },
-  eyebrow: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.7, marginTop: 22, marginBottom: 12 },
   resumeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
   resumeIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   resumeTitle: { fontSize: 14.5, fontFamily: 'Nunito_700Bold', marginBottom: 1 },

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -41,6 +41,28 @@ export default function SignupScreen() {
   const [formError, setFormError] = useState<string | null>(null)
   // Post-signup "confirm your email" state — replaces the old dead-end Alert.
   const [awaitingConfirm, setAwaitingConfirm] = useState(false)
+  const [confirmed, setConfirmed] = useState(false)
+
+  // While the "confirm your email" card is up, quietly retry sign-in every few
+  // seconds. The moment the email is confirmed (on ANY device — phone, laptop),
+  // sign-in succeeds, the card flips to "confirmed", and the session sweeps the
+  // user into onboarding automatically. No manual "come back and sign in".
+  useEffect(() => {
+    if (!awaitingConfirm || confirmed) return
+    let attempts = 0
+    const iv = setInterval(async () => {
+      if (++attempts > 60) { clearInterval(iv); return }   // give up after ~5 min
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      if (!error && data.session) {
+        clearInterval(iv)
+        setConfirmed(true)   // brief ceremony; RootNavigator routes on session
+      }
+    }, 5000)
+    return () => clearInterval(iv)
+  }, [awaitingConfirm, confirmed]) // eslint-disable-line react-hooks/exhaustive-deps
   const lastNameRef = useRef<TextInput>(null)
   const emailRef = useRef<TextInput>(null)
   const passwordFocusHack = useRef<TextInput>(null)
@@ -151,15 +173,27 @@ export default function SignupScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
         <View style={[s.scroll, { flex: 1, justifyContent: 'center', paddingBottom: insets.bottom + 40 }]}>
-          <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, alignItems: 'center', ...C.shadow }]}>
-            <View style={[s.mailCircle, { backgroundColor: C.tealTint }]}>
-              <Ionicons name="mail-unread-outline" size={34} color={C.teal} />
+          <View style={[s.card, { backgroundColor: C.surface, borderColor: confirmed ? C.green : C.border, alignItems: 'center', ...C.shadow }]}>
+            <View style={[s.mailCircle, { backgroundColor: confirmed ? C.greenTint : C.tealTint }]}>
+              <Ionicons
+                name={confirmed ? 'checkmark-circle' : 'mail-unread-outline'}
+                size={34}
+                color={confirmed ? C.green : C.teal}
+              />
             </View>
-            <Text style={[s.title, { textAlign: 'center', color: C.text, marginBottom: 8 }]}>Confirm your email</Text>
+            <Text style={[s.title, { textAlign: 'center', color: C.text, marginBottom: 8 }]}>
+              {confirmed ? 'Email confirmed! 🎉' : 'Confirm your email'}
+            </Text>
             <Text style={[s.confirmBody, { color: C.textSoft }]}>
-              We sent a confirmation link to{'\n'}
-              <Text style={{ fontFamily: 'Nunito_800ExtraBold', color: C.text }}>{email.trim()}</Text>
-              {'\n\n'}Tap the link on this phone — it opens Skoolie and signs you in automatically.
+              {confirmed ? (
+                'Welcome to Skoolie — setting things up…'
+              ) : (
+                <>
+                  We sent a confirmation link to{'\n'}
+                  <Text style={{ fontFamily: 'Nunito_800ExtraBold', color: C.text }}>{email.trim()}</Text>
+                  {'\n\n'}Tap it on any device — this screen updates by itself the moment you're confirmed.
+                </>
+              )}
             </Text>
             <Button label="Go to sign in" onPress={() => router.replace('/(auth)/login')} fullWidth style={{ marginTop: 20 }} />
             <TouchableOpacity

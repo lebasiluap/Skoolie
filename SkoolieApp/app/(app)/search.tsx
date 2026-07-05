@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { View, Text, TextInput, FlatList, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Modal, Pressable, Animated } from 'react-native'
 import { router } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
@@ -9,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 import { TopicIcon } from '@/components/ui/TopicIcon'
 import { topicColor } from '@/constants/topics'
-import { TopBar } from '@/components/ui/TopBar'
+import { SkeletonList } from '@/components/ui/Skeleton'
 import { withFilterAnim } from '@/lib/anim'
 
 type TypeFilter = 'all' | 'mcq' | 'flashcard' | 'case_study'
@@ -41,6 +42,7 @@ function fuzzyMatchSystems(q: string, systems: SystemRow[]): SystemRow[] {
 
 export default function SearchScreen() {
   const C = useTheme()
+  const insets = useSafeAreaInsets()
   const { profile, user } = useAuth()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Result[]>([])
@@ -58,6 +60,11 @@ export default function SearchScreen() {
   const loggedSearchRef = useRef<Set<string>>(new Set())  // dedupe 'search' events per query session
 
   const entrance = useScreenEntrance()
+
+  function goBack() {
+    if (router.canGoBack()) router.back()
+    else router.navigate('/(app)/practice' as any)
+  }
 
   useEffect(() => { loadSystems() }, [profile?.profession])
 
@@ -215,27 +222,41 @@ export default function SearchScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <TopBar title="Search" />
-
       <Animated.View style={[{ flex: 1 }, entrance]}>
-      {/* Search bar */}
-      <View style={[s.header, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
-        <View style={[s.searchBar, { backgroundColor: C.surface2, borderColor: C.border }]}>
-          <Ionicons name="search" size={18} color={C.textFaint} />
-          <TextInput
-            style={[s.input, { color: C.text }]}
-            value={query}
-            onChangeText={search}
-            placeholder="Search topics, conditions, drugs..."
-            placeholderTextColor={C.textFaint}
-            autoCapitalize="none"
-            returnKeyType="search"
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => { setQuery(''); setResults([]); setCaseResults([]); loggedSearchRef.current.clear() }}>
-              <Ionicons name="close-circle" size={18} color={C.textFaint} />
-            </TouchableOpacity>
-          )}
+      {/* Focused search header — back + live input, keyboard up on arrival */}
+      <View style={[s.header, { backgroundColor: C.surface, borderBottomColor: C.border, paddingTop: insets.top + 10 }]}>
+        <View style={s.headerRow}>
+          <TouchableOpacity
+            onPress={goBack}
+            style={[s.backBtn, { backgroundColor: C.surface2, borderColor: C.border }]}
+            accessibilityRole="button"
+            accessibilityLabel="Back to practice"
+          >
+            <Ionicons name="arrow-back" size={20} color={C.textSoft} />
+          </TouchableOpacity>
+          <View style={[s.searchBar, { flex: 1, backgroundColor: C.surface2, borderColor: C.border }]}>
+            <Ionicons name="search" size={18} color={C.textFaint} />
+            <TextInput
+              style={[s.input, { color: C.text }]}
+              value={query}
+              onChangeText={search}
+              placeholder="Search topics, conditions, drugs…"
+              placeholderTextColor={C.textFaint}
+              autoCapitalize="none"
+              returnKeyType="search"
+              autoFocus
+            />
+            {query.length > 0 && (
+              <TouchableOpacity
+                onPress={() => { setQuery(''); setResults([]); setCaseResults([]); loggedSearchRef.current.clear() }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
+              >
+                <Ionicons name="close-circle" size={18} color={C.textFaint} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* Type filter chips (search mode only) */}
@@ -282,7 +303,7 @@ export default function SearchScreen() {
 
           <Text style={[s.sectionLabel, { color: C.textFaint }]}>ALL SYSTEMS ({systems.length})</Text>
           {loadingSystems ? (
-            <ActivityIndicator style={{ marginTop: 20 }} color={C.teal} />
+            <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 4 }} />
           ) : (
             systems.map(sys => {
               const { color: iconColor, bgLight: iconBg } = topicColor(sys.topic)
@@ -591,7 +612,9 @@ export default function SearchScreen() {
 }
 
 const s = StyleSheet.create({
-  header: { paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: 1 },
+  header: { paddingHorizontal: 14, paddingBottom: 12, borderBottomWidth: 1 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  backBtn: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 11 },
   input: { flex: 1, fontSize: 15, fontFamily: 'Nunito_600SemiBold' },
   sectionLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8, marginTop: 20, marginBottom: 10, paddingHorizontal: 18 },

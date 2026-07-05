@@ -135,6 +135,19 @@ export default function PracticeHubScreen() {
         <Text style={[s.pageTitle, { color: C.text }]}>Practice</Text>
         {profLabel ? <Text style={[s.pageSub, { color: C.textSoft }]}>{profLabel}</Text> : null}
 
+        {/* Search — looks like an input, acts as a door. Tapping opens the
+            real search screen with the keyboard already up. */}
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: '/(app)/search', params: { from: 'practice' } } as any)}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Search questions, cards, and cases"
+          style={[s.searchBar, { backgroundColor: C.surface, borderColor: C.border }]}
+        >
+          <Ionicons name="search" size={18} color={C.textFaint} />
+          <Text style={[s.searchBarText, { color: C.textFaint }]}>Search questions, cards, cases…</Text>
+        </TouchableOpacity>
+
         {/* Timed mode — prominent banner while active; tap to change duration or turn off */}
         {timedOn && (
           <TouchableOpacity
@@ -246,21 +259,6 @@ export default function PracticeHubScreen() {
           </View>
         </View>
 
-        {/* Search — demoted from the tab bar (Bookmarks took its slot) */}
-        <TouchableOpacity
-          onPress={() => router.navigate('/(app)/search' as any)}
-          activeOpacity={0.75}
-          style={[s.bookmarksRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
-        >
-          <View style={[s.bmIcon, { backgroundColor: C.tealTint }]}>
-            <Ionicons name="search" size={20} color={C.teal} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.bmLabel, { color: C.text }]}>Search</Text>
-            <Text style={[s.bmSub, { color: C.textFaint }]}>Find any question, card, or case</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
-        </TouchableOpacity>
       </ScrollView>
       </Animated.View>
       <TimedModeSheet visible={timedSheet} onClose={() => setTimedSheet(false)} />
@@ -272,6 +270,8 @@ const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18, paddingTop: 20 },
 
   pageTitle: { fontSize: 26, fontFamily: 'Nunito_900Black', letterSpacing: -0.3, marginBottom: 4 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 13, marginTop: 14, marginBottom: 4 },
+  searchBarText: { fontSize: 14.5, fontFamily: 'Nunito_600SemiBold' },
   pageSub: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', marginBottom: 20 },
 
   // Eyebrow
@@ -306,8 +306,4 @@ const s = StyleSheet.create({
   btnGhostText: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
 
   // Bookmarks
-  bookmarksRow: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, borderWidth: 1, padding: 16 },
-  bmIcon: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  bmLabel: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
-  bmSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 2 },
 })

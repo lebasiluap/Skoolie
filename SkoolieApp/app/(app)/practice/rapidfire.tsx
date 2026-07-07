@@ -208,17 +208,27 @@ export default function RapidFireScreen() {
   }
 
   async function startRun(topic: string | null) {
-    if (!profile) return
+    if (loadingQs) return   // double-tap guard — one fetch at a time
+    // Every early exit must be VISIBLE (audit: post-barrage 'Go again' appeared
+    // dead because failures here were silent).
+    if (!profile) {
+      showToast('Your profile is still loading — try again in a second.', 'error')
+      return
+    }
     setLoadingQs(true)
-    const { data } = await supabase.rpc('get_rapid_fire_questions', {
+    const { data, error } = await supabase.rpc('get_rapid_fire_questions', {
       p_profession: profile.profession,
       // Over-fetch so areas of interest can lead the run (empty interests = as-is)
       p_limit: topic ? RUN_SIZE : RUN_SIZE * 3,
       p_topic: topic,
       p_access_key: profile.access_key ?? null,
     })
-    const qs = preferInterests((data ?? []) as Question[], topic ? [] : profile.interests).slice(0, RUN_SIZE)
     setLoadingQs(false)
+    if (error) {
+      showToast("Couldn't load questions — check your connection and try again.", 'error')
+      return
+    }
+    const qs = preferInterests((data ?? []) as Question[], topic ? [] : profile.interests).slice(0, RUN_SIZE)
     if (qs.length === 0) {
       Alert.alert('No rapid-fire questions', 'This topic has no quick-recall questions yet — try another one.')
       return
@@ -497,8 +507,10 @@ export default function RapidFireScreen() {
           ))}
         </View>
 
-        <TouchableOpacity onPress={() => startRun(runTopic)} style={[s.cta, { backgroundColor: P }]} activeOpacity={0.85}>
-          <Text style={[s.ctaText, { color: onP }]}>⚡ Go again</Text>
+        <TouchableOpacity onPress={() => startRun(runTopic)} style={[s.cta, { backgroundColor: P, opacity: loadingQs ? 0.7 : 1 }]} activeOpacity={0.85} disabled={loadingQs}>
+          {loadingQs
+            ? <ActivityIndicator size="small" color={onP} />
+            : <Text style={[s.ctaText, { color: onP }]}>⚡ Go again</Text>}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setScreen('topics')} style={[s.ctaGhost, { borderColor: C.border }]} activeOpacity={0.8}>
           <Text style={[s.ctaGhostText, { color: C.text }]}>Change topic</Text>

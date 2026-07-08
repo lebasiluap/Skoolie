@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, Alert, AppState } from 'react-native'
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Svg, { Circle } from 'react-native-svg'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -36,6 +37,8 @@ import { haptic } from '@/lib/haptics'
 import { trySave } from '@/lib/reliably'
 import { showToast } from '@/lib/toast'
 import type { Question } from '@/types'
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle)
 
 const RUN_SIZE = 5
 const SECONDS_PER_Q = 12
@@ -390,7 +393,11 @@ export default function RapidFireScreen() {
       inputRange: [0, 0.15, 0.5, 0.62, 1],
       outputRange: [C.red, C.red, C.amber, C.green, C.green],
     })
-    const barWidth = barAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] })
+    // Countdown ring — lives ON the question card so the timer, question and
+    // answers share one gaze area (the old top bar made the eye commute).
+    const RING_R = 21, RING_SW = 4
+    const RING_CIRC = 2 * Math.PI * RING_R
+    const ringOffset = barAnim.interpolate({ inputRange: [0, 1], outputRange: [RING_CIRC, 0] })
 
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -401,7 +408,6 @@ export default function RapidFireScreen() {
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={[s.counter, { color: C.textSoft }]}>{qIndex + 1} / {questions.length}</Text>
-            <Text style={[s.secsReadout, { color: secsLeft <= 3 ? C.red : C.textFaint }]} accessibilityLabel={`${secsLeft} seconds left`}>{secsLeft}s</Text>
             {isBarrageRun && (
               <View style={[s.barragePill, { backgroundColor: P }]}>
                 <Text style={[s.barragePillText, { color: onP }]}>⚡ 2×</Text>
@@ -417,21 +423,33 @@ export default function RapidFireScreen() {
           </Animated.View>
         </View>
 
-        {/* Depleting time bar */}
-        <View style={[s.barTrack, { backgroundColor: C.surface3 }]}>
-          <Animated.View style={[s.barFill, { width: barWidth, backgroundColor: barColor }]} />
-        </View>
-
         {/* Natural sizes, repositioned: the question + pills sit centered in
             the screen as one group instead of hugging the top. */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 18, paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-          {/* Question — tinted + labelled so it can't be mistaken for an option */}
+          {/* Question — tinted + labelled, with the countdown ring ON the card
+              (alarm-clock style) so timer + question + answers share one gaze */}
           <View style={[s.stemCard, { backgroundColor: PTint, borderColor: P }]}>
-            <View style={s.stemLabelRow}>
-              <Ionicons name="flash" size={13} color={P} />
-              <Text style={[s.stemLabel, { color: P }]}>QUESTION</Text>
+            <View style={s.stemMain}>
+              <View style={s.stemLabelRow}>
+                <Ionicons name="flash" size={13} color={P} />
+                <Text style={[s.stemLabel, { color: P }]}>QUESTION</Text>
+              </View>
+              <Text style={[s.stem, { color: C.text }]}>{q.question_text}</Text>
             </View>
-            <Text style={[s.stem, { color: C.text }]}>{q.question_text}</Text>
+            <View style={s.ringWrap} accessible accessibilityLabel={`${secsLeft} seconds left`}>
+              <Svg width={54} height={54} viewBox="0 0 54 54">
+                <Circle cx={27} cy={27} r={RING_R} stroke={C.surface3} strokeWidth={RING_SW} fill="none" />
+                <AnimatedCircle
+                  cx={27} cy={27} r={RING_R}
+                  stroke={barColor as any} strokeWidth={RING_SW} fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${RING_CIRC}`}
+                  strokeDashoffset={ringOffset as any}
+                  transform="rotate(-90 27 27)"
+                />
+              </Svg>
+              <Text style={[s.ringSecs, { color: secsLeft <= 3 ? C.red : C.text }]}>{secsLeft}</Text>
+            </View>
           </View>
 
           <Text style={[s.pickLabel, { color: C.textFaint }]}>TAP THE ANSWER</Text>
@@ -542,16 +560,15 @@ const s = StyleSheet.create({
 
   runHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
   counter: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
-  secsReadout: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'], minWidth: 30 },
   comboChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 11, borderRadius: 999 },
   comboText: { fontSize: 13, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
   barragePill: { paddingVertical: 3, paddingHorizontal: 8, borderRadius: 999 },
   barragePillText: { fontSize: 11, fontFamily: 'Nunito_900Black' },
 
-  barTrack: { height: 10 },
-  barFill: { height: 10 },
-
-  stemCard: { borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
+  stemCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
+  stemMain: { flex: 1 },
+  ringWrap: { width: 54, height: 54, alignItems: 'center', justifyContent: 'center' },
+  ringSecs: { position: 'absolute', fontSize: 15, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
   stemLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },
   stemLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1 },
   stem: { fontSize: 18, fontFamily: 'Nunito_800ExtraBold', lineHeight: 26 },

@@ -486,17 +486,19 @@ export default function FlashcardsScreen() {
         <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border, paddingTop: 0, paddingBottom: filtersOpen ? 18 : 0 }]}>
           <TouchableOpacity
             onPress={() => withAccordionAnim(() => setFiltersOpen(o => !o))}
-            style={s.filterToggle}
+            style={[s.filterToggle, { backgroundColor: C.tealTint, borderColor: C.teal }]}
             accessibilityRole="button"
             accessibilityState={{ expanded: filtersOpen }}
             accessibilityLabel="Session filters"
           >
-            <Ionicons name="options-outline" size={17} color={C.textSoft} />
-            <Text style={[s.filterToggleTitle, { color: C.text }]}>Filters</Text>
+            <View style={[s.filterToggleIcon, { backgroundColor: C.teal }]}>
+              <Ionicons name="options" size={15} color={C.onTeal} />
+            </View>
+            <Text style={[s.filterToggleTitle, { color: C.teal }]}>Filters</Text>
             <Text style={[s.filterToggleSummary, { color: C.textFaint }]} numberOfLines={1}>
               {difficulty === 'all' ? 'All levels' : difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} · {sessionSize} cards{allYears ? ' · All years' : ''}
             </Text>
-            <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={17} color={C.textFaint} />
+            <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={17} color={C.teal} />
           </TouchableOpacity>
           {filtersOpen && (<Entrance dy={-8}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
@@ -936,8 +938,9 @@ const s = StyleSheet.create({
 
   // Filters
   filterSection: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 18, borderBottomWidth: 1 },
-  filterToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14 },
-  filterToggleTitle: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
+  filterToggle: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 12, paddingVertical: 11, paddingHorizontal: 13, borderRadius: 14, borderWidth: 1.5 },
+  filterToggleIcon: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  filterToggleTitle: { fontSize: 14.5, fontFamily: 'Nunito_800ExtraBold' },
   filterToggleSummary: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', textAlign: 'right' },
   filterLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.6, marginBottom: 8 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

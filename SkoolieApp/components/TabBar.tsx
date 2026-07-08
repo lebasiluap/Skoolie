@@ -75,7 +75,9 @@ const ICONS: Record<string, (color: string) => React.ReactNode> = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const VISIBLE = ['dashboard', 'practice', 'bookmarks', 'progress', 'profile']
+// Bookmarks was demoted from the bar (it's a collection, not a destination) —
+// it now lives as a row on the Practice hub. Four confident tabs.
+const VISIBLE = ['dashboard', 'practice', 'progress', 'profile']
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const C = useTheme()
@@ -87,7 +89,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   if (focusSession) return null
 
   // Hidden sub-screens still belong to a tab — keep that tab highlighted.
-  const REPRESENT: Record<string, string> = { search: 'practice' }
+  const REPRESENT: Record<string, string> = { search: 'practice', bookmarks: 'practice' }
   const focusedName = state.routes[state.index]?.name
   const activeName = REPRESENT[focusedName] ?? focusedName
 

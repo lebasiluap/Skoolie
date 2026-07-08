@@ -40,6 +40,7 @@ export default function PracticeHubScreen() {
   // who has practiced at all gets a resume row).
   const [lastTopic, setLastTopic] = useState<{ topic: string; mode: string } | null>(null)
   const [todayCount, setTodayCount] = useState<number | null>(null)   // null until loaded — strip hides meanwhile
+  const [bmCount, setBmCount] = useState(0)   // saved bookmarks — row hides at 0
   useFocusEffect(useCallback(() => {
     if (!user) return
     supabase
@@ -53,6 +54,12 @@ export default function PracticeHubScreen() {
       .then(({ data }) => setLastTopic(data?.topic ? { topic: data.topic, mode: data.question_type ?? 'mcq' } : null))
     // Today's answered count — server-side since-midnight filter, exact and
     // identical to the dashboard's definition (no limit-window divergence).
+    // Saved-items row (bookmarks left the tab bar — this is its home now)
+    supabase
+      .from('bookmarks')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .then(({ count }) => setBmCount(count ?? 0))
     const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
     supabase
       .from('quiz_sessions')
@@ -321,6 +328,29 @@ export default function PracticeHubScreen() {
             </>
           )
         })()}
+
+        {/* SAVED — bookmarks' home since leaving the tab bar; hides at 0 */}
+        {bmCount > 0 && (
+          <>
+            <Text style={[s.eyebrow, { color: C.textFaint, marginTop: 22 }]}>SAVED</Text>
+            <TouchableOpacity
+              onPress={() => go(() => router.push({ pathname: '/(app)/bookmarks', params: { from: 'practice' } } as any))}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={`Bookmarks, ${bmCount} saved`}
+              style={[s.resumeRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
+            >
+              <View style={[s.resumeIcon, { backgroundColor: C.tealTint }]}>
+                <Ionicons name="bookmark" size={17} color={C.teal} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.resumeTitle, { color: C.text }]}>Bookmarks</Text>
+                <Text style={[s.resumeSub, { color: C.textFaint }]}>{bmCount} saved item{bmCount !== 1 ? 's' : ''}</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={18} color={C.teal} />
+            </TouchableOpacity>
+          </>
+        )}
 
         {/* TODAY — the goal, seen from where the work happens */}
         {todayCount !== null && profile && (() => {

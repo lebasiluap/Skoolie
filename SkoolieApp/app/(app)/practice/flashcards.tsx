@@ -88,6 +88,16 @@ export default function FlashcardsScreen() {
   const [screen, setScreen] = useState<Screen>('topics')
   // Focused session — hide app chrome (tab bar) while the deck is running
   useFocusSessionWhile(screen === 'quiz')
+
+  // Jump Back In lands here with startTopic — scroll the expanded topic into
+  // view once its card reports layout (it can sit below the fold).
+  const topicsScrollRef = useRef<ScrollView>(null)
+  const scrolledToStartTopic = useRef(false)
+  const scrollToStartTopic = (topic: string, y: number) => {
+    if (topic !== startTopic || scrolledToStartTopic.current) return
+    scrolledToStartTopic.current = true
+    setTimeout(() => topicsScrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true }), 300)
+  }
   const [topicRows, setTopicRows] = useState<TopicRow[]>([])
   const [cards, setCards] = useState<Flashcard[]>([])
   const [originalCards, setOriginalCards] = useState<Flashcard[]>([])  // full deck, for "Study again"
@@ -468,7 +478,7 @@ export default function FlashcardsScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="fc" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
+        <ScrollView ref={topicsScrollRef} contentContainerStyle={{ paddingBottom: 100, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
         {/* Filters */}
         <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
@@ -539,7 +549,7 @@ export default function FlashcardsScreen() {
               })
 
               return (
-                <View key={topic} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 10 }]}>
+                <View key={topic} onLayout={e => scrollToStartTopic(topic, e.nativeEvent.layout.y)} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 10 }]}>
                   <View style={s.topicRowInner}>
                     <View style={[s.topicIcon, { backgroundColor: iconBg }]}>
                       <TopicIcon topic={topic} size={20} color={iconColor} />

@@ -146,6 +146,16 @@ export default function CasesScreen() {
   const [screen, setScreen] = useState<Screen>('topics')
   // Focused session — hide app chrome (tab bar) while a case is active
   useFocusSessionWhile(screen === 'vignette' || screen === 'case')
+
+  // Jump Back In lands here with startTopic — scroll the expanded topic into
+  // view once its card reports layout (it can sit below the fold).
+  const topicsScrollRef = useRef<ScrollView>(null)
+  const scrolledToStartTopic = useRef(false)
+  const scrollToStartTopic = (topic: string, y: number) => {
+    if (topic !== startTopic || scrolledToStartTopic.current) return
+    scrolledToStartTopic.current = true
+    setTimeout(() => topicsScrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true }), 300)
+  }
   const [topicRows, setTopicRows] = useState<TopicRow[]>([])
   const [cases, setCases] = useState<CaseStudy[]>([])
   const [originalCases, setOriginalCases] = useState<CaseStudy[]>([])     // full set, for "Retake"
@@ -540,7 +550,7 @@ export default function CasesScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="case" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
+        <ScrollView ref={topicsScrollRef} contentContainerStyle={{ paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
         <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
           <View style={s.chipRow}>
@@ -596,7 +606,7 @@ export default function CasesScreen() {
               })
 
               return (
-                <View key={topic} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 10 }]}>
+                <View key={topic} onLayout={e => scrollToStartTopic(topic, e.nativeEvent.layout.y)} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 10 }]}>
                   <View style={s.topicRowInner}>
                     <View style={[s.topicIcon, { backgroundColor: iconBg }]}>
                       <TopicIcon topic={topic} size={20} color={iconColor} />

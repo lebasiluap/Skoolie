@@ -116,6 +116,16 @@ export default function MCQScreen() {
   // Focused session — hide app chrome (tab bar) while a run is active
   useFocusSessionWhile(screen === 'quiz')
 
+  // Jump Back In lands here with startTopic — scroll the expanded topic into
+  // view once its card reports layout (it can sit below the fold).
+  const topicsScrollRef = useRef<ScrollView>(null)
+  const scrolledToStartTopic = useRef(false)
+  const scrollToStartTopic = (topic: string, y: number) => {
+    if (topic !== startTopic || scrolledToStartTopic.current) return
+    scrolledToStartTopic.current = true
+    setTimeout(() => topicsScrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true }), 300)
+  }
+
   // Quiz state
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
@@ -585,7 +595,7 @@ export default function MCQScreen() {
 
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="mcq" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 32, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
+        <ScrollView ref={topicsScrollRef} contentContainerStyle={{ paddingBottom: 32, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           {/* Filter sections */}
           <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
             {/* DIFFICULTY */}
@@ -692,7 +702,7 @@ export default function MCQScreen() {
               })
 
               return (
-                <View key={topic} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 8 }]}>
+                <View key={topic} onLayout={e => scrollToStartTopic(topic, e.nativeEvent.layout.y)} style={[s.topicCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, marginHorizontal: 16, marginBottom: 8 }]}>
                   {/* Topic row */}
                   <View style={s.topicRowInner}>
                     <View style={[s.topicIcon, { backgroundColor: iconBg }]}>

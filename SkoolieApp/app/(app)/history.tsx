@@ -34,6 +34,8 @@ const MODE_META: Record<string, { label: string; icon: string }> = {
   case_study: { label: 'Cases', icon: 'clipboard' },
   rapid_fire: { label: 'Rapid Fire', icon: 'flash' },
   barrage: { label: 'Barrage 2×', icon: 'flash' },
+  // Challenge replays fall through to the MCQ branch — practice-only, like all replays
+  daily_challenge: { label: 'Challenge', icon: 'trophy' },
 }
 
 function formatWhen(iso: string): string {
@@ -126,7 +128,7 @@ export default function HistoryScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[s.title, { color: C.text }]} numberOfLines={1}>
-                    {item.topic ?? 'Random mix'}
+                    {item.mode === 'daily_challenge' ? "Today's Challenge" : item.topic ?? 'Random mix'}
                   </Text>
                   <Text style={[s.meta, { color: C.textFaint }]} numberOfLines={1}>
                     {mm?.label ?? 'Quiz'} · {item.score}/{total}{item.timed ? ' · ⏱' : ''} · {formatWhen(item.started_at)}

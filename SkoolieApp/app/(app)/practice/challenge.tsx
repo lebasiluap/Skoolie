@@ -54,6 +54,8 @@ export default function ChallengeScreen() {
   const [inReview, setInReview] = useState(false)
   const [score, setScore] = useState(0)
   const [xpEarned, setXpEarned] = useState<number | null>(null)
+  const [saveFailed, setSaveFailed] = useState(false)
+  const [saveNonce, setSaveNonce] = useState(0)   // bump to retry a failed save
   const sessionSavedRef = useRef(false)
 
   const goBack = () => (router.canGoBack() ? router.back() : router.navigate('/(app)/dashboard' as any))
@@ -131,10 +133,17 @@ export default function ChallengeScreen() {
           p_timed: false, p_bonus: 0, p_slot: 0,
         })
         if (!error) xp = Number(data ?? 0)
-        else if (attempt === 1) showToast("Couldn't save your challenge — check your connection. Your XP may not have counted.", 'error')
       }
-      setXpEarned(xp ?? 0)
-      if (xp !== null && xp > 0) {
+      if (xp === null) {
+        // Network/server failure — the claim did NOT land, so the attempt is
+        // still unspent. Never conflate this with "already claimed" (xp = 0).
+        sessionSavedRef.current = false
+        setSaveFailed(true)
+        return
+      }
+      setSaveFailed(false)
+      setXpEarned(xp)
+      if (xp > 0) {
         const streakUpd = computeStreakUpdate(profile)
         await trySave(() => supabase.from('quiz_sessions').insert({
           user_id: user.id, score, question_ids: questions.map(q => q.id),
@@ -147,7 +156,7 @@ export default function ChallengeScreen() {
         refreshProfile()
       }
     })()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screen, saveNonce]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const cohortLabel = profile
     ? (profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)) +
@@ -245,7 +254,18 @@ export default function ChallengeScreen() {
           <MascotAnimator expr={pct >= 60 ? 'happy' : 'thinking'}><CappyHead expr={pct >= 60 ? 'happy' : 'thinking'} size={96} /></MascotAnimator>
           <Text style={[s.bigTitle, { color: C.text }]}>Challenge complete!</Text>
           <Text style={[s.resultScore, { color: C.teal }]}>{score}/{total}</Text>
-          {xpEarned === null ? (
+          {saveFailed ? (
+            <View style={{ alignItems: 'center' }}>
+              <Text style={[s.subText, { color: C.red }]}>Couldn't reach the server — your attempt hasn't been used yet.</Text>
+              <TouchableOpacity
+                onPress={() => setSaveNonce(n => n + 1)}
+                style={[s.primaryBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.teal, marginTop: 12, paddingHorizontal: 28 }]}
+                accessibilityRole="button" accessibilityLabel="Retry saving your result"
+              >
+                <Text style={[s.primaryBtnText, { color: C.teal }]}>Try again</Text>
+              </TouchableOpacity>
+            </View>
+          ) : xpEarned === null ? (
             <ActivityIndicator size="small" color={C.teal} style={{ marginTop: 8 }} />
           ) : xpEarned > 0 ? (
             <View style={[s.xpPill, { backgroundColor: C.tealTint }]}>

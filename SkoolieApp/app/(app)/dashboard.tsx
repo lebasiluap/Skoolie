@@ -62,6 +62,7 @@ const MODE_META: Record<string, { label: string; icon: string }> = {
   case_study: { label: 'Cases', icon: 'clipboard' },
   rapid_fire: { label: 'Rapid Fire', icon: 'flash' },
   barrage: { label: 'Barrage 2×', icon: 'flash' },
+  daily_challenge: { label: 'Challenge', icon: 'trophy' },
 }
 
 export default function DashboardScreen() {
@@ -453,7 +454,7 @@ export default function DashboardScreen() {
             {sessions.map((sess, i) => {
               const total = sess.question_ids?.length ?? 0
               const mm = sess.mode ? MODE_META[sess.mode] : undefined
-              const title = sess.mode ? (sess.topic ?? 'Random') : 'Quiz session'
+              const title = sess.mode === 'daily_challenge' ? "Today's Challenge" : sess.mode ? (sess.topic ?? 'Random') : 'Quiz session'
               const metaLine = `${mm ? mm.label + ' · ' : ''}${sess.score} / ${total} correct`
               return (
                 <View key={i} style={[s.activityRow, i > 0 && { borderTopWidth: 1, borderTopColor: C.border }]}>

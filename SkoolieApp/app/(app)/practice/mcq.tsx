@@ -675,15 +675,9 @@ export default function MCQScreen() {
                 </Svg>
                 <Text style={[s.chipText, { color: filter.highYield ? '#fff' : C.textSoft }]}>High Yield</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[s.chip, s.chipIcon, { backgroundColor: C.surface2, borderColor: C.border }]}>
-                <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={C.textSoft} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <Rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <Line x1="16" y1="2" x2="16" y2="6"/>
-                  <Line x1="8" y1="2" x2="8" y2="6"/>
-                  <Line x1="3" y1="10" x2="21" y2="10"/>
-                </Svg>
-                <Text style={[s.chipText, { color: C.textSoft }]}>All Years</Text>
-              </TouchableOpacity>
+              {/* (dead "All Years" chip removed — MCQ filters have no allYears
+                  mechanic; the working version lives in flashcards, gated by
+                  study_year) */}
             </View>
             </Entrance>)}
           </View>
@@ -956,6 +950,9 @@ export default function MCQScreen() {
                 <TouchableOpacity
                   onPress={() => { if (!inReview) setSelected(letter) }}
                   activeOpacity={inReview ? 1 : 0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Option ${letter}: ${text}`}
+                  accessibilityState={{ selected: isSel, disabled: inReview }}
                   style={[s.option, { backgroundColor: bg, borderColor: border, opacity: inReview && !isAns && !isSel ? 0.5 : 1 }]}
                 >
                   <View style={[s.optChip, { backgroundColor: chipBg }]}>

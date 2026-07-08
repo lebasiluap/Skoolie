@@ -446,6 +446,7 @@ export default function CasesScreen() {
 
   function submitAnswer() {
     if (!selected || revealed) return
+    setDetailsVisible(false)   // never stack the review sheet on the details sheet
     setRevealed(true)
     setOverlayVisible(true)
     const cs = cases[caseIdx]
@@ -463,6 +464,7 @@ export default function CasesScreen() {
     if (!cs) return
     playSound('wrong')
     setTimedOut(true)
+    setDetailsVisible(false)   // never stack the review sheet on the details sheet
     setRevealed(true)
     setOverlayVisible(true)
     setWrongCaseIds(prev => new Set(prev).add(cs.id))
@@ -506,6 +508,7 @@ export default function CasesScreen() {
 
   function next() {
     setOverlayVisible(false)
+    setDetailsVisible(false)
     setTimedOut(false)
     const cs = cases[caseIdx]
     if (qIdx + 1 < cs.questions.length) {
@@ -828,6 +831,7 @@ export default function CasesScreen() {
               style={[s.detailsChip, { backgroundColor: C.surface2, borderColor: C.border }]}
               accessibilityRole="button"
               accessibilityLabel="Review case details"
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             >
               <Ionicons name="document-text-outline" size={15} color={C.teal} />
               <Text style={[s.detailsChipText, { color: C.teal }]}>Case details</Text>
@@ -863,6 +867,9 @@ export default function CasesScreen() {
                   <TouchableOpacity
                     onPress={() => !revealed && setSelected(letter)}
                     activeOpacity={revealed ? 1 : 0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Option ${letter}: ${opt}`}
+                    accessibilityState={{ selected: isSelected, disabled: revealed }}
                     style={[s.option, { backgroundColor: bg, borderColor: border, opacity }]}
                   >
                     <View style={[s.optKey, { backgroundColor: chipBg }]}>

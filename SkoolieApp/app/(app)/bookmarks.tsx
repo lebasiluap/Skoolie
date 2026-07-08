@@ -269,9 +269,18 @@ export default function BookmarksScreen() {
                         <Text style={[s.answerText, { color: C.textSoft }]}>{q.explanation}</Text>
                       </View>
                     ) : (
+                      // Q&A flashcards keep the answer in correct_answer (the
+                      // explanation is supplementary); comprehensive cards have
+                      // no correct_answer — there the explanation IS the answer.
                       <View style={[s.flashAnswer, { backgroundColor: C.teal }]}>
                         <Text style={[s.flashAnswerLabel, { color: C.onTeal + '99' }]}>ANSWER</Text>
-                        <Text style={[s.flashAnswerText, { color: C.onTeal }]}>{q.explanation}</Text>
+                        <Text style={[s.flashAnswerText, { color: C.onTeal }]}>{q.correct_answer?.trim() ? q.correct_answer : q.explanation}</Text>
+                        {q.correct_answer?.trim() && q.explanation?.trim() && q.explanation.trim() !== q.correct_answer.trim() ? (
+                          <>
+                            <Text style={[s.flashAnswerLabel, { color: C.onTeal + '99', marginTop: 8 }]}>WHY</Text>
+                            <Text style={[s.flashAnswerText, { color: C.onTeal }]}>{q.explanation}</Text>
+                          </>
+                        ) : null}
                       </View>
                     )}
                   </TouchableOpacity>

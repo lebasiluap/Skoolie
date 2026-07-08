@@ -430,10 +430,26 @@ export default function SearchScreen() {
                         <Text style={[s.optText, { color: C.text }]}>{opt.v}</Text>
                       </View>
                     ))}
-                    <View style={[s.explain, { backgroundColor: C.tealTint }]}>
-                      <Text style={[s.explainTitle, { color: C.teal }]}>Explanation</Text>
-                      <Text style={[s.explainText, { color: C.textSoft }]}>{item.explanation}</Text>
-                    </View>
+                    {/* Flashcards keep the answer in correct_answer (the
+                        explanation is supplementary); comprehensive cards have
+                        no correct_answer — the explanation IS the answer. */}
+                    {item.question_type === 'flashcard' && item.correct_answer?.trim() ? (
+                      <View style={[s.explain, { backgroundColor: C.tealTint }]}>
+                        <Text style={[s.explainTitle, { color: C.teal }]}>Answer</Text>
+                        <Text style={[s.explainText, { color: C.text }]}>{item.correct_answer}</Text>
+                        {item.explanation?.trim() && item.explanation.trim() !== item.correct_answer.trim() ? (
+                          <>
+                            <Text style={[s.explainTitle, { color: C.teal, marginTop: 8 }]}>Why</Text>
+                            <Text style={[s.explainText, { color: C.textSoft }]}>{item.explanation}</Text>
+                          </>
+                        ) : null}
+                      </View>
+                    ) : (
+                      <View style={[s.explain, { backgroundColor: C.tealTint }]}>
+                        <Text style={[s.explainTitle, { color: C.teal }]}>Explanation</Text>
+                        <Text style={[s.explainText, { color: C.textSoft }]}>{item.explanation}</Text>
+                      </View>
+                    )}
                   </View>
                 )}
 

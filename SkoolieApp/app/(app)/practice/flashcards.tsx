@@ -803,7 +803,7 @@ export default function FlashcardsScreen() {
               tail centered on the face */}
           {!revealed ? (
             <Text style={[s.tapHint, { color: C.textFaint }]}>Tap the card to flip it</Text>
-          ) : card.note && cleanBack(card.note).trim() ? (
+          ) : card.note && cleanBack(card.note).trim() && cleanBack(card.note).trim() !== cleanBack(card.back).trim() ? (
             // Noggin adds the supplementary explanation — only when there's a
             // note distinct from the answer already on the card. Eases in
             // after the flip lands.

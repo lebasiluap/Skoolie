@@ -762,18 +762,22 @@ export default function FlashcardsScreen() {
           </TouchableOpacity>
           </Animated.View>
 
-          {/* Below-card: hint before reveal, Noggin speech bubble after */}
+          {/* Below-card: hint before reveal, Noggin explains after — same
+              Duolingo treatment as MCQ/cases: big mascot, bubble with a
+              tail centered on the face */}
           {!revealed ? (
             <Text style={[s.tapHint, { color: C.textFaint }]}>Tap the card to flip it</Text>
           ) : (
             <View style={s.nogginBubbleRow}>
-              <MascotAnimator expr="thinking">
-                <NogginHead size={46} expr="thinking" />
+              <MascotAnimator expr="happy">
+                <NogginHead size={92} expr="happy" />
               </MascotAnimator>
-              <View style={[s.speechBubble, { backgroundColor: C.surface, borderColor: C.border }]}>
-                <View style={[s.speechTail, { borderRightColor: C.border }]} />
-                <View style={[s.speechTailInner, { borderRightColor: C.surface }]} />
-                <Text style={[s.explanationText, { color: C.textSoft }]}>{cleanBack(card.back)}</Text>
+              <View style={[s.speechBubble, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+                <View style={s.tailWrap} pointerEvents="none">
+                  <View style={[s.bubbleTail, { borderRightColor: C.surface }]} />
+                </View>
+                <Text style={[s.explainLabel, { color: C.teal }]}>EXPLANATION</Text>
+                <Text style={[s.explanationText, { color: C.text }]}>{cleanBack(card.back)}</Text>
               </View>
             </View>
           )}
@@ -950,23 +954,13 @@ const s = StyleSheet.create({
   // Noggin speech bubble (below card, after flip)
   fcDiff: { paddingVertical: 2, paddingHorizontal: 9, borderRadius: 999 },
   fcDiffText: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', textTransform: 'capitalize' },
-  nogginBubbleRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 16, width: '100%', gap: 6 },
-  speechBubble: { flex: 1, borderRadius: 18, borderTopLeftRadius: 4, borderWidth: 1, padding: 14, position: 'relative' },
-  speechTail: {
-    position: 'absolute', left: -9, top: 14,
-    width: 0, height: 0,
-    borderStyle: 'solid',
-    borderTopWidth: 7, borderBottomWidth: 7, borderRightWidth: 9,
-    borderTopColor: 'transparent', borderBottomColor: 'transparent',
-  },
-  speechTailInner: {
-    position: 'absolute', left: -7, top: 14,
-    width: 0, height: 0,
-    borderStyle: 'solid',
-    borderTopWidth: 7, borderBottomWidth: 7, borderRightWidth: 9,
-    borderTopColor: 'transparent', borderBottomColor: 'transparent',
-  },
-  explanationText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', lineHeight: 21 },
+  nogginBubbleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 16, width: '100%', gap: 6 },
+  speechBubble: { flex: 1, borderRadius: 20, borderWidth: 1, padding: 18 },
+  // Full-height wrapper vertically centers the tail on the bubble (and Noggin)
+  tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
+  bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
+  explainLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1, marginBottom: 6 },
+  explanationText: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', lineHeight: 23 },
 
   // Action bar (fixed bottom, after flip)
   actionBar: { position: 'absolute', bottom: 0, left: 0, right: 0, borderTopWidth: 1, paddingTop: 12, paddingHorizontal: 16 },

@@ -855,8 +855,23 @@ export default function FlashcardsScreen() {
           </View>
         </View>
 
-        {/* Action buttons */}
+        {/* Action buttons — same hierarchy as MCQ results:
+            review (tinted) → replay (ghost) → new content (filled) → Dashboard (ghost) */}
         <View style={s.resultActions}>
+          {missed > 0 && (
+            <TouchableOpacity
+              onPress={reviewMissed}
+              style={[s.resultBtn, { backgroundColor: C.redTint, borderWidth: 1, borderColor: C.red }]}
+            >
+              <Text style={[s.resultBtnText, { color: C.red }]}>Review {missed} still learning →</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={studyAgain}
+            style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.borderStrong }]}
+          >
+            <Text style={[s.resultBtnText, { color: C.textSoft }]}>↺  Study again</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               if (lastWasSurprise) surpriseMe()
@@ -867,28 +882,14 @@ export default function FlashcardsScreen() {
           >
             <Text style={[s.resultBtnText, { color: C.onTeal }]}>New deck →</Text>
           </TouchableOpacity>
-          {missed > 0 && (
-            <TouchableOpacity
-              onPress={reviewMissed}
-              style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.borderStrong }]}
-            >
-              <Text style={[s.resultBtnText, { color: C.text }]}>Review {missed} still learning</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={studyAgain}
-            style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.borderStrong }]}
-          >
-            <Text style={[s.resultBtnText, { color: C.text }]}>Study again</Text>
+          <TouchableOpacity onPress={() => router.push('/(app)/dashboard')} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.borderStrong }]}>
+            <Text style={[s.resultBtnText, { color: C.textSoft }]}>Dashboard</Text>
           </TouchableOpacity>
           {cardIds && (
-            <TouchableOpacity onPress={() => backToBookmarks()} style={{ alignSelf: 'center', marginTop: 4 }}>
-              <Text style={[s.dashLink, { color: C.textFaint }]}>← Back to bookmarks</Text>
+            <TouchableOpacity onPress={() => backToBookmarks()} style={{ alignSelf: 'center', marginTop: 6 }}>
+              <Text style={[s.resultBtnText, { color: C.textFaint, fontSize: 13 }]}>← Back to bookmarks</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity onPress={() => router.push('/(app)/dashboard')} style={{ alignSelf: 'center', marginTop: 4 }}>
-            <Text style={[s.dashLink, { color: C.textFaint }]}>Back to dashboard</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>

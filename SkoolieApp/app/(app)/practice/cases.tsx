@@ -1020,7 +1020,17 @@ export default function CasesScreen() {
             <Text style={[s.statLabel, { color: C.textFaint }]}>XP</Text>
           </View>
         </View>
+        {/* Action buttons — same hierarchy as MCQ results:
+            review (tinted) → replay (ghost) → new content (filled) → Dashboard (ghost) */}
         <View style={s.resultActions}>
+          {wrongCaseIds.size > 0 && (
+            <TouchableOpacity onPress={reviewWrongCases} style={[s.resultBtn, { backgroundColor: C.redTint, borderWidth: 1, borderColor: C.red }]}>
+              <Text style={[s.resultBtnText, { color: C.red }]}>Review {wrongCaseIds.size} {wrongCaseIds.size === 1 ? 'case' : 'cases'} missed →</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={retakeCases} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.borderStrong }]}>
+            <Text style={[s.resultBtnText, { color: C.textSoft }]}>↺  Retake these cases</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               if (lastWasSurprise) surpriseCases()
@@ -1031,19 +1041,11 @@ export default function CasesScreen() {
           >
             <Text style={[s.resultBtnText, { color: C.onTeal }]}>New cases →</Text>
           </TouchableOpacity>
-          {wrongCaseIds.size > 0 && (
-            <TouchableOpacity onPress={reviewWrongCases} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.borderStrong }]}>
-              <Text style={[s.resultBtnText, { color: C.text }]}>Review {wrongCaseIds.size} {wrongCaseIds.size === 1 ? 'case' : 'cases'} missed</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={retakeCases} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.borderStrong }]}>
-            <Text style={[s.resultBtnText, { color: C.text }]}>Retake these cases</Text>
+          <TouchableOpacity onPress={() => router.push('/(app)/dashboard')} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.borderStrong }]}>
+            <Text style={[s.resultBtnText, { color: C.textSoft }]}>Dashboard</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setScreen('topics')} style={[s.resultBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.borderStrong }]}>
-            <Text style={[s.resultBtnText, { color: C.text }]}>Choose topic</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/(app)/dashboard')} style={{ alignSelf: 'center', marginTop: 4, padding: 8 }}>
-            <Text style={[s.resultBtnText, { color: C.textFaint, fontSize: 13 }]}>Back to dashboard</Text>
+          <TouchableOpacity onPress={() => setScreen('topics')} style={{ alignSelf: 'center', marginTop: 6 }}>
+            <Text style={[s.resultBtnText, { color: C.textFaint, fontSize: 13 }]}>Choose a different topic</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

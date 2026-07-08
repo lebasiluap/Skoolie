@@ -76,6 +76,8 @@ export default function DashboardScreen() {
   const [weekXp, setWeekXp] = useState(0)
   // Surprise Barrage — deterministic daily window; claimed defaults true to avoid banner flash
   const [claimedSlots, setClaimedSlots] = useState<Set<number>>(new Set([0, 1]))  // default full to avoid banner flash
+  // Today's Challenge — null until loaded (card hides meanwhile, no flash)
+  const [challenge, setChallenge] = useState<{ available: boolean; claimed: boolean; score: number; total: number } | null>(null)
   const [barrageTotal, setBarrageTotal] = useState(0)   // completed barrages (freeze every 5)
   const [, tick] = useState(0)
   useEffect(() => { const iv = setInterval(() => tick(t => t + 1), 30_000); return () => clearInterval(iv) }, [])
@@ -94,6 +96,16 @@ export default function DashboardScreen() {
   useFocusEffect(useCallback(() => {
     loadSessions()
     refreshProfile()
+    // Today's Challenge status (materializes the cohort's set on first call)
+    supabase.rpc('get_daily_challenge').then(({ data, error }) => {
+      if (error || !data) { setChallenge(null); return }
+      setChallenge({
+        available: !!data.available,
+        claimed: !!data.claimed,
+        score: Number(data.score ?? 0),
+        total: Number(data.claimed ? (data.claimed_total ?? data.total ?? 0) : (data.total ?? 0)),
+      })
+    })
   }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadSessions() {
@@ -348,6 +360,36 @@ export default function DashboardScreen() {
           return null
         })()}
 
+        {/* Today's Challenge — one card while unclaimed, one quiet line once done */}
+        {challenge?.available && (challenge.claimed ? (
+          <View style={[s.challengeDone, { backgroundColor: C.surface, borderColor: C.border }]}>
+            <Ionicons name="trophy" size={15} color={C.success} />
+            <Text style={[s.challengeDoneText, { color: C.textSoft }]}>
+              Today's Challenge done — <Text style={{ color: C.text, fontFamily: 'Nunito_800ExtraBold' }}>{challenge.score}/{challenge.total}</Text>
+            </Text>
+            <Ionicons name="checkmark-circle" size={16} color={C.success} />
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/practice/challenge' as any)}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Start today's challenge — 5 questions, one attempt"
+            style={[s.challengeCard, { backgroundColor: C.teal, ...C.shadowLg }]}
+          >
+            <View style={[s.challengeIcon, { backgroundColor: C.onTeal + '26' }]}>
+              <Ionicons name="trophy" size={22} color={C.onTeal} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.challengeTitle, { color: C.onTeal }]}>TODAY'S CHALLENGE</Text>
+              <Text style={[s.challengeSub, { color: C.onTeal + 'D9' }]}>
+                {challenge.total} questions · one attempt · same set as your whole year
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={C.onTeal} />
+          </TouchableOpacity>
+        ))}
+
         {/* Tier card — one idea: what you're becoming. The tier's own color owns
             this moment; weekly XP is a compact chip (its real home is the league);
             level moved to the stats strip below the fold. */}
@@ -532,6 +574,14 @@ const s = StyleSheet.create({
   barrageTitle: { fontSize: 13, fontFamily: 'Nunito_900Black', letterSpacing: 0.6 },
   barrageSub: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', marginTop: 2 },
   barrageTeaser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14 },
+
+  // Today's Challenge
+  challengeCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, padding: 16, marginBottom: 14 },
+  challengeIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  challengeTitle: { fontSize: 13, fontFamily: 'Nunito_900Black', letterSpacing: 0.6 },
+  challengeSub: { fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', marginTop: 2 },
+  challengeDone: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14 },
+  challengeDoneText: { flex: 1, fontSize: 13, fontFamily: 'Nunito_600SemiBold', fontVariant: ['tabular-nums'] },
   barrageTeaserText: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', lineHeight: 18 },
   weekChip: { paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999 },
   weekChipText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },

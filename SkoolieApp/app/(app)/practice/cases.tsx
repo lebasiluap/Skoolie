@@ -147,6 +147,9 @@ export default function CasesScreen() {
   // Focused session — hide app chrome (tab bar) while a case is active
   useFocusSessionWhile(screen === 'vignette' || screen === 'case')
 
+  // Filters collapsed by default — the topic list is the browse screen's job
+  const [filtersOpen, setFiltersOpen] = useState(false)
+
   // Jump Back In lands here with startTopic — scroll the expanded topic into
   // view once its card reports layout (it can sit below the fold).
   const topicsScrollRef = useRef<ScrollView>(null)
@@ -551,7 +554,23 @@ export default function CasesScreen() {
         {/* Pinned: active filters survive across visits — keep them visible with one-tap clear */}
         <FilterBanner kind="case" />
         <ScrollView ref={topicsScrollRef} contentContainerStyle={{ paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-        <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+        {/* Filters — collapsed to one summary row by default (matches MCQ) */}
+        <View style={[s.filterSection, { backgroundColor: C.surface, borderBottomColor: C.border, paddingTop: 0, paddingBottom: filtersOpen ? 18 : 0 }]}>
+          <TouchableOpacity
+            onPress={() => withAccordionAnim(() => setFiltersOpen(o => !o))}
+            style={s.filterToggle}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: filtersOpen }}
+            accessibilityLabel="Session filters"
+          >
+            <Ionicons name="options-outline" size={17} color={C.textSoft} />
+            <Text style={[s.filterToggleTitle, { color: C.text }]}>Filters</Text>
+            <Text style={[s.filterToggleSummary, { color: C.textFaint }]} numberOfLines={1}>
+              {difficulty === 'all' ? 'All levels' : difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} · {sessionSize} {sessionSize === 1 ? 'case' : 'cases'}
+            </Text>
+            <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={17} color={C.textFaint} />
+          </TouchableOpacity>
+          {filtersOpen && (<>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
           <View style={s.chipRow}>
             {DIFF_OPTS.map(d => {
@@ -580,6 +599,7 @@ export default function CasesScreen() {
               )
             })}
           </View>
+          </>)}
         </View>
 
         <TouchableOpacity onPress={surpriseCases} activeOpacity={0.85}
@@ -1073,6 +1093,9 @@ const s = StyleSheet.create({
   headerSub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
   backBtn: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   filterSection: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 18, borderBottomWidth: 1 },
+  filterToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 14 },
+  filterToggleTitle: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
+  filterToggleSummary: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', textAlign: 'right' },
   filterLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.6, marginBottom: 8 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1.5 },

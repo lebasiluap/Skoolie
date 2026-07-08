@@ -616,7 +616,7 @@ export default function MCQScreen() {
               </Text>
               <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={17} color={C.textFaint} />
             </TouchableOpacity>
-            {filtersOpen && (<>
+            {filtersOpen && (<Entrance dy={-8}>
             {/* DIFFICULTY */}
             <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
             <View style={s.chipRow}>
@@ -683,7 +683,7 @@ export default function MCQScreen() {
                 <Text style={[s.chipText, { color: C.textSoft }]}>All Years</Text>
               </TouchableOpacity>
             </View>
-            </>)}
+            </Entrance>)}
           </View>
 
           {/* Surprise me banner */}

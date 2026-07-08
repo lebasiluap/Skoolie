@@ -422,10 +422,9 @@ export default function RapidFireScreen() {
           <Animated.View style={[s.barFill, { width: barWidth, backgroundColor: barColor }]} />
         </View>
 
-        {/* flexGrow fills the screen: the question card takes the top third
-            (text centered), the answer pills stretch through the rest —
-            bigger targets for a speed mode, no dead zone at the bottom. */}
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, padding: 18, paddingBottom: 18, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
+        {/* Natural sizes, repositioned: the question + pills sit centered in
+            the screen as one group instead of hugging the top. */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 18, paddingBottom: 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
           {/* Question — tinted + labelled so it can't be mistaken for an option */}
           <View style={[s.stemCard, { backgroundColor: PTint, borderColor: P }]}>
             <View style={s.stemLabelRow}>
@@ -552,14 +551,12 @@ const s = StyleSheet.create({
   barTrack: { height: 10 },
   barFill: { height: 10 },
 
-  // Grows to ~the top third of the run screen; question text centers in it
-  stemCard: { flexGrow: 1.2, justifyContent: 'center', borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
+  stemCard: { borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
   stemLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 },
   stemLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1 },
   stem: { fontSize: 18, fontFamily: 'Nunito_800ExtraBold', lineHeight: 26 },
   pickLabel: { fontSize: 10.5, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8, marginBottom: 10 },
-  // Each pill shares the leftover height equally — big, fast tap targets
-  pill: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 26, borderWidth: 1.5, paddingVertical: 14, paddingHorizontal: 18, marginBottom: 10 },
+  pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 999, borderWidth: 1.5, paddingVertical: 14, paddingHorizontal: 18, marginBottom: 10 },
   pillText: { fontSize: 15.5, fontFamily: 'Nunito_800ExtraBold', textAlign: 'center', flexShrink: 1 },
   timeoutNote: { textAlign: 'center', marginTop: 6, fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
 

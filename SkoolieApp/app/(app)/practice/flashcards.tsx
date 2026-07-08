@@ -498,7 +498,7 @@ export default function FlashcardsScreen() {
             </Text>
             <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={17} color={C.textFaint} />
           </TouchableOpacity>
-          {filtersOpen && (<>
+          {filtersOpen && (<Entrance dy={-8}>
           <Text style={[s.filterLabel, { color: C.textFaint }]}>DIFFICULTY</Text>
           <View style={s.chipRow}>
             {DIFF_OPTS.map(d => {
@@ -537,7 +537,7 @@ export default function FlashcardsScreen() {
               </View>
             </>
           ) : null}
-          </>)}
+          </Entrance>)}
         </View>
 
         {/* Surprise me */}

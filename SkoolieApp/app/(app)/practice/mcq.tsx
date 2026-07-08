@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useFocusSessionWhile } from '@/hooks/useFocusSession'
+import { Entrance } from '@/components/ui/Entrance'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -847,9 +848,9 @@ export default function MCQScreen() {
             bottom. Long content simply scrolls as before. */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={[s.quizScroll, { flexGrow: 1, paddingBottom: 8, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]} showsVerticalScrollIndicator={false}>
           {/* Ask block: badges + Cappy + bubble travel together, centered in
-              the vertical slack — one composed pocket of whitespace instead
-              of voids above and below. */}
-          <View style={s.askBlock}>
+              the vertical slack. Keyed by question so each new question
+              rises in fresh. */}
+          <Entrance key={`ask-${qIndex}`} style={s.askBlock}>
           {/* Badges — hidden when the user disables "Show question tags" in Profile */}
           {(profile?.show_question_tags ?? true) && (
           <View style={s.badgeRow}>
@@ -894,7 +895,7 @@ export default function MCQScreen() {
               <Text style={[s.stem, { color: C.text }]}>{q.question_text}</Text>
             </View>
           </View>
-          </View>
+          </Entrance>
 
           {/* Options */}
           {shuffled.options.map((text, i) => {
@@ -917,17 +918,20 @@ export default function MCQScreen() {
             }
 
             return (
-              <TouchableOpacity
-                key={letter}
-                onPress={() => { if (!inReview) setSelected(letter) }}
-                activeOpacity={inReview ? 1 : 0.75}
-                style={[s.option, { backgroundColor: bg, borderColor: border, opacity: inReview && !isAns && !isSel ? 0.5 : 1 }]}
-              >
-                <View style={[s.optChip, { backgroundColor: chipBg }]}>
-                  <Text style={[s.optChipText, { color: chipText }]}>{chipChar}</Text>
-                </View>
-                <Text style={[s.optText, { color: textColor }]}>{text}</Text>
-              </TouchableOpacity>
+              // Keyed by question + letter: each new question's options
+              // cascade in with a small stagger (Duolingo-style).
+              <Entrance key={`${qIndex}-${letter}`} delay={60 + i * 45} style={{ flexGrow: 1, marginBottom: 12 }}>
+                <TouchableOpacity
+                  onPress={() => { if (!inReview) setSelected(letter) }}
+                  activeOpacity={inReview ? 1 : 0.75}
+                  style={[s.option, { backgroundColor: bg, borderColor: border, opacity: inReview && !isAns && !isSel ? 0.5 : 1 }]}
+                >
+                  <View style={[s.optChip, { backgroundColor: chipBg }]}>
+                    <Text style={[s.optChipText, { color: chipText }]}>{chipChar}</Text>
+                  </View>
+                  <Text style={[s.optText, { color: textColor }]}>{text}</Text>
+                </TouchableOpacity>
+              </Entrance>
             )
           })}
         </ScrollView>
@@ -1184,7 +1188,8 @@ const s = StyleSheet.create({
   tailWrap: { position: 'absolute', left: -10, top: 0, bottom: 0, justifyContent: 'center' },
   bubbleTail: { width: 0, height: 0, borderTopWidth: 9, borderBottomWidth: 9, borderRightWidth: 11, borderTopColor: 'transparent', borderBottomColor: 'transparent' },
   stem: { fontSize: 18, fontFamily: 'Nunito_700Bold', lineHeight: 28 },
-  option: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, paddingVertical: 16, paddingHorizontal: 14, marginBottom: 12 },
+  // flex:1 fills the Entrance wrapper, which carries flexGrow + margin
+  option: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 13, borderRadius: 16, borderWidth: 2, paddingVertical: 16, paddingHorizontal: 14 },
   optChip: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   optChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 15, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 22 },

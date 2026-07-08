@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useFocusSessionWhile } from '@/hooks/useFocusSession'
+import { Entrance } from '@/components/ui/Entrance'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -773,8 +774,9 @@ export default function FlashcardsScreen() {
             <Text style={[s.tapHint, { color: C.textFaint }]}>Tap the card to flip it</Text>
           ) : card.note && cleanBack(card.note).trim() ? (
             // Noggin adds the supplementary explanation — only when there's a
-            // note distinct from the answer already on the card.
-            <View style={s.nogginBubbleRow}>
+            // note distinct from the answer already on the card. Eases in
+            // after the flip lands.
+            <Entrance key={`note-${cardIndex}`} delay={120} style={s.nogginBubbleRow}>
               <MascotAnimator expr="happy">
                 <NogginHead size={92} expr="happy" />
               </MascotAnimator>
@@ -785,7 +787,7 @@ export default function FlashcardsScreen() {
                 <Text style={[s.explainLabel, { color: C.teal }]}>WHY</Text>
                 <Text style={[s.explanationText, { color: C.text }]}>{cleanBack(card.note)}</Text>
               </View>
-            </View>
+            </Entrance>
           ) : null}
 
           {/* Bottom spacer — flex so it absorbs remaining space without affecting card position */}
@@ -794,7 +796,7 @@ export default function FlashcardsScreen() {
 
         {/* Fixed bottom action bar — appears after answer revealed; stays even if flipped back */}
         {revealed && (
-          <View style={[s.actionBar, {
+          <Entrance key={`bar-${cardIndex}`} dy={20} style={[s.actionBar, {
             backgroundColor: C.bg,
             borderTopColor: C.border,
             paddingBottom: insets.bottom + 12,
@@ -810,7 +812,7 @@ export default function FlashcardsScreen() {
                 <Text style={[s.actionText, { color: C.green }]}>Got it</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Entrance>
         )}
       </View>
     )

@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useFocusSessionWhile } from '@/hooks/useFocusSession'
+import { Entrance } from '@/components/ui/Entrance'
 import { useTheme } from '@/hooks/useTheme'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
@@ -777,7 +778,7 @@ export default function CasesScreen() {
           {/* Ask block — Buddy asks the question (matches MCQ's Cappy bubble);
               the "Case details" chip lets the user cross-check the vignette
               without abandoning the question. */}
-          <View style={s.askBlock}>
+          <Entrance key={`ask-${caseIdx}-${qIdx}`} style={s.askBlock}>
             <View style={s.stemRow}>
               <MascotAnimator expr={revealed ? (isCorrect ? 'happy' : 'wrong') : 'idle'}>
                 <BuddyHead expr={revealed ? (isCorrect ? 'happy' : 'thinking') : 'idle'} size={110} />
@@ -799,7 +800,7 @@ export default function CasesScreen() {
               <Ionicons name="document-text-outline" size={15} color={C.teal} />
               <Text style={[s.detailsChipText, { color: C.teal }]}>Case details</Text>
             </TouchableOpacity>
-          </View>
+          </Entrance>
 
           {/* Options — flexGrow swallows the leftover height (matches MCQ) */}
           <View style={{ gap: 10, marginTop: 4, flexGrow: 1 }}>
@@ -825,19 +826,21 @@ export default function CasesScreen() {
               }
 
               return (
-                <TouchableOpacity
-                  key={letter}
-                  onPress={() => !revealed && setSelected(letter)}
-                  activeOpacity={revealed ? 1 : 0.75}
-                  style={[s.option, { backgroundColor: bg, borderColor: border, opacity }]}
-                >
-                  <View style={[s.optKey, { backgroundColor: chipBg }]}>
-                    <Text style={[s.optKeyText, { color: chipFg }]}>
-                      {revealed && isAnswer ? '✓' : revealed && isChosen ? '✗' : letter}
-                    </Text>
-                  </View>
-                  <Text style={[s.optText, { color: tc }]}>{opt}</Text>
-                </TouchableOpacity>
+                // Keyed by case+question+letter: options cascade in per question
+                <Entrance key={`${caseIdx}-${qIdx}-${letter}`} delay={60 + i * 45} style={{ flexGrow: 1 }}>
+                  <TouchableOpacity
+                    onPress={() => !revealed && setSelected(letter)}
+                    activeOpacity={revealed ? 1 : 0.75}
+                    style={[s.option, { backgroundColor: bg, borderColor: border, opacity }]}
+                  >
+                    <View style={[s.optKey, { backgroundColor: chipBg }]}>
+                      <Text style={[s.optKeyText, { color: chipFg }]}>
+                        {revealed && isAnswer ? '✓' : revealed && isChosen ? '✗' : letter}
+                      </Text>
+                    </View>
+                    <Text style={[s.optText, { color: tc }]}>{opt}</Text>
+                  </TouchableOpacity>
+                </Entrance>
               )
             })}
           </View>
@@ -1109,7 +1112,8 @@ const s = StyleSheet.create({
   detailsChipText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   questionLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1, marginBottom: 8 },
   stem: { fontSize: 16, fontFamily: 'Nunito_700Bold', lineHeight: 25 },
-  option: { flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1.5, paddingVertical: 16, paddingHorizontal: 14 },
+  // flex:1 fills the Entrance wrapper, which carries flexGrow (gap does spacing)
+  option: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 14, borderWidth: 1.5, paddingVertical: 16, paddingHorizontal: 14 },
   optKey: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   optKeyText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   optText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', flex: 1, lineHeight: 21 },

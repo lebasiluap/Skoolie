@@ -31,7 +31,10 @@ export default function PracticeHubScreen() {
   const { qSet, setQSet } = useFilters()
   const entrance = useScreenEntrance()
   const [counts, setCounts] = useState<Counts>({ mcq: 0, flashcard: 0, case_study: 0 })
-  const [loading, setLoading] = useState(true)
+  // Monotonic request id — fast segment-tapping fires overlapping RPCs and
+  // the slowest must not win. Previous counts stay on screen until the
+  // NEWEST response arrives (no sub-text flicker mid-swap).
+  const countsReq = useRef(0)
   // "Jump back in" — the topic of the LAST QUESTION answered (answer history
   // carries a topic even when the session was a Random smart start, so anyone
   // who has practiced at all gets a resume row).
@@ -108,7 +111,7 @@ export default function PracticeHubScreen() {
 
   async function loadCounts(set: QSet) {
     if (!profile) return
-    setLoading(true)
+    const req = ++countsReq.current
     const prof = profile.profession
     const ak = profile.access_key ?? null
     // NOTE: this control is a COUNT BREAKDOWN, not a content filter — practice
@@ -117,6 +120,7 @@ export default function PracticeHubScreen() {
     const regionVal = set === 'Global' ? 'universal' : set === 'Regional' ? regionSlug : null
 
     const { data } = await supabase.rpc('get_practice_counts', { p_profession: prof, p_region: regionVal, p_access_key: ak })
+    if (req !== countsReq.current) return   // a newer request superseded this one
     const row = Array.isArray(data) ? data[0] : data
 
     withFilterAnim(() => {
@@ -125,7 +129,6 @@ export default function PracticeHubScreen() {
         flashcard: Number(row?.flashcard ?? 0),
         case_study: Number(row?.case_study ?? 0),
       })
-      setLoading(false)
     })
   }
 
@@ -254,7 +257,7 @@ export default function PracticeHubScreen() {
                   <View style={{ flex: 1, marginLeft: 10 }}>
                     <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
                     <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
-                      {!loading && mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
+                      {mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
                     </Text>
                   </View>
                 </View>
@@ -271,11 +274,7 @@ export default function PracticeHubScreen() {
                     <Text style={[s.tileBtnText, { color: clr.onFg }]} numberOfLines={1} maxFontSizeMultiplier={1.1}>Start</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => go(() => router.push(
-                      isRF
-                        ? mode.href as any
-                        : { pathname: mode.href, params: { browseMode: '1' } } as any
-                    ))}
+                    onPress={() => go(() => router.push(mode.href as any))}
                     activeOpacity={0.8}
                     accessibilityRole="button"
                     accessibilityLabel={`Browse ${mode.label} topics`}
@@ -410,7 +409,8 @@ const s = StyleSheet.create({
   todayStreak: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999 },
   todayStreakText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
   tileActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderRadius: 999 },
+  // paddingVertical 12 clears the 44pt target minimum with the 15pt text
+  tileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 12, borderRadius: 999 },
   tileBtnGhost: { backgroundColor: 'transparent', borderWidth: 1.5 },
   tileBtnText: { fontSize: 12.5, fontFamily: 'Nunito_800ExtraBold' },
   modeIconBox: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

@@ -38,7 +38,11 @@ function orderByUnseen<T extends { id: string }>(pool: T[], seen: Set<string>): 
 type Screen = 'topics' | 'quiz' | 'results'
 
 interface Flashcard {
-  id: string; front: string; back: string; topic: string; category: string | null; subtopic: string | null; difficulty: string | null
+  // back = the answer (correct_answer). note = supplementary explanation,
+  // shown in Noggin's bubble. Comprehensive cards have no correct_answer —
+  // there the explanation IS the answer, so it becomes `back` and there's
+  // no separate note.
+  id: string; front: string; back: string; note: string | null; topic: string; category: string | null; subtopic: string | null; difficulty: string | null
 }
 
 export default function FlashcardsScreen() {
@@ -274,7 +278,7 @@ export default function FlashcardsScreen() {
 
     const seen = await fetchSeenFcIds()
     const shuffled = orderByUnseen(data, seen).slice(0, sessionSize)
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: r.explanation, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
+    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : r.explanation, note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     if (user) {
       const { data: bk } = await supabase.from('bookmarks').select('question_id').eq('user_id', user.id)
@@ -307,7 +311,7 @@ export default function FlashcardsScreen() {
     const seen = await fetchSeenFcIds()
     // Areas of interest bias the surprise pool (unseen-interest first); empty = decide for me
     const shuffled = orderByInterestAndUnseen(data as any[], profile.interests, seen).slice(0, sessionSize)
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: r.explanation, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
+    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : r.explanation, note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     if (user) {
       const { data: bk } = await supabase.from('bookmarks').select('question_id').eq('user_id', user.id)
@@ -325,7 +329,7 @@ export default function FlashcardsScreen() {
     const { data } = await supabase.rpc('get_questions_by_ids', { p_ids: ids, p_limit: 200 })
     if (!data || data.length === 0) { setLoadingCards(false); return }
     const shuffled = [...data].sort(() => Math.random() - 0.5)
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: r.explanation, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
+    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : r.explanation, note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([]); flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
     if (user) {
@@ -767,7 +771,9 @@ export default function FlashcardsScreen() {
               tail centered on the face */}
           {!revealed ? (
             <Text style={[s.tapHint, { color: C.textFaint }]}>Tap the card to flip it</Text>
-          ) : (
+          ) : card.note && cleanBack(card.note).trim() ? (
+            // Noggin adds the supplementary explanation — only when there's a
+            // note distinct from the answer already on the card.
             <View style={s.nogginBubbleRow}>
               <MascotAnimator expr="happy">
                 <NogginHead size={92} expr="happy" />
@@ -776,11 +782,11 @@ export default function FlashcardsScreen() {
                 <View style={s.tailWrap} pointerEvents="none">
                   <View style={[s.bubbleTail, { borderRightColor: C.surface }]} />
                 </View>
-                <Text style={[s.explainLabel, { color: C.teal }]}>EXPLANATION</Text>
-                <Text style={[s.explanationText, { color: C.text }]}>{cleanBack(card.back)}</Text>
+                <Text style={[s.explainLabel, { color: C.teal }]}>WHY</Text>
+                <Text style={[s.explanationText, { color: C.text }]}>{cleanBack(card.note)}</Text>
               </View>
             </View>
-          )}
+          ) : null}
 
           {/* Bottom spacer — flex so it absorbs remaining space without affecting card position */}
           <View style={{ flex: 1 }} />

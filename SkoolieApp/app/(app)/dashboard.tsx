@@ -78,7 +78,7 @@ export default function DashboardScreen() {
   // Surprise Barrage — deterministic daily window; claimed defaults true to avoid banner flash
   const [claimedSlots, setClaimedSlots] = useState<Set<number>>(new Set([0, 1]))  // default full to avoid banner flash
   // Today's Challenge — null until loaded (card hides meanwhile, no flash)
-  const [challenge, setChallenge] = useState<{ available: boolean; claimed: boolean; score: number; total: number } | null>(null)
+  const [challenge, setChallenge] = useState<{ available: boolean; claimed: boolean; started: boolean; score: number; total: number } | null>(null)
   const [barrageTotal, setBarrageTotal] = useState(0)   // completed barrages (freeze every 5)
   const [, tick] = useState(0)
   useEffect(() => { const iv = setInterval(() => tick(t => t + 1), 30_000); return () => clearInterval(iv) }, [])
@@ -103,6 +103,7 @@ export default function DashboardScreen() {
       setChallenge({
         available: !!data.available,
         claimed: !!data.claimed,
+        started: !!data.started,
         score: Number(data.score ?? 0),
         total: Number(data.claimed ? (data.claimed_total ?? data.total ?? 0) : (data.total ?? 0)),
       })
@@ -361,8 +362,10 @@ export default function DashboardScreen() {
           return null
         })()}
 
-        {/* Today's Challenge — one card while unclaimed, one quiet line once done */}
-        {challenge?.available && (challenge.claimed ? (
+        {/* Today's Challenge — one card while unclaimed, one quiet line once
+            done. Yields to a LIVE barrage window (one hero moment at a time;
+            windows are ~20 min, the card returns right after). */}
+        {challenge?.available && !(user && !challenge.claimed && nextBarrage(user.id, claimedSlots)?.status === 'live') && (challenge.claimed ? (
           <View style={[s.challengeDone, { backgroundColor: C.surface, borderColor: C.border }]}>
             <Ionicons name="trophy" size={15} color={C.success} />
             <Text style={[s.challengeDoneText, { color: C.textSoft }]}>
@@ -384,7 +387,9 @@ export default function DashboardScreen() {
             <View style={{ flex: 1 }}>
               <Text style={[s.challengeTitle, { color: C.onTeal }]}>TODAY'S CHALLENGE</Text>
               <Text style={[s.challengeSub, { color: C.onTeal + 'D9' }]}>
-                {challenge.total} questions · one attempt · same set as your whole year
+                {challenge.started
+                  ? 'Your attempt is open — finish it before midnight'
+                  : `${challenge.total} questions · one attempt · same set as your whole year`}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={C.onTeal} />

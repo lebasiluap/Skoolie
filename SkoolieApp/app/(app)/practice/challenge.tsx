@@ -56,6 +56,8 @@ export default function ChallengeScreen() {
   const [xpEarned, setXpEarned] = useState<number | null>(null)
   const [saveFailed, setSaveFailed] = useState(false)
   const [saveNonce, setSaveNonce] = useState(0)   // bump to retry a failed save
+  const [resuming, setResuming] = useState(false) // attempt committed earlier, not finished
+  const [starting, setStarting] = useState(false)
   const sessionSavedRef = useRef(false)
 
   const goBack = () => (router.canGoBack() ? router.back() : router.navigate('/(app)/dashboard' as any))
@@ -77,7 +79,23 @@ export default function ChallengeScreen() {
       return
     }
     setQuestions((data.questions ?? []) as ChallengeQ[])
+    setResuming(!!data.started)
     setScreen('intro')
+  }
+
+  /** The attempt commits HERE (start lock) — peeking by quitting mid-run
+   *  spends the attempt; a crash just resumes the same fixed set. */
+  async function beginChallenge() {
+    if (starting) return
+    setStarting(true)
+    const { data, error } = await supabase.rpc('start_daily_challenge')
+    setStarting(false)
+    if (error) {
+      showToast("Couldn't start the challenge — check your connection.", 'error')
+      return
+    }
+    if (data === false) { load(); return }   // completed on another device meanwhile
+    setScreen('quiz')
   }
 
   // Option order is seeded by day+id — identical for the whole cohort.
@@ -112,7 +130,7 @@ export default function ChallengeScreen() {
   function confirmAbandon() {
     Alert.alert(
       'Leave the challenge?',
-      "Your attempt isn't used until you finish — but progress on these questions will be lost.",
+      'Your attempt is already committed — you can come back and finish this same set today, but these answers will be lost.',
       [
         { text: 'Keep going', style: 'cancel' },
         { text: 'Leave', style: 'destructive', onPress: goBack },
@@ -219,7 +237,7 @@ export default function ChallengeScreen() {
           <View style={{ marginTop: 18, gap: 10, alignSelf: 'stretch' }}>
             {[
               { icon: 'list' as const, text: `${questions.length} questions, easy to hard — same set as everyone in your year` },
-              { icon: 'flame' as const, text: 'One attempt. No retakes until tomorrow.' },
+              { icon: 'flame' as const, text: resuming ? 'Your attempt is already open — finish it before midnight.' : 'One attempt. It commits the moment you start.' },
               { icon: 'flash' as const, text: 'Up to +40 XP, counted toward your league' },
             ].map(row => (
               <View key={row.icon} style={[s.factRow, { backgroundColor: C.surface, borderColor: C.border }]}>
@@ -229,11 +247,14 @@ export default function ChallengeScreen() {
             ))}
           </View>
           <TouchableOpacity
-            onPress={() => setScreen('quiz')}
-            style={[s.primaryBtn, { backgroundColor: C.teal, marginTop: 26, alignSelf: 'stretch' }]}
-            accessibilityRole="button" accessibilityLabel="Start today's challenge"
+            onPress={beginChallenge}
+            disabled={starting}
+            style={[s.primaryBtn, { backgroundColor: C.teal, marginTop: 26, alignSelf: 'stretch', opacity: starting ? 0.7 : 1 }]}
+            accessibilityRole="button" accessibilityLabel={resuming ? "Resume today's challenge" : "Start today's challenge"}
           >
-            <Text style={[s.primaryBtnText, { color: C.onTeal }]}>I'm ready →</Text>
+            {starting
+              ? <ActivityIndicator size="small" color={C.onTeal} />
+              : <Text style={[s.primaryBtnText, { color: C.onTeal }]}>{resuming ? 'Resume →' : "I'm ready →"}</Text>}
           </TouchableOpacity>
           <TouchableOpacity onPress={goBack} style={{ marginTop: 14, padding: 6 }} accessibilityRole="button" accessibilityLabel="Not now">
             <Text style={[s.subText, { color: C.textFaint }]}>Not now</Text>

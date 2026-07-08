@@ -565,7 +565,10 @@ const s = StyleSheet.create({
   barragePill: { paddingVertical: 3, paddingHorizontal: 8, borderRadius: 999 },
   barragePillText: { fontSize: 11, fontFamily: 'Nunito_900Black' },
 
-  stemCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
+  // Capped growth: the card and pills absorb the free height, but maxHeight
+  // stops them ballooning on tall screens (the earlier uncapped version
+  // looked comically large).
+  stemCard: { flexGrow: 1, maxHeight: 280, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, borderWidth: 1.5, padding: 18, marginBottom: 18 },
   stemMain: { flex: 1 },
   ringWrap: { width: 54, height: 54, alignItems: 'center', justifyContent: 'center' },
   ringSecs: { position: 'absolute', fontSize: 15, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
@@ -573,7 +576,7 @@ const s = StyleSheet.create({
   stemLabel: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 1 },
   stem: { fontSize: 18, fontFamily: 'Nunito_800ExtraBold', lineHeight: 26 },
   pickLabel: { fontSize: 10.5, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8, marginBottom: 10 },
-  pill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 999, borderWidth: 1.5, paddingVertical: 14, paddingHorizontal: 18, marginBottom: 10 },
+  pill: { flexGrow: 1, maxHeight: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 26, borderWidth: 1.5, paddingVertical: 14, paddingHorizontal: 18, marginBottom: 10 },
   pillText: { fontSize: 15.5, fontFamily: 'Nunito_800ExtraBold', textAlign: 'center', flexShrink: 1 },
   timeoutNote: { textAlign: 'center', marginTop: 6, fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
 

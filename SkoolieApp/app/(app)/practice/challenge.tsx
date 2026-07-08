@@ -11,7 +11,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native'
-import { router } from 'expo-router'
+import { router, useNavigation } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
@@ -24,6 +24,7 @@ import { TopBar } from '@/components/ui/TopBar'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
+import { useCollapsePracticeStack } from '@/hooks/usePracticeStack'
 import { computeStreakUpdate } from '@/lib/streak'
 import { playSound } from '@/lib/sounds'
 import { trySave } from '@/lib/reliably'
@@ -39,6 +40,7 @@ interface ChallengeQ {
 type Screen = 'loading' | 'unavailable' | 'done' | 'intro' | 'quiz' | 'results'
 
 export default function ChallengeScreen() {
+  useCollapsePracticeStack()
   const C = useTheme()
   const insets = useSafeAreaInsets()
   const { user, profile, refreshProfile } = useAuth()
@@ -59,8 +61,15 @@ export default function ChallengeScreen() {
   const [resuming, setResuming] = useState(false) // attempt committed earlier, not finished
   const [starting, setStarting] = useState(false)
   const sessionSavedRef = useRef(false)
+  const navigation = useNavigation<any>()
 
-  const goBack = () => (router.canGoBack() ? router.back() : router.navigate('/(app)/dashboard' as any))
+  // Exit returns to the dashboard AND collapses the practice stack back to its
+  // hub — otherwise this screen lingers as the stack top and re-surfaces the
+  // next time the Practice tab is opened (stale results screen).
+  const goBack = () => {
+    router.navigate('/(app)/dashboard' as any)
+    setTimeout(() => navigation.reset({ index: 0, routes: [{ name: 'index' as never }] }), 0)
+  }
 
   useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
   async function load() {

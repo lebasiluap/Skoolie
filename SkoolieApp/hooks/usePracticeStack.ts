@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigation } from 'expo-router'
 
-const MODE_ROUTES = ['mcq', 'flashcards', 'cases']
+const MODE_ROUTES = ['mcq', 'flashcards', 'cases', 'rapidfire', 'challenge']
 
 // Keeps a practice mode screen sitting directly on top of the hub ('index').
 //

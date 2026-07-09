@@ -225,18 +225,22 @@ export default function ProgressScreen() {
           const rank = activeList.findIndex(x => x.id === u.id) + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
-          // Zones mirror credit_xp EXACTLY, computed over REAL weekly entrants
-          // (not the 0-XP backfill rows), and only when the cohort is a single
-          // league — in a merged "Open" week, display ranks aren't league ranks.
-          // Rules: top 10 WITH XP promote; if the cohort has ≥10 players, the
-          // non-promoted bottom 5 demote (first demoted rank = max(11, n-4)).
+          // Zones mirror credit_xp truthfully but stay VISIBLE (Duolingo-style):
+          // - Promotion band always sits under displayed rank 10 — anyone who
+          //   earns XP floats above the 0-XP backfill, so a top-10 spot with
+          //   XP genuinely promotes. Full green caret = promoting now; faint
+          //   caret = a promotion seat not yet earned (0 XP).
+          // - Demotion needs ≥10 REAL weekly entrants (server rule) — the red
+          //   zone only appears when someone can actually drop.
+          // - Hidden in merged "Open" weeks: display ranks aren't league ranks.
           const zoneCohort = weekUsers.length
+          const listLen = activeList.length
           const showZones = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
-          const isEntrant = showZones && rank <= zoneCohort
+          const inPromoZone = showZones && rank <= 10
+          const promoEarned = inPromoZone && u.xp > 0
           const demoStart = Math.max(11, zoneCohort - 4)
-          const inPromo = isEntrant && rank <= 10 && u.xp > 0
-          const inDemo = isEntrant && !inPromo && zoneCohort >= 10 && rank >= demoStart
-          const promoLine = showZones && zoneCohort > 10 && rank === 11
+          const inDemo = showZones && !promoEarned && zoneCohort >= 10 && rank >= demoStart && rank <= zoneCohort
+          const promoLine = showZones && listLen > 10 && rank === 11
           const relegLine = showZones && zoneCohort >= 11 && rank === demoStart && demoStart <= zoneCohort
           return (
             // Rows cascade in — delay capped so deep scrolls never wait
@@ -270,7 +274,7 @@ export default function ProgressScreen() {
                 {rankStyle ? <Text style={{ fontSize: 18 }}>{rankStyle.label}</Text> : <Text style={[s.rankNum, { color: C.textFaint }]}>#{rank}</Text>}
               </View>
               {/* Per-row zone cue — no misreading which side of the cut a row is on */}
-              {inPromo && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6 }} />}
+              {inPromoZone && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6, opacity: promoEarned ? 1 : 0.3 }} />}
               {inDemo && <Ionicons name="caret-down" size={13} color={C.red} style={{ marginLeft: -6 }} />}
               <Avatar name={u.full_name} avatarUrl={u.avatar_url} size={40} />
               {/* Quiet row: the tier badge is the ONLY colored chip; the XP value

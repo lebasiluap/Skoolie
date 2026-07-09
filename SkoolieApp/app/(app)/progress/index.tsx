@@ -14,7 +14,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { IntroGate } from '@/components/ui/IntroGate'
 import { tierScore, tierFromScore } from '@/lib/tiers'
-import { LEAGUE_PROMOTE } from '@/lib/league'
+import { LEAGUE_PROMOTE, effectivePromote } from '@/lib/league'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
@@ -240,9 +240,9 @@ export default function ProgressScreen() {
           const zoneCohort = weekUsers.length
           const listLen = activeList.length
           const showZones = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
-          // Per-league promotion counts (Duolingo): Bronze 15, Silver 12,
-          // Gold 10, Diamond 10 → into the Tournament
-          const promoteN = LEAGUE_CONFIG[myWeekLeagueId].promote
+          // Adaptive cut: league counts shrink with small cohorts so both
+          // zones always exist (mirrors server league_effective_promote)
+          const promoteN = effectivePromote(myWeekLeagueId, weekUsers.length)
           const isDiamond = myWeekLeagueId === 'diamond'
           const inPromoZone = showZones && rank <= promoteN
           const promoEarned = inPromoZone && u.xp > 0
@@ -490,13 +490,17 @@ export default function ProgressScreen() {
               <Text style={[s.leagueTitle, { color: C.text }]}>
                 {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
               </Text>
-              {!mixedCohort && (
-                <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
-                  {myWeekLeagueId === 'diamond'
-                    ? 'Top 10 enter the Tournament · bottom 5 drop'
-                    : `Top ${LEAGUE_CONFIG[myWeekLeagueId].promote} promote · bottom 5 drop`}
-                </Text>
-              )}
+              {!mixedCohort && (() => {
+                const eff = effectivePromote(myWeekLeagueId, weekUsers.length)
+                const dropLive = weekUsers.length >= 10
+                return (
+                  <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
+                    {myWeekLeagueId === 'diamond'
+                      ? `Top ${eff} enter the Tournament${dropLive ? ' · bottom 5 drop' : ''}`
+                      : `Top ${eff} promote${dropLive ? ' · bottom 5 drop' : ''}`}
+                  </Text>
+                )
+              })()}
               <View style={s.leagueMetaRow}>
                 <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>
                   <Ionicons name="time-outline" size={13} color={C.amber} />

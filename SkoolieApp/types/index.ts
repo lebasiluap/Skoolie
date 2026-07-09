@@ -37,6 +37,8 @@ export interface UserProfile {
   intros_seen: string[]
   /** Notification category opt-outs — missing key means enabled */
   notif_prefs: NotifPrefs | null
+  /** Expo push token for server-sent notifications (zone transitions) */
+  push_token: string | null
   created_at: string
 }
 

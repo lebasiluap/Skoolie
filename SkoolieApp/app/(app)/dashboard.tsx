@@ -22,7 +22,7 @@ import { PRACTITIONER_TITLES } from '@/constants/professions'
 import { tierProgress, tierMeta } from '@/lib/tiers'
 import { nextBarrage, barrageDay } from '@/lib/barrage'
 import { checkWeekMoments } from '@/lib/weekMoments'
-import { rescheduleAll } from '@/lib/notifications'
+import { rescheduleAll, registerPushToken } from '@/lib/notifications'
 import { detectZoneEvent } from '@/lib/league'
 import { preloadSounds } from '@/lib/sounds'
 import { IntroGate } from '@/components/ui/IntroGate'
@@ -147,9 +147,11 @@ export default function DashboardScreen() {
           const today = new Date()
           const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
           // Zone transition (promotion/demotion cut) piggybacks on the same
-          // rebuild — detectZoneEvent diffs against the last zone seen this week
+          // rebuild. When the server push engine has this device's token, the
+          // LOCAL zone ping is skipped — one announcement per transition, ever.
           ;(async () => {
-            const zoneEvent = await detectZoneEvent(user.id)
+            const serverPush = await registerPushToken(user.id)
+            const zoneEvent = serverPush ? null : await detectZoneEvent(user.id)
             rescheduleAll({
               userId: user.id,
               streak,

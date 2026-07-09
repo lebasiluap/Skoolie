@@ -11,6 +11,14 @@ import { supabase } from './supabase'
 
 export const LEAGUE_PROMOTE: Record<string, number> = { bronze: 15, silver: 12, gold: 10, diamond: 10 }
 
+/** Adaptive cut (mirrors server league_effective_promote): Duolingo's counts
+ *  assume 30-person boards — small cohorts shrink the cut so both zones stay
+ *  real (top N promote, bottom 5 drop, never overlapping). */
+export function effectivePromote(league: string, cohort: number): number {
+  const base = LEAGUE_PROMOTE[league] ?? 10
+  return Math.min(base, Math.max(1, cohort - (cohort >= 10 ? 5 : 0)))
+}
+
 export type LeagueZone = 'promo' | 'near' | 'mid' | 'releg'
 
 export interface ZoneEvent {
@@ -47,8 +55,8 @@ export async function detectZoneEvent(userId: string): Promise<ZoneEvent | null>
     const rank = idx + 1
     const me = rows[idx]
     const league = me.league
-    const promoteN = LEAGUE_PROMOTE[league] ?? 10
     const cohort = rows.length
+    const promoteN = effectivePromote(league, cohort)
     const demoStart = Math.max(promoteN + 1, cohort - 4)
     const zone: LeagueZone =
       rank <= promoteN && me.week_xp > 0 ? 'promo'

@@ -126,6 +126,37 @@ const ZONE_MSGS: Record<ZoneEvent['kind'], (e: ZoneEvent) => Msg[]> = {
 }
 
 let permissionAsked = false
+let tokenRegistered: boolean | null = null
+
+/**
+ * Register this device's Expo push token on the profile so the server-side
+ * zone-push engine (pg_cron → Expo API) can reach the user while the app is
+ * closed. Returns true when a token is stored — the caller then SKIPS local
+ * zone notifications so the same transition is never announced twice.
+ */
+export async function registerPushToken(userId: string): Promise<boolean> {
+  if (tokenRegistered !== null) return tokenRegistered
+  const Notifications = getNotifications()
+  if (!Notifications) { tokenRegistered = false; return false }
+  try {
+    const ok = await ensureNotificationPermissions(false)
+    if (!ok) { tokenRegistered = false; return false }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Constants = require('expo-constants').default
+    const projectId: string | undefined =
+      Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId
+    const token = (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data
+    if (!token) { tokenRegistered = false; return false }
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { supabase } = require('@/lib/supabase')
+    const { error } = await supabase.from('user_profiles').update({ push_token: token }).eq('id', userId)
+    tokenRegistered = !error
+    return tokenRegistered
+  } catch {
+    tokenRegistered = false
+    return false
+  }
+}
 
 /**
  * Check (and optionally request) notification permission.

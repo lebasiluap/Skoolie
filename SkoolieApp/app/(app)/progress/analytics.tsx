@@ -58,12 +58,16 @@ export default function AnalyticsScreen() {
   useFocusEffect(useCallback(() => { load() }, [user?.id, profile?.id])) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function load() {
-    // Wait for profile; the focus effect re-runs when profile.id becomes available.
+    // Wait for profile; the focus effect re-runs when profile.id becomes
+    // available. A permanently-missing profile means the account is broken —
+    // RootNavigator routes that to onboarding, so this screen never strands.
     if (!user || !profile) return
     try {
     const [{ data: hist }, { data: sess }, { data: mcqC }, { data: fcC }, { data: lb }, { count: bmCount }] = await Promise.all([
-      supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).limit(5000),
-      supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).limit(500),
+      // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
+      // the limit binds, and "last 14 days" would compute from stale rows.
+      supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).order('answered_at', { ascending: false }).limit(5000),
+      supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500),
       supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'mcq', p_access_key: profile.access_key ?? null }),
       supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }),
       supabase.rpc('get_leaderboard', { p_limit: 200 }),
@@ -75,6 +79,9 @@ export default function AnalyticsScreen() {
 
     // Build question→topic/subtopic map for the questions answered in sessions (mcq/flashcard only;
     // case composite ids like "uuid:0" aren't real question ids and are skipped).
+    // KNOWN LIMIT: capped at 1,000 distinct ids — beyond that, per-topic
+    // coverage undercounts. Newest sessions win (ordered above); a server-side
+    // aggregate is the eventual fix if power users hit this.
     const ids = [...new Set(((sess ?? []) as SessRow[]).flatMap(s => s.question_ids ?? []))]
       .filter(id => id && !id.includes(':')).slice(0, 1000)
     const qMeta: QMeta = {}
@@ -113,7 +120,29 @@ export default function AnalyticsScreen() {
     </View>
   )
 
-  const a = data!
+  // Load failed (network error path leaves data null) — honest error state
+  // with retry instead of the crash `data!` used to cause here.
+  if (!data) return (
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <TopBar title="Insights" />
+      <View style={[s.empty, { backgroundColor: C.surface, borderColor: C.border, marginHorizontal: 16 }]}>
+        <MascotAnimator expr="thinking">
+          <CappyHead expr="thinking" size={72} />
+        </MascotAnimator>
+        <Text style={[s.emptyTitle, { color: C.text }]}>Couldn't load your insights</Text>
+        <Text style={[s.emptySub, { color: C.textFaint }]}>Check your connection and try again.</Text>
+        <TouchableOpacity
+          onPress={() => { setLoading(true); load() }}
+          style={[s.cta, { backgroundColor: C.teal }]}
+          accessibilityRole="button" accessibilityLabel="Retry loading insights"
+        >
+          <Text style={[s.ctaText, { color: C.onTeal }]}>Try again</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
+  const a = data
   const masteryColor = (p: number) => (p >= 75 ? C.green : p >= 50 ? C.teal : p >= 30 ? C.amber : C.red)
 
   return (
@@ -122,7 +151,7 @@ export default function AnalyticsScreen() {
       <IntroGate introKey="readiness" when={a.hasData} />
       <Animated.View style={[{ flex: 1 }, entrance]}>
         <View style={[s.header, { backgroundColor: C.bg }]}>
-          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.navigate('/(app)/progress' as any))} style={[s.backBtn, { backgroundColor: C.surface2, borderColor: C.border }]} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <TouchableOpacity onPress={() => (router.canGoBack() ? router.back() : router.navigate('/(app)/progress' as any))} style={[s.backBtn, { backgroundColor: C.surface2, borderColor: C.border }]} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }} accessibilityRole="button" accessibilityLabel="Go back">
             <Ionicons name="arrow-back" size={20} color={C.textSoft} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
@@ -141,7 +170,7 @@ export default function AnalyticsScreen() {
               </MascotAnimator>
               <Text style={[s.emptyTitle, { color: C.text }]}>No data yet</Text>
               <Text style={[s.emptySub, { color: C.textFaint }]}>Answer a few questions and your learning insights will appear here.</Text>
-              <TouchableOpacity onPress={() => router.navigate('/(app)/practice' as any)} style={[s.cta, { backgroundColor: C.teal }]}>
+              <TouchableOpacity onPress={() => router.navigate('/(app)/practice' as any)} style={[s.cta, { backgroundColor: C.teal }]} accessibilityRole="button" accessibilityLabel="Start practising">
                 <Text style={[s.ctaText, { color: C.onTeal }]}>Start practising →</Text>
               </TouchableOpacity>
             </View>
@@ -222,7 +251,7 @@ export default function AnalyticsScreen() {
                   }[p.kind]
                   const last = i === a.studyPlan.length - 1
                   return (
-                    <TouchableOpacity key={p.topic} onPress={() => practiceTopic(p.topic)} activeOpacity={0.75} style={s.planStep}>
+                    <TouchableOpacity key={p.topic} onPress={() => practiceTopic(p.topic)} activeOpacity={0.75} style={s.planStep} accessibilityRole="button" accessibilityLabel={`${p.title}. ${p.reason}. ${p.size}`}>
                       {/* Timeline column */}
                       <View style={{ alignItems: 'center', width: 36 }}>
                         <View style={[s.planIcon, { backgroundColor: meta.color + '22' }]}>
@@ -271,7 +300,7 @@ export default function AnalyticsScreen() {
           {/* ── Accuracy trend (14 days) ─────────────────────────────── */}
           <Text style={[s.secLabel, { color: C.textFaint }]}>ACCURACY · LAST 14 DAYS</Text>
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-            <BarChart points={a.accuracyByDay.map(p => p.value)} labels={a.accuracyByDay.map(p => p.label)} color={C.green} C={C} fixedMax={100} suffix="%" />
+            <BarChart points={a.accuracyByDay.map(p => p.value)} labels={a.accuracyByDay.map(p => p.label)} missing={a.accuracyByDay.map(p => !!p.missing)} color={C.green} C={C} fixedMax={100} suffix="%" />
           </View>
 
           {/* ── Study mix ────────────────────────────────────────────── */}
@@ -351,14 +380,14 @@ export default function AnalyticsScreen() {
               <Text style={[s.secLabel, { color: C.textFaint }]}>KNOWLEDGE GAPS</Text>
               <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
                 {a.weakest && (
-                  <TouchableOpacity style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(a.weakest!.topic)}>
+                  <TouchableOpacity style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(a.weakest!.topic)} accessibilityRole="button" accessibilityLabel={`Practice your weakest subject, ${a.weakest.topic}, ${a.weakest.accuracy} percent accuracy`}>
                     <Ionicons name="trending-down" size={16} color={C.red} />
                     <Text style={[s.cardText, { color: C.text, flex: 1 }]} numberOfLines={1}>Weakest: {a.weakest.topic}</Text>
                     <Text style={[s.cardStrong, { color: C.red }]}>{a.weakest.accuracy}%</Text>
                   </TouchableOpacity>
                 )}
                 {a.untouched.slice(0, 3).map(t => (
-                  <TouchableOpacity key={t} style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(t)}>
+                  <TouchableOpacity key={t} style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(t)} accessibilityRole="button" accessibilityLabel={`Start ${t} — untouched so far`}>
                     <Ionicons name="ellipse-outline" size={16} color={C.textFaint} />
                     <Text style={[s.cardText, { color: C.text, flex: 1 }]} numberOfLines={1}>Untouched: {t}</Text>
                     <Ionicons name="chevron-forward" size={15} color={C.textFaint} />
@@ -375,7 +404,7 @@ export default function AnalyticsScreen() {
             const tc = topicColor(t.topic)
             return (
               <View key={t.topic} style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow, padding: 0 }]}>
-                <TouchableOpacity activeOpacity={0.8} onPress={() => withAccordionAnim(() => setOpenTopic(open ? null : t.topic))} style={s.subjHead}>
+                <TouchableOpacity activeOpacity={0.8} onPress={() => withAccordionAnim(() => setOpenTopic(open ? null : t.topic))} style={s.subjHead} accessibilityRole="button" accessibilityState={{ expanded: open }} accessibilityLabel={`${t.topic}: ${t.mastery} percent mastered, ${t.accuracy} percent accuracy`}>
                   <View style={[s.tIcon, { backgroundColor: tc.bgLight }]}>
                     <TopicIcon topic={t.topic} size={18} color={tc.color} />
                   </View>
@@ -453,27 +482,34 @@ function Ring({ size, stroke, pct, color, track, children }: {
 
 /** Bar chart — highlighted bar (default: last, i.e. today) is full-strength with a
  *  value bubble; the rest render softened so the eye lands on "now". */
-function BarChart({ points, labels, color, C, fixedMax, suffix = '', highlightIndex }: {
+function BarChart({ points, labels, color, C, fixedMax, suffix = '', highlightIndex, missing }: {
   points: number[]; labels: string[]; color: string; C: any; fixedMax?: number; suffix?: string; highlightIndex?: number
+  /** per-point "no activity" flags — a missing day renders gray, while a REAL
+   *  zero (e.g. 0% accuracy) renders a colored sliver + bubble. Charts without
+   *  the flag treat 0 as empty (XP, weekday counts). */
+  missing?: boolean[]
 }) {
   const max = fixedMax ?? Math.max(1, ...points)
   const hi = highlightIndex ?? points.length - 1
   return (
     <View>
       <View style={s.chartRow}>
-        {points.map((v, i) => (
+        {points.map((v, i) => {
+          const isMissing = missing ? !!missing[i] : v <= 0
+          return (
           <View key={i} style={s.chartCol}>
-            {i === hi && v > 0 && (
+            {i === hi && !isMissing && (
               <View style={[s.chartBubble, { backgroundColor: color }]}>
                 <Text style={[s.chartBubbleText, { color: C.onTeal }]}>{v}{suffix}</Text>
               </View>
             )}
             <View style={[s.bar, {
               height: `${Math.max(3, (v / max) * 100)}%`,
-              backgroundColor: v > 0 ? (i === hi ? color : color + '73') : C.surface3,
+              backgroundColor: isMissing ? C.surface3 : i === hi ? color : color + '73',
             }]} />
           </View>
-        ))}
+          )
+        })}
       </View>
       <View style={s.chartRow}>
         {labels.map((l, i) => (

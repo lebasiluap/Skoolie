@@ -27,6 +27,8 @@ interface LeaderboardUser {
 /** Weekly league row — xp is aliased to week_xp so the shared row renderer works. */
 interface WeeklyRow extends LeaderboardUser { league: string }
 
+// Medal metals are identity colors (not theme moods) — deliberately fixed hex,
+// with alpha tints that read on both light and dark surfaces.
 const LEAGUE_CONFIG = {
   bronze:  { label: 'Bronze',  min: 0,    color: '#b45309', bg: 'rgba(180,83,9,0.1)',    emoji: '🥉' },
   silver:  { label: 'Silver',  min: 500,  color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '🥈' },
@@ -71,8 +73,10 @@ export default function ProgressScreen() {
       // must come from a SECURITY DEFINER RPC that returns public columns only.
       supabase.rpc('get_leaderboard', { p_limit: 50 }),
       supabase.rpc('get_weekly_league'),
-      user ? supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).limit(200) : Promise.resolve({ data: [] }),
-      user ? supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).limit(5000) : Promise.resolve({ data: [] }),
+      // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
+      // the limit binds, and recent activity would silently vanish from stats.
+      user ? supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).order('started_at', { ascending: false }).limit(200) : Promise.resolve({ data: [] }),
+      user ? supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).order('answered_at', { ascending: false }).limit(5000) : Promise.resolve({ data: [] }),
       profile ? supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'mcq', p_access_key: profile.access_key ?? null }) : Promise.resolve({ data: [] }),
       profile ? supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }) : Promise.resolve({ data: [] }),
     ])
@@ -85,6 +89,8 @@ export default function ProgressScreen() {
     for (const r of [...(mcqC ?? []), ...(fcC ?? [])]) totals[r.topic] = (totals[r.topic] ?? 0) + Number(r.cnt)
 
     const sess = (sessions ?? []) as SessRow[]
+    // KNOWN LIMIT: 1,000 distinct ids for meta lookup — newest sessions win
+    // (ordered above); server-side aggregation is the eventual fix at scale.
     const ids = [...new Set(sess.flatMap(s => s.question_ids ?? []))].filter(id => id && !id.includes(':')).slice(0, 1000)
     const qMeta: QMeta = {}
     if (ids.length) {
@@ -141,7 +147,9 @@ export default function ProgressScreen() {
   const myRank = activeList.findIndex(u => u.id === user?.id) + 1
   // Weekly view: league comes from the standings (promotion/relegation);
   // all-time view keeps the lifetime-XP league thresholds.
-  const myWeekLeagueId = (weekUsers.find(u => u.id === user?.id)?.league ?? weekUsers[0]?.league ?? 'bronze') as keyof typeof LEAGUE_CONFIG
+  // Unranked users default to bronze (where a fresh entrant lands) — never
+  // borrow another user's league for the label.
+  const myWeekLeagueId = (weekUsers.find(u => u.id === user?.id)?.league ?? 'bronze') as keyof typeof LEAGUE_CONFIG
   // Low-DAU cold start: the server merges all leagues into one global race until
   // there are enough weekly players for real cohorts — label it honestly.
   const mixedCohort = new Set(weekUsers.map(u => u.league)).size > 1
@@ -221,6 +229,8 @@ export default function ProgressScreen() {
             <TouchableOpacity
               onPress={() => router.push(`/users/${u.id}` as any)}
               activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={`${u.full_name}${isMe ? ', you' : ''}, rank ${rank}, ${u.xp.toLocaleString()} XP. View profile`}
               style={[s.row, { backgroundColor: isMe ? C.tealTint : C.surface, borderColor: isMe ? C.teal : C.border, marginHorizontal: 16, ...C.shadow }]}
             >
               <View style={[s.rankBox, rankStyle ? { backgroundColor: rankStyle.bg } : { backgroundColor: C.surface3 }]}>
@@ -252,6 +262,8 @@ export default function ProgressScreen() {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.push('/(app)/progress/analytics' as any)}
+          accessibilityRole="button"
+          accessibilityLabel={`Exam readiness ${readiness} percent, ${readinessLabel}. Open learning insights`}
           style={[s.heroCard, { backgroundColor: C.surface, borderColor: C.border, marginHorizontal: 16, marginBottom: 14, ...C.shadow }]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -309,6 +321,8 @@ export default function ProgressScreen() {
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push({ pathname: '/(app)/practice/mcq', params: { startTopic: nextAction.topic, from: 'progress' } } as any)}
+            accessibilityRole="button"
+            accessibilityLabel={`Do this next: ${nextAction.title}. ${nextAction.reason}`}
             style={[s.nextCard, { backgroundColor: C.surface, borderColor: C.border, marginHorizontal: 16, marginBottom: 20, ...C.shadow }]}
           >
             <View style={[s.nextIcon, { backgroundColor: C.coralTint }]}>
@@ -341,6 +355,9 @@ export default function ProgressScreen() {
                   key={p.id}
                   onPress={() => withFilterAnim(() => setLbPeriod(p.id))}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Show ${p.label} leaderboard`}
                   style={[s.scopeChip, { backgroundColor: active ? C.text : C.surface2, borderColor: active ? C.text : C.border }]}
                 >
                   <Text style={[s.scopeChipText, { color: active ? C.bg : C.textSoft }]}>{p.label}</Text>
@@ -385,6 +402,9 @@ export default function ProgressScreen() {
                   key={scope.id}
                   onPress={() => withFilterAnim(() => setLbScope(scope.id))}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Filter leaderboard: ${scope.label}`}
                   style={[s.scopeChip, { backgroundColor: active ? C.teal : C.surface2, borderColor: active ? C.teal : C.border }]}
                 >
                   <Text style={[s.scopeChipText, { color: active ? C.onTeal : C.textSoft }]}>{scope.label}</Text>
@@ -392,6 +412,13 @@ export default function ProgressScreen() {
               )
             })}
           </View>
+          {/* Filtered view keeps GLOBAL ranks (your true position) — say so,
+              or the gaps in numbering read as missing rows */}
+          {lbScope === 'mine' && (
+            <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 8 }]}>
+              Showing overall ranks — numbers skip where other professions place.
+            </Text>
+          )}
         </View>
           </View>
         }

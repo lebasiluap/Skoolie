@@ -48,7 +48,11 @@ export interface TopicStat {
   subtopics: SubtopicStat[]
 }
 
-export interface DayPoint { day: string; label: string; value: number }
+export interface DayPoint {
+  day: string; label: string; value: number
+  /** true = no activity that day (distinguishes "didn't practice" from a real 0%) */
+  missing?: boolean
+}
 
 export interface PlanItem {
   kind: 'weak' | 'review' | 'new' | 'polish'
@@ -119,7 +123,10 @@ export function computeAnalytics(
     const ids = s.question_ids ?? []
     sumScore += s.score ?? 0
     sumTotal += ids.length
-    if (s.mode === 'mcq' || s.mode === 'flashcard' || s.mode === 'case_study') mix[s.mode] += ids.length
+    // Rapid fire, barrage and the daily challenge are all MCQ answering —
+    // fold them into the MCQ bucket so the study mix reflects ALL practice.
+    const mixMode = s.mode === 'flashcard' ? 'flashcard' : s.mode === 'case_study' ? 'case_study' : s.mode ? 'mcq' : null
+    if (mixMode) mix[mixMode] += ids.length
     for (const id of ids) {
       answeredAll.add(id)
       const m = qMeta[id]
@@ -282,7 +289,8 @@ export function computeAnalytics(
     const k = dayKey(d)
     xpByDay.push({ day: k, label: WD[d.getDay()], value: xpMap.get(k) ?? 0 })
     const e = accSrc.get(k)
-    accuracyByDay.push({ day: k, label: WD[d.getDay()], value: e && e.a ? Math.round((e.c / e.a) * 100) : 0 })
+    const hasDay = !!e && e.a > 0
+    accuracyByDay.push({ day: k, label: WD[d.getDay()], value: hasDay ? Math.round((e!.c / e!.a) * 100) : 0, missing: !hasDay })
   }
 
   // ── Recommendations ──────────────────────────────────────────────────────

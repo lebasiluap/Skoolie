@@ -37,11 +37,22 @@ const LEAGUE_CONFIG = {
   diamond: { label: 'Diamond', min: 4000, color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    emoji: '💎' },
 }
 
-function getLeague(xp: number) {
-  if (xp >= 4000) return LEAGUE_CONFIG.diamond
-  if (xp >= 1500) return LEAGUE_CONFIG.gold
-  if (xp >= 500)  return LEAGUE_CONFIG.silver
-  return LEAGUE_CONFIG.bronze
+const LEAGUE_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const
+
+/** Time until the weekly league resets (Monday 00:00, matching the server's
+ *  date_trunc('week')). */
+function weekEndsIn(): string {
+  const now = new Date()
+  const next = new Date(now)
+  const dow = (now.getDay() + 6) % 7   // 0 = Monday
+  next.setDate(now.getDate() + (7 - dow))
+  next.setHours(0, 0, 0, 0)
+  const ms = next.getTime() - now.getTime()
+  const days = Math.floor(ms / 86400000)
+  const hrs = Math.floor((ms % 86400000) / 3600000)
+  if (days > 0) return `${days}d ${hrs}h`
+  if (hrs > 0) return `${hrs}h`
+  return 'soon'
 }
 
 interface TopicMastery {
@@ -144,7 +155,6 @@ export default function ProgressScreen() {
     ...users.filter(u => !weeklyIds.has(u.id)).map(u => ({ ...u, xp: 0 })),
   ]
   const activeList: LeaderboardUser[] = lbPeriod === 'week' ? weekMerged : users
-  const myRank = activeList.findIndex(u => u.id === user?.id) + 1
   // Weekly view: league comes from the standings (promotion/relegation);
   // all-time view keeps the lifetime-XP league thresholds.
   // Unranked users default to bronze (where a fresh entrant lands) — never
@@ -153,9 +163,6 @@ export default function ProgressScreen() {
   // Low-DAU cold start: the server merges all leagues into one global race until
   // there are enough weekly players for real cohorts — label it honestly.
   const mixedCohort = new Set(weekUsers.map(u => u.league)).size > 1
-  const baseLeague = lbPeriod === 'week' ? LEAGUE_CONFIG[myWeekLeagueId] : getLeague(profile?.xp ?? 0)
-  const myLeague = lbPeriod === 'week' && mixedCohort ? { ...baseLeague, label: 'Open', emoji: '🌍' } : baseLeague
-  const myWeekXp = weekUsers.find(u => u.id === user?.id)?.xp ?? 0
   const profCap = profile ? profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1) : 'Mine'
   const filteredUsers = lbScope === 'mine' ? activeList.filter(u => u.profession === profile?.profession) : activeList
   const LB_SCOPES: { id: 'all' | 'mine'; label: string }[] = [
@@ -218,14 +225,18 @@ export default function ProgressScreen() {
             {promoLine && (
               <View style={s.zoneRow}>
                 <View style={[s.zoneLine, { backgroundColor: C.green }]} />
-                <Text style={[s.zoneText, { color: C.green }]}>PROMOTION ↑</Text>
+                <Ionicons name="arrow-up" size={11} color={C.green} />
+                <Text style={[s.zoneText, { color: C.green }]}>PROMOTION ZONE</Text>
+                <Ionicons name="arrow-up" size={11} color={C.green} />
                 <View style={[s.zoneLine, { backgroundColor: C.green }]} />
               </View>
             )}
             {relegLine && (
               <View style={s.zoneRow}>
                 <View style={[s.zoneLine, { backgroundColor: C.red }]} />
-                <Text style={[s.zoneText, { color: C.red }]}>RELEGATION ↓</Text>
+                <Ionicons name="arrow-down" size={11} color={C.red} />
+                <Text style={[s.zoneText, { color: C.red }]}>DEMOTION ZONE</Text>
+                <Ionicons name="arrow-down" size={11} color={C.red} />
                 <View style={[s.zoneLine, { backgroundColor: C.red }]} />
               </View>
             )}
@@ -381,32 +392,41 @@ export default function ProgressScreen() {
             </View>
           </View>
 
-          {/* Compact league standing */}
-          {profile && (
-            <View style={[s.leagueCard, { backgroundColor: C.surface, borderColor: C.border, marginTop: 12, ...C.shadow }]}>
-              <View style={s.leagueTopRow}>
-                <Text style={{ fontSize: 22 }}>{myLeague.emoji}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.leagueRowName, { color: C.text }]}>{myLeague.label} League</Text>
-                  <Text style={[s.leagueRowMeta, { color: C.textFaint }]}>
-                    {lbPeriod === 'week'
-                      ? `${myRank > 0 ? `Rank ${myRank}` : 'Unranked'} · ${myWeekXp.toLocaleString()} XP this week`
-                      : `${myRank > 0 ? `Rank ${myRank}` : 'Unranked'} · ${profile.xp.toLocaleString()} XP`}
-                  </Text>
-                </View>
+          {/* Duolingo-style league header: the shield strip shows the ladder
+              (your league lit, the rest quiet), then the league name and the
+              week countdown. The promotion/demotion zones live IN the list
+              as dividers — no explainer chips. */}
+          {lbPeriod === 'week' && (
+            <View style={s.leagueHeader}>
+              <View style={s.shieldRow}>
+                {LEAGUE_ORDER.map(id => {
+                  const lg = LEAGUE_CONFIG[id]
+                  const active = !mixedCohort && id === myWeekLeagueId
+                  return (
+                    <View
+                      key={id}
+                      style={[s.shield, active
+                        ? { backgroundColor: lg.bg, borderColor: lg.color, transform: [{ scale: 1.12 }] }
+                        : { backgroundColor: C.surface2, borderColor: C.border }]}
+                      accessible accessibilityLabel={`${lg.label} league${active ? ', your current league' : ''}`}
+                    >
+                      <Text style={{ fontSize: 22, opacity: active ? 1 : 0.35 }}>{lg.emoji}</Text>
+                    </View>
+                  )
+                })}
               </View>
-              {lbPeriod === 'week' && (
-                <View style={s.zoneChipRow}>
-                  <View style={[s.zoneChip, { backgroundColor: C.greenTint }]}>
-                    <Ionicons name="arrow-up" size={11} color={C.green} />
-                    <Text style={[s.zoneChipText, { color: C.green }]}>Top 10 promote</Text>
-                  </View>
-                  <View style={[s.zoneChip, { backgroundColor: C.redTint }]}>
-                    <Ionicons name="arrow-down" size={11} color={C.red} />
-                    <Text style={[s.zoneChipText, { color: C.red }]}>Bottom 5 drop</Text>
-                  </View>
+              <Text style={[s.leagueTitle, { color: C.text }]}>
+                {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
+              </Text>
+              <View style={s.leagueMetaRow}>
+                <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>
+                  <Ionicons name="time-outline" size={13} color={C.amber} />
+                  <Text style={[s.countdownText, { color: C.amber }]}>Ends in {weekEndsIn()}</Text>
                 </View>
-              )}
+                {mixedCohort && (
+                  <Text style={[s.leaderSub, { color: C.textFaint, flexShrink: 1 }]}>All leagues race together this week</Text>
+                )}
+              </View>
             </View>
           )}
           {/* Filtered view keeps GLOBAL ranks (your true position) — say so,
@@ -454,16 +474,17 @@ const s = StyleSheet.create({
   nextPill: { paddingVertical: 7, paddingHorizontal: 13, borderRadius: 999 },
   nextPillText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
 
-  leagueCard: { borderRadius: 14, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 14 },
-  leagueTopRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  zoneChipRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  zoneChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999 },
-  zoneChipText: { fontSize: 11, fontFamily: 'Nunito_700Bold' },
-  zoneRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 10, marginTop: 2 },
+  // Duolingo-style league header
+  leagueHeader: { alignItems: 'center', marginTop: 16 },
+  shieldRow: { flexDirection: 'row', gap: 14, marginBottom: 12 },
+  shield: { width: 46, height: 46, borderRadius: 23, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  leagueTitle: { fontSize: 20, fontFamily: 'Nunito_900Black', letterSpacing: -0.3 },
+  leagueMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
+  countdownPill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 999 },
+  countdownText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
+  zoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: 16, marginBottom: 10, marginTop: 2 },
   zoneLine: { flex: 1, height: 1.5, borderRadius: 1, opacity: 0.5 },
   zoneText: { fontSize: 10, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8 },
-  leagueRowName: { fontSize: 14, fontFamily: 'Nunito_800ExtraBold' },
-  leagueRowMeta: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
   detailHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16, borderBottomWidth: 1 },
   detailTitle: { fontSize: 20, fontFamily: 'Nunito_900Black', letterSpacing: -0.3 },
   masteryRow: { borderRadius: 14, borderWidth: 1, padding: 14, marginBottom: 10 },

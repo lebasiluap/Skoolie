@@ -55,9 +55,11 @@ export default function TrophiesScreen() {
       <TopBar title="Profile" />
       <View style={[s.header, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
         <TouchableOpacity
-          onPress={() => (router.canGoBack() ? router.back() : router.navigate('/(app)/profile' as any))}
+          // Tab routes don't stack — router.back() falls through to the
+          // Dashboard (same bug class as search). Always return to Profile.
+          onPress={() => router.navigate('/(app)/profile' as any)}
           style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]}
-          accessibilityRole="button" accessibilityLabel="Go back"
+          accessibilityRole="button" accessibilityLabel="Back to profile"
         >
           <Ionicons name="arrow-back" size={20} color={C.textSoft} />
         </TouchableOpacity>

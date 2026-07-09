@@ -137,10 +137,9 @@ export default function ProfileScreen() {
   const [hapticsOn, setHapticsOn] = useState(profile?.haptics_enabled !== false)
   const [nameModal, setNameModal] = useState(false)
   const [nameDraft, setNameDraft] = useState(profile?.full_name ?? '')
-  const [pwModal, setPwModal] = useState(false)
-  const [pw1, setPw1] = useState('')
-  const [pw2, setPw2] = useState('')
-  const [pwSaving, setPwSaving] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false)
+  const [deleteText, setDeleteText] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   if (!profile || !user) return null
 
@@ -280,42 +279,30 @@ export default function ProfileScreen() {
     setNameModal(false)
   }
 
-  const isEmailUser = (user.app_metadata?.provider ?? 'email') === 'email'
-
-  async function savePassword() {
-    if (pw1.length < 6) { Alert.alert('Too short', 'Password must be at least 6 characters.'); return }
-    if (pw1 !== pw2) { Alert.alert("Passwords don't match", 'Please retype them.'); return }
-    setPwSaving(true)
-    const { error } = await supabase.auth.updateUser({ password: pw1 })
-    setPwSaving(false)
-    if (error) { Alert.alert('Error', error.message); return }
-    setPw1(''); setPw2(''); setPwModal(false)
-    showToast('Password updated.', 'success')
-  }
-
-  /** Store-required account deletion — double-confirmed, irreversible. */
+  /** Store-required account deletion — STAGED: warning alert → typed
+   *  confirmation modal ("DELETE") → final destructive execute. */
   function confirmDeleteAccount() {
     Alert.alert(
       'Delete account?',
-      'This permanently erases your account, progress, XP, streaks, and trophies. It cannot be undone.',
+      'This permanently erases your account: all progress, XP, streaks, trophies, league history, and bookmarks. There is no way to recover any of it.',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete forever', style: 'destructive',
-          onPress: () => Alert.alert('Are you absolutely sure?', 'Last chance — everything will be gone.', [
-            { text: 'Keep my account', style: 'cancel' },
-            {
-              text: 'Yes, delete everything', style: 'destructive',
-              onPress: async () => {
-                const { error } = await supabase.rpc('delete_account')
-                if (error) { Alert.alert('Error', "Couldn't delete your account — please try again or contact support@skoolieapp.com."); return }
-                supabase.auth.signOut()
-              },
-            },
-          ]),
-        },
+        { text: 'Continue', style: 'destructive', onPress: () => { setDeleteText(''); setDeleteModal(true) } },
       ],
     )
+  }
+
+  async function executeDelete() {
+    if (deleteText.trim().toUpperCase() !== 'DELETE') return
+    setDeleting(true)
+    const { error } = await supabase.rpc('delete_account')
+    setDeleting(false)
+    if (error) {
+      Alert.alert('Error', "Couldn't delete your account — please try again or contact support@skoolieapp.com.")
+      return
+    }
+    setDeleteModal(false)
+    supabase.auth.signOut()
   }
 
   return (
@@ -422,24 +409,6 @@ export default function ProfileScreen() {
             </View>
             <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
           </TouchableOpacity>
-
-          {isEmailUser && (
-            <TouchableOpacity
-              onPress={() => setPwModal(true)}
-              activeOpacity={0.75}
-              accessibilityRole="button" accessibilityLabel="Change your password"
-              style={[s.row, s.rowBorder, { borderColor: C.border }]}
-            >
-              <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
-                <Ionicons name="key" size={19} color={C.textSoft} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[s.rowLabel, { color: C.text }]}>Change password</Text>
-                <Text style={[s.rowSub, { color: C.textFaint }]}>Update your sign-in password</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
-            </TouchableOpacity>
-          )}
 
           <TouchableOpacity
             onPress={openProfessionModal}
@@ -930,37 +899,43 @@ export default function ProfileScreen() {
         </Pressable>
       </Modal>
 
-      {/* Change password (email accounts only) */}
-      <Modal visible={pwModal} transparent animationType="fade" onRequestClose={() => setPwModal(false)}>
-        <Pressable style={yr.overlay} onPress={() => setPwModal(false)}>
+      {/* Delete account — final stage: type DELETE to unlock the button */}
+      <Modal visible={deleteModal} transparent animationType="fade" onRequestClose={() => setDeleteModal(false)}>
+        <Pressable style={yr.overlay} onPress={() => setDeleteModal(false)}>
           <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
             <View style={[yr.handle, { backgroundColor: C.border }]} />
-            <Text style={[yr.title, { color: C.text }]}>Change password</Text>
-            <Text style={[yr.sub, { color: C.textFaint }]}>At least 6 characters</Text>
+            <Text style={[yr.title, { color: C.red }]}>Delete your account</Text>
+            <Text style={[yr.sub, { color: C.textFaint }]}>
+              Everything goes: progress, XP, streaks, trophies, league history, bookmarks. This cannot be undone.{'\n\n'}Type DELETE to confirm.
+            </Text>
             <TextInput
-              value={pw1}
-              onChangeText={setPw1}
+              value={deleteText}
+              onChangeText={setDeleteText}
               autoFocus
-              secureTextEntry
-              placeholder="New password"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              placeholder="Type DELETE"
               placeholderTextColor={C.textFaint}
               style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
-              accessibilityLabel="New password"
+              accessibilityLabel="Type DELETE to confirm account deletion"
             />
-            <TextInput
-              value={pw2}
-              onChangeText={setPw2}
-              secureTextEntry
-              placeholder="Repeat new password"
-              placeholderTextColor={C.textFaint}
-              style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text, marginTop: 10 }]}
-              accessibilityLabel="Repeat new password"
-            />
-            <TouchableOpacity onPress={savePassword} disabled={pwSaving} style={[s.modalBtn, { backgroundColor: C.teal, opacity: pwSaving ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel="Save password">
-              {pwSaving ? <ActivityIndicator size="small" color={C.onTeal} /> : <Text style={[s.modalBtnText, { color: C.onTeal }]}>Update password</Text>}
+            <TouchableOpacity
+              onPress={executeDelete}
+              disabled={deleteText.trim().toUpperCase() !== 'DELETE' || deleting}
+              style={[s.modalBtn, {
+                backgroundColor: deleteText.trim().toUpperCase() === 'DELETE' ? C.red : C.surface3,
+                opacity: deleting ? 0.7 : 1,
+              }]}
+              accessibilityRole="button"
+              accessibilityLabel="Permanently delete account"
+              accessibilityState={{ disabled: deleteText.trim().toUpperCase() !== 'DELETE' }}
+            >
+              {deleting
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Text style={[s.modalBtnText, { color: deleteText.trim().toUpperCase() === 'DELETE' ? '#fff' : C.textFaint }]}>Delete forever</Text>}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setPwModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
-              <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
+            <TouchableOpacity onPress={() => setDeleteModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
+              <Text style={[yr.cancelText, { color: C.textSoft }]}>Keep my account</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>

@@ -89,7 +89,8 @@ export default function HistoryScreen() {
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Time Capsule" />
       <View style={[s.header, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]}>
+        {/* Tab routes don't stack — back() falls to Dashboard; go to Profile */}
+        <TouchableOpacity onPress={() => router.navigate('/(app)/profile' as any)} style={[s.iconBtn, { backgroundColor: C.surface2, borderColor: C.border }]} accessibilityRole="button" accessibilityLabel="Back to profile">
           <Ionicons name="arrow-back" size={20} color={C.textSoft} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

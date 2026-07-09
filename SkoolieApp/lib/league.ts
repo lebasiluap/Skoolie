@@ -46,22 +46,27 @@ export function weekStartKey(): string {
 export async function detectZoneEvent(userId: string): Promise<ZoneEvent | null> {
   try {
     const { data } = await supabase.rpc('get_weekly_league')
-    const rows = (data ?? []) as { id: string; week_xp: number; league: string }[]
+    const all = (data ?? []) as { id: string; week_xp: number; league: string; is_bot?: boolean }[]
+    // Pacer bots are display-only — zone truth is computed over humans
+    const rows = all.filter(r => !r.is_bot)
     if (!rows.length) return null
     if (new Set(rows.map(r => r.league)).size > 1) return null
     const idx = rows.findIndex(r => r.id === userId)
     if (idx < 0) return null
 
-    const rank = idx + 1
+    // rank for the MESSAGE uses the displayed board (bots included) so the
+    // number matches what the user sees; the zone math stays human-only
+    const rank = all.findIndex(r => r.id === userId) + 1
+    const humanRank = idx + 1
     const me = rows[idx]
     const league = me.league
     const cohort = rows.length
     const promoteN = effectivePromote(league, cohort)
     const demoStart = Math.max(promoteN + 1, cohort - 4)
     const zone: LeagueZone =
-      rank <= promoteN && me.week_xp > 0 ? 'promo'
-        : cohort >= 10 && rank >= demoStart ? 'releg'
-          : rank <= promoteN + 2 ? 'near'
+      humanRank <= promoteN && me.week_xp > 0 ? 'promo'
+        : cohort >= 10 && humanRank >= demoStart ? 'releg'
+          : humanRank <= promoteN + 2 ? 'near'
             : 'mid'
 
     const prevKey = `leagueZone:${weekStartKey()}`

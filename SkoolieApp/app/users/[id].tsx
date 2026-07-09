@@ -19,6 +19,8 @@ interface UserProfileData {
   level: number
   avatar_url: string | null
   tier: number | null
+  /** Pacer (simulated participant, ✦-marked — see Terms §6) */
+  is_bot?: boolean
 }
 
 const PROF_META: Record<string, { label: string; color: string; bg: string }> = {
@@ -68,7 +70,7 @@ export default function UserProfileScreen() {
             <View style={s.avatarRow}>
               <Avatar name={profile.full_name} avatarUrl={profile.avatar_url} size={80} />
             </View>
-            <Text style={[s.name, { color: C.text }]}>{profile.full_name}</Text>
+            <Text style={[s.name, { color: C.text }]}>{profile.full_name}{profile.is_bot ? <Text style={{ color: C.textFaint }}> ✦</Text> : null}</Text>
 
             {/* Profession badge */}
             {(() => {

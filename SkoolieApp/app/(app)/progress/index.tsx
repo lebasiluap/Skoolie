@@ -24,6 +24,8 @@ interface LeaderboardUser {
   id: string; full_name: string; xp: number; level: number; current_streak: number
   avatar_url: string | null; profession: string; last_active_date: string | null
   tier: number | null
+  /** Pacer bot (display-only simulated racer — see ToS). Never affects cuts. */
+  is_bot?: boolean
 }
 
 /** Weekly league row — xp is aliased to week_xp so the shared row renderer works. */
@@ -191,6 +193,30 @@ export default function ProgressScreen() {
   ]
   const effectiveStreak = computeEffectiveStreak(profile?.current_streak, profile?.last_active_date)
 
+  // ── Zone math over HUMANS ONLY (pacer bots are display-only) ─────────────
+  // Bots interleave in display order, so the cut lines are positional: the
+  // promotion band sits under the promoteN-th promoting HUMAN row, and the
+  // demotion band above the first demoted human — wherever those fall.
+  const humanRacers = weekUsers.filter(u => !u.is_bot)
+  const zoneCohortH = humanRacers.length
+  const promoteNH = effectivePromote(myWeekLeagueId, zoneCohortH)
+  const demoStartH = Math.max(promoteNH + 1, zoneCohortH - 4)
+  const demoLiveH = zoneCohortH >= 10
+  const showZonesGlobal = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
+  let promoBoundaryIdx = -1
+  let relegBoundaryIdx = -1
+  if (showZonesGlobal) {
+    let h = 0
+    for (let i = 0; i < activeList.length; i++) {
+      if (!activeList[i].is_bot) {
+        h++
+        if (h === promoteNH && promoBoundaryIdx === -1) promoBoundaryIdx = i + 1
+        if (demoLiveH && h === demoStartH && relegBoundaryIdx === -1) relegBoundaryIdx = i
+      }
+    }
+    if (promoBoundaryIdx >= activeList.length) promoBoundaryIdx = -1  // nothing below the cut
+  }
+
   /** Returns 0 if user hasn't practiced today or yesterday — prevents stale streak display */
   function liveStreak(u: LeaderboardUser): number {
     return computeEffectiveStreak(u.current_streak, u.last_active_date)
@@ -229,28 +255,17 @@ export default function ProgressScreen() {
           const rank = activeList.findIndex(x => x.id === u.id) + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
-          // Zones mirror credit_xp truthfully but stay VISIBLE (Duolingo-style):
-          // - Promotion band always sits under displayed rank 10 — anyone who
-          //   earns XP floats above the 0-XP backfill, so a top-10 spot with
-          //   XP genuinely promotes. Full green caret = promoting now; faint
-          //   caret = a promotion seat not yet earned (0 XP).
-          // - Demotion needs ≥10 REAL weekly entrants (server rule) — the red
-          //   zone only appears when someone can actually drop.
-          // - Hidden in merged "Open" weeks: display ranks aren't league ranks.
-          const zoneCohort = weekUsers.length
-          const listLen = activeList.length
-          const showZones = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
-          // Adaptive cut: league counts shrink with small cohorts so both
-          // zones always exist (mirrors server league_effective_promote)
-          const promoteN = effectivePromote(myWeekLeagueId, weekUsers.length)
           const isDiamond = myWeekLeagueId === 'diamond'
-          const inPromoZone = showZones && rank <= promoteN
+          // Human-rank-based zones; bots (display-only) never get carets and
+          // never shift the cuts. Bands come from the precomputed boundaries.
+          const humansAbove = activeList.slice(0, rank - 1).filter(x => !x.is_bot).length
+          const humanRank = u.is_bot ? 0 : humansAbove + 1
+          const inPromoZone = showZonesGlobal && !u.is_bot && humanRank <= promoteNH
           const promoEarned = inPromoZone && u.xp > 0
-          const demoStart = Math.max(promoteN + 1, zoneCohort - 4)
-          const inDemo = showZones && !promoEarned && zoneCohort >= 10 && rank >= demoStart && rank <= zoneCohort
-          const promoLine = showZones && listLen > promoteN && rank === promoteN + 1
+          const inDemo = showZonesGlobal && !u.is_bot && !promoEarned && demoLiveH && humanRank >= demoStartH
+          const promoLine = showZonesGlobal && index === promoBoundaryIdx
           // (bands may render adjacent when there's no stay zone — that's honest)
-          const relegLine = showZones && zoneCohort >= promoteN + 1 && rank === demoStart && demoStart <= zoneCohort
+          const relegLine = showZonesGlobal && index === relegBoundaryIdx && relegBoundaryIdx !== -1
           return (
             // Rows cascade in — delay capped so deep scrolls never wait
             <Entrance delay={Math.min(index, 8) * 35} dy={10}>
@@ -290,7 +305,7 @@ export default function ProgressScreen() {
                   is the ONLY emphasized number. Everything else is neutral. */}
               <View style={{ flex: 1 }}>
                 <Text style={[s.name, { color: C.text }]} numberOfLines={1}>
-                  {u.full_name}{isMe ? ' (you)' : ''}
+                  {u.full_name}{isMe ? ' (you)' : ''}{u.is_bot ? <Text style={{ color: C.textFaint }}> ✦</Text> : null}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
                   <TierBadge tier={u.tier ?? 0} size="sm" />
@@ -491,7 +506,7 @@ export default function ProgressScreen() {
                 {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
               </Text>
               {!mixedCohort && (() => {
-                const racing = weekUsers.length
+                const racing = weekUsers.filter(u => !u.is_bot).length
                 const eff = effectivePromote(myWeekLeagueId, racing)
                 const dropLive = racing >= 10
                 // Tiny cohorts: "Top 1 promote" is true but reads oddly —

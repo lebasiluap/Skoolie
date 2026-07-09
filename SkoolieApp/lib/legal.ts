@@ -47,7 +47,7 @@ export const TERMS: LegalDoc = {
     },
     {
       heading: '6. Gamification',
-      body: 'XP, levels, streaks, streak freezes, tiers, leagues, and similar features are part of the Service experience. They have no monetary value, cannot be sold or exchanged, and may be adjusted, rebalanced, or reset as we improve the Service (for example, to correct bugs or prevent abuse).',
+      body: 'XP, levels, streaks, streak freezes, tiers, leagues, and similar features are part of the Service experience. They have no monetary value, cannot be sold or exchanged, and may be adjusted, rebalanced, or reset as we improve the Service (for example, to correct bugs or prevent abuse). To keep competitions active, leaderboards may include simulated participants ("pacers") operated by Skoolie and marked with a ✦ symbol; pacers never affect promotions, relegations, tournaments, or any outcome for real users, and are phased out as boards fill with real participants.',
     },
     {
       heading: '7. Fees',

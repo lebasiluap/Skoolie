@@ -41,6 +41,10 @@ export interface UserProfile {
   push_token: string | null
   /** Trophy reward: 1.5× XP until this time (credit_xp honors it) */
   xp_boost_until: string | null
+  /** Sound effects on/off (default on) */
+  sound_enabled: boolean
+  /** Haptic feedback on/off (default on) */
+  haptics_enabled: boolean
   created_at: string
 }
 

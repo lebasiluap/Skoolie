@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing, TextInput, Linking } from 'react-native'
+import Constants from 'expo-constants'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
@@ -17,6 +18,9 @@ import { effectiveStreak as computeEffectiveStreak } from '@/lib/streak'
 import { StreakTracker } from '@/components/ui/StreakTracker'
 import { YEARS_BY_PROFESSION, DEFAULT_YEARS, PRACTITIONER_TITLES } from '@/constants/professions'
 import { TIMED_CHOICES, formatSecs } from '@/lib/timing'
+import { setSoundEnabled } from '@/lib/sounds'
+import { setHapticsEnabled } from '@/lib/haptics'
+import { showToast } from '@/lib/toast'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { InterestsSheet } from '@/components/ui/InterestsSheet'
 import { CountrySheet } from '@/components/ui/CountrySheet'
@@ -72,7 +76,12 @@ function PillToggle({ value, onValueChange, activeColor }: {
   const bg = anim.interpolate({ inputRange: [0, 1], outputRange: [C.surface3, activeColor] })
   const tx = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 20] }) // track 50 − padding 6 − thumb 24
   return (
-    <TouchableOpacity onPress={() => onValueChange(!value)} activeOpacity={0.85}>
+    <TouchableOpacity
+      onPress={() => onValueChange(!value)}
+      activeOpacity={0.85}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+    >
       <Animated.View style={[tog.track, { backgroundColor: bg }]}>
         <Animated.View style={[tog.thumb, { transform: [{ translateX: tx }] }]} />
       </Animated.View>
@@ -124,6 +133,14 @@ export default function ProfileScreen() {
   const [profSaving, setProfSaving] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarSheet, setAvatarSheet] = useState(false)
+  const [soundOn, setSoundOn] = useState(profile?.sound_enabled !== false)
+  const [hapticsOn, setHapticsOn] = useState(profile?.haptics_enabled !== false)
+  const [nameModal, setNameModal] = useState(false)
+  const [nameDraft, setNameDraft] = useState(profile?.full_name ?? '')
+  const [pwModal, setPwModal] = useState(false)
+  const [pw1, setPw1] = useState('')
+  const [pw2, setPw2] = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
 
   if (!profile || !user) return null
 
@@ -241,6 +258,66 @@ export default function ProfileScreen() {
     ])
   }
 
+  /** Sound / haptic gates flip instantly (module flags) and persist best-effort. */
+  function toggleSound(v: boolean) {
+    setSoundOn(v); setSoundEnabled(v)
+    supabase.from('user_profiles').update({ sound_enabled: v }).eq('id', user!.id)
+      .then(({ error }) => { if (error) showToast("Couldn't save that setting.", 'error'); else refreshProfile() })
+  }
+  function toggleHaptics(v: boolean) {
+    setHapticsOn(v); setHapticsEnabled(v)
+    supabase.from('user_profiles').update({ haptics_enabled: v }).eq('id', user!.id)
+      .then(({ error }) => { if (error) showToast("Couldn't save that setting.", 'error'); else refreshProfile() })
+  }
+
+  async function saveName() {
+    const clean = nameDraft.trim().replace(/\s+/g, ' ')
+    if (clean.length < 2) { Alert.alert('Name too short', 'Please enter at least 2 characters.'); return }
+    if (clean.length > 60) { Alert.alert('Name too long', 'Please keep it under 60 characters.'); return }
+    const { error } = await supabase.from('user_profiles').update({ full_name: clean }).eq('id', user!.id)
+    if (error) { Alert.alert('Error', error.message); return }
+    await refreshProfile()
+    setNameModal(false)
+  }
+
+  const isEmailUser = (user.app_metadata?.provider ?? 'email') === 'email'
+
+  async function savePassword() {
+    if (pw1.length < 6) { Alert.alert('Too short', 'Password must be at least 6 characters.'); return }
+    if (pw1 !== pw2) { Alert.alert("Passwords don't match", 'Please retype them.'); return }
+    setPwSaving(true)
+    const { error } = await supabase.auth.updateUser({ password: pw1 })
+    setPwSaving(false)
+    if (error) { Alert.alert('Error', error.message); return }
+    setPw1(''); setPw2(''); setPwModal(false)
+    showToast('Password updated.', 'success')
+  }
+
+  /** Store-required account deletion — double-confirmed, irreversible. */
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Delete account?',
+      'This permanently erases your account, progress, XP, streaks, and trophies. It cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete forever', style: 'destructive',
+          onPress: () => Alert.alert('Are you absolutely sure?', 'Last chance — everything will be gone.', [
+            { text: 'Keep my account', style: 'cancel' },
+            {
+              text: 'Yes, delete everything', style: 'destructive',
+              onPress: async () => {
+                const { error } = await supabase.rpc('delete_account')
+                if (error) { Alert.alert('Error', "Couldn't delete your account — please try again or contact support@skoolieapp.com."); return }
+                supabase.auth.signOut()
+              },
+            },
+          ]),
+        },
+      ],
+    )
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Profile" />
@@ -329,10 +406,46 @@ export default function ProfileScreen() {
         {/* ── YOUR ACCOUNT ──────────────────────────────────── */}
         <Text style={[s.sectionHeader, { color: C.textFaint }]}>YOUR ACCOUNT</Text>
         <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+          {/* Name */}
+          <TouchableOpacity
+            onPress={() => { setNameDraft(profile.full_name); setNameModal(true) }}
+            activeOpacity={0.75}
+            accessibilityRole="button" accessibilityLabel="Edit your name"
+            style={s.row}
+          >
+            <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+              <Ionicons name="person" size={19} color={C.textSoft} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Name</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]} numberOfLines={1}>{profile.full_name}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
+          </TouchableOpacity>
+
+          {isEmailUser && (
+            <TouchableOpacity
+              onPress={() => setPwModal(true)}
+              activeOpacity={0.75}
+              accessibilityRole="button" accessibilityLabel="Change your password"
+              style={[s.row, s.rowBorder, { borderColor: C.border }]}
+            >
+              <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+                <Ionicons name="key" size={19} color={C.textSoft} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.rowLabel, { color: C.text }]}>Change password</Text>
+                <Text style={[s.rowSub, { color: C.textFaint }]}>Update your sign-in password</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             onPress={openProfessionModal}
             activeOpacity={0.75}
-            style={s.row}
+            accessibilityRole="button" accessibilityLabel="Change profession"
+            style={[s.row, s.rowBorder, { borderColor: C.border }]}
           >
             <View style={[s.iconBox, { backgroundColor: profMeta.bg }]}>
               <Ionicons name="medical" size={19} color={profMeta.color} />
@@ -360,8 +473,8 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── APPEARANCE ────────────────────────────────────── */}
-        <Text style={[s.sectionHeader, { color: C.textFaint }]}>APPEARANCE</Text>
+        {/* ── APPEARANCE & FEEDBACK ─────────────────────────── */}
+        <Text style={[s.sectionHeader, { color: C.textFaint }]}>APPEARANCE & FEEDBACK</Text>
         <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
           <View style={s.row}>
             <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
@@ -395,6 +508,30 @@ export default function ProfileScreen() {
                 )
               })}
             </View>
+          </View>
+
+          {/* Sound effects */}
+          <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
+            <View style={[s.iconBox, { backgroundColor: C.tealTint }]}>
+              <Ionicons name="volume-high" size={19} color={C.teal} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Sound effects</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]}>Correct, wrong, flips, and fanfares</Text>
+            </View>
+            <PillToggle value={soundOn} onValueChange={toggleSound} activeColor={C.teal} />
+          </View>
+
+          {/* Haptics */}
+          <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
+            <View style={[s.iconBox, { backgroundColor: C.coralTint }]}>
+              <Ionicons name="radio-outline" size={19} color={C.coral} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Haptic feedback</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]}>Little buzzes on answers and milestones</Text>
+            </View>
+            <PillToggle value={hapticsOn} onValueChange={toggleHaptics} activeColor={C.teal} />
           </View>
         </View>
 
@@ -549,7 +686,7 @@ export default function ProfileScreen() {
             style={s.row}
           >
             <View style={[s.iconBox, { backgroundColor: C.amberTint }]}>
-              <Ionicons name="trophy" size={19} color={C.amber} />
+              <Ionicons name="podium" size={19} color={C.amber} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[s.rowLabel, { color: C.text }]}>Leaderboard</Text>
@@ -604,15 +741,53 @@ export default function ProfileScreen() {
             </View>
             <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
           </TouchableOpacity>
+
+          {/* Contact support */}
+          <TouchableOpacity
+            onPress={() => Linking.openURL('mailto:support@skoolieapp.com').catch(() => showToast('Email support@skoolieapp.com', 'info'))}
+            activeOpacity={0.75}
+            accessibilityRole="button" accessibilityLabel="Contact support by email"
+            style={[s.row, s.rowBorder, { borderColor: C.border }]}
+          >
+            <View style={[s.iconBox, { backgroundColor: C.tealTint }]}>
+              <Ionicons name="mail-outline" size={19} color={C.teal} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Contact support</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]}>support@skoolieapp.com</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
+          </TouchableOpacity>
+
+          {/* Version */}
+          <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
+            <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+              <Ionicons name="information-circle-outline" size={19} color={C.textSoft} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Version</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]}>{Constants.expoConfig?.version ?? '1.0.0'}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Sign out */}
+        {/* Sign out + danger zone */}
         <TouchableOpacity
           onPress={handleSignOut}
           style={[s.signOut, { borderColor: C.red }]}
           activeOpacity={0.75}
+          accessibilityRole="button" accessibilityLabel="Sign out"
         >
           <Text style={[s.signOutText, { color: C.red }]}>Sign out</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={confirmDeleteAccount}
+          activeOpacity={0.7}
+          accessibilityRole="button" accessibilityLabel="Delete your account permanently"
+          hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
+          style={{ alignSelf: 'center', marginTop: 16, marginBottom: 4 }}
+        >
+          <Text style={[s.deleteLink, { color: C.textFaint }]}>Delete account</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -728,6 +903,69 @@ export default function ProfileScreen() {
         </Pressable>
       </Modal>
 
+      {/* Edit name */}
+      <Modal visible={nameModal} transparent animationType="fade" onRequestClose={() => setNameModal(false)}>
+        <Pressable style={yr.overlay} onPress={() => setNameModal(false)}>
+          <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
+            <View style={[yr.handle, { backgroundColor: C.border }]} />
+            <Text style={[yr.title, { color: C.text }]}>Your name</Text>
+            <Text style={[yr.sub, { color: C.textFaint }]}>How you appear on leaderboards and to other learners</Text>
+            <TextInput
+              value={nameDraft}
+              onChangeText={setNameDraft}
+              autoFocus
+              maxLength={60}
+              placeholder="Your name"
+              placeholderTextColor={C.textFaint}
+              style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
+              accessibilityLabel="Your name"
+            />
+            <TouchableOpacity onPress={saveName} style={[s.modalBtn, { backgroundColor: C.teal }]} accessibilityRole="button" accessibilityLabel="Save name">
+              <Text style={[s.modalBtnText, { color: C.onTeal }]}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setNameModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
+              <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Change password (email accounts only) */}
+      <Modal visible={pwModal} transparent animationType="fade" onRequestClose={() => setPwModal(false)}>
+        <Pressable style={yr.overlay} onPress={() => setPwModal(false)}>
+          <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
+            <View style={[yr.handle, { backgroundColor: C.border }]} />
+            <Text style={[yr.title, { color: C.text }]}>Change password</Text>
+            <Text style={[yr.sub, { color: C.textFaint }]}>At least 6 characters</Text>
+            <TextInput
+              value={pw1}
+              onChangeText={setPw1}
+              autoFocus
+              secureTextEntry
+              placeholder="New password"
+              placeholderTextColor={C.textFaint}
+              style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
+              accessibilityLabel="New password"
+            />
+            <TextInput
+              value={pw2}
+              onChangeText={setPw2}
+              secureTextEntry
+              placeholder="Repeat new password"
+              placeholderTextColor={C.textFaint}
+              style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text, marginTop: 10 }]}
+              accessibilityLabel="Repeat new password"
+            />
+            <TouchableOpacity onPress={savePassword} disabled={pwSaving} style={[s.modalBtn, { backgroundColor: C.teal, opacity: pwSaving ? 0.7 : 1 }]} accessibilityRole="button" accessibilityLabel="Save password">
+              {pwSaving ? <ActivityIndicator size="small" color={C.onTeal} /> : <Text style={[s.modalBtnText, { color: C.onTeal }]}>Update password</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setPwModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
+              <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       {/* Avatar preset gallery — the built-in set anyone can wear */}
       <Modal visible={avatarSheet} transparent animationType="fade" onRequestClose={() => setAvatarSheet(false)}>
         <Pressable style={yr.overlay} onPress={() => setAvatarSheet(false)}>
@@ -790,6 +1028,12 @@ const pr = StyleSheet.create({
 
 const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18 },
+
+  // Modals (name / password)
+  modalInput: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, fontFamily: 'Nunito_600SemiBold' },
+  modalBtn: { padding: 15, borderRadius: 999, alignItems: 'center', marginTop: 14 },
+  modalBtnText: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
+  deleteLink: { fontSize: 13, fontFamily: 'Nunito_700Bold' },
 
   // Trophy case row
   trophyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 14 },

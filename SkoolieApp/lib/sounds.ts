@@ -73,7 +73,13 @@ const players: Partial<Record<SoundName, import('expo-audio').AudioPlayer>> = {}
 
 /** Fire-and-forget SFX. Safe to call anywhere; silent no-op without the native module.
  *  Reinforcement sounds carry their paired haptic — fires even without audio. */
+// User preference (profile.sound_enabled) — synced at the profile choke
+// point (useAuth.loadProfile) and from the Profile toggle.
+let soundOn = true
+export function setSoundEnabled(v: boolean): void { soundOn = v }
+
 export function playSound(name: SoundName): void {
+  if (!soundOn) return
   if (name === 'correct' || name === 'wrong' || name === 'complete' || name === 'flip') haptic(name)
   try {
     const Audio = getAudio()

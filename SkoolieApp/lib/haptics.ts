@@ -32,7 +32,11 @@ function getHaptics(): HapticsModule | null {
 
 export type HapticKind = 'correct' | 'wrong' | 'complete' | 'flip' | 'tick' | 'celebrate'
 
+let hapticsOn = true
+export function setHapticsEnabled(v: boolean): void { hapticsOn = v }
+
 export function haptic(kind: HapticKind): void {
+  if (!hapticsOn) return
   const H = getHaptics()
   if (!H) return
   try {

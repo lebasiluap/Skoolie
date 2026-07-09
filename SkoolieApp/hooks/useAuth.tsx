@@ -3,6 +3,8 @@ import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { UserProfile } from '@/types'
 import { diffProfiles, emitCelebrations } from '@/lib/celebrations'
+import { setSoundEnabled } from '@/lib/sounds'
+import { setHapticsEnabled } from '@/lib/haptics'
 
 interface AuthContextType {
   session: Session | null
@@ -50,6 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return   // keep previous profile (or null + profileChecked=false on first load)
     }
     setProfileChecked(true)
+    // Sync the sound/haptics preference gates at the single profile choke point
+    setSoundEnabled(data?.sound_enabled !== false)
+    setHapticsEnabled(data?.haptics_enabled !== false)
     setProfile(prev => {
       // Every profile write flows through here — diff snapshots to catch
       // level-ups, tier promotions, and freeze events worth celebrating.

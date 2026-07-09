@@ -30,11 +30,13 @@ interface WeeklyRow extends LeaderboardUser { league: string }
 
 // Medal metals are identity colors (not theme moods) — deliberately fixed hex,
 // with alpha tints that read on both light and dark surfaces.
+// `promote` mirrors the server's league_promote_count (Duolingo-style
+// per-league counts); Diamond's top 10 enter the Tournament instead.
 const LEAGUE_CONFIG = {
-  bronze:  { label: 'Bronze',  min: 0,    color: '#b45309', bg: 'rgba(180,83,9,0.1)',    emoji: '🥉' },
-  silver:  { label: 'Silver',  min: 500,  color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '🥈' },
-  gold:    { label: 'Gold',    min: 1500, color: '#d97706', bg: 'rgba(217,119,6,0.1)',    emoji: '🥇' },
-  diamond: { label: 'Diamond', min: 4000, color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    emoji: '💎' },
+  bronze:  { label: 'Bronze',  promote: 15, color: '#b45309', bg: 'rgba(180,83,9,0.1)',    emoji: '🥉' },
+  silver:  { label: 'Silver',  promote: 12, color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '🥈' },
+  gold:    { label: 'Gold',    promote: 10, color: '#d97706', bg: 'rgba(217,119,6,0.1)',    emoji: '🥇' },
+  diamond: { label: 'Diamond', promote: 10, color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    emoji: '💎' },
 }
 
 const LEAGUE_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const
@@ -236,12 +238,17 @@ export default function ProgressScreen() {
           const zoneCohort = weekUsers.length
           const listLen = activeList.length
           const showZones = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
-          const inPromoZone = showZones && rank <= 10
+          // Per-league promotion counts (Duolingo): Bronze 15, Silver 12,
+          // Gold 10, Diamond 10 → into the Tournament
+          const promoteN = LEAGUE_CONFIG[myWeekLeagueId].promote
+          const isDiamond = myWeekLeagueId === 'diamond'
+          const inPromoZone = showZones && rank <= promoteN
           const promoEarned = inPromoZone && u.xp > 0
-          const demoStart = Math.max(11, zoneCohort - 4)
+          const demoStart = Math.max(promoteN + 1, zoneCohort - 4)
           const inDemo = showZones && !promoEarned && zoneCohort >= 10 && rank >= demoStart && rank <= zoneCohort
-          const promoLine = showZones && listLen > 10 && rank === 11
-          const relegLine = showZones && zoneCohort >= 11 && rank === demoStart && demoStart <= zoneCohort
+          const promoLine = showZones && listLen > promoteN && rank === promoteN + 1
+          // (bands may render adjacent when there's no stay zone — that's honest)
+          const relegLine = showZones && zoneCohort >= promoteN + 1 && rank === demoStart && demoStart <= zoneCohort
           return (
             // Rows cascade in — delay capped so deep scrolls never wait
             <Entrance delay={Math.min(index, 8) * 35} dy={10}>
@@ -249,7 +256,7 @@ export default function ProgressScreen() {
               <View style={s.zoneRow}>
                 <View style={[s.zoneLine, { backgroundColor: C.green }]} />
                 <Ionicons name="arrow-up" size={11} color={C.green} />
-                <Text style={[s.zoneText, { color: C.green }]}>PROMOTION ZONE</Text>
+                <Text style={[s.zoneText, { color: C.green }]}>{isDiamond ? 'TOURNAMENT ZONE' : 'PROMOTION ZONE'}</Text>
                 <Ionicons name="arrow-up" size={11} color={C.green} />
                 <View style={[s.zoneLine, { backgroundColor: C.green }]} />
               </View>
@@ -481,6 +488,13 @@ export default function ProgressScreen() {
               <Text style={[s.leagueTitle, { color: C.text }]}>
                 {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
               </Text>
+              {!mixedCohort && (
+                <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
+                  {myWeekLeagueId === 'diamond'
+                    ? 'Top 10 enter the Tournament · bottom 5 drop'
+                    : `Top ${LEAGUE_CONFIG[myWeekLeagueId].promote} promote · bottom 5 drop`}
+                </Text>
+              )}
               <View style={s.leagueMetaRow}>
                 <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>
                   <Ionicons name="time-outline" size={13} color={C.amber} />

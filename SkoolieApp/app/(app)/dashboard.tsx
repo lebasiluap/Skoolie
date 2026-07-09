@@ -21,6 +21,7 @@ import { topicColor } from '@/constants/topics'
 import { PRACTITIONER_TITLES } from '@/constants/professions'
 import { tierProgress, tierMeta } from '@/lib/tiers'
 import { nextBarrage, barrageDay } from '@/lib/barrage'
+import { checkWeekMoments } from '@/lib/weekMoments'
 import { rescheduleAll } from '@/lib/notifications'
 import { preloadSounds } from '@/lib/sounds'
 import { IntroGate } from '@/components/ui/IntroGate'
@@ -97,6 +98,8 @@ export default function DashboardScreen() {
   useFocusEffect(useCallback(() => {
     loadSessions()
     refreshProfile()
+    // Week-end league result + tournament moments (AsyncStorage-deduped)
+    checkWeekMoments()
     // Today's Challenge status (materializes the cohort's set on first call)
     supabase.rpc('get_daily_challenge').then(({ data, error }) => {
       if (error || !data) { setChallenge(null); return }

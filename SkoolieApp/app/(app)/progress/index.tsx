@@ -67,6 +67,11 @@ export default function ProgressScreen() {
   const [weekUsers, setWeekUsers] = useState<WeeklyRow[]>([])
   const [lbPeriod, setLbPeriod] = useState<'week' | 'all'>('week')
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
+  // Diamond Tournament — active entry shows the knockout race above the league
+  const [tournament, setTournament] = useState<{
+    stage: number; stageLabel: string
+    entrants: { id: string; full_name: string; avatar_url: string | null; tier: number | null; xp: number }[]
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [lbScope, setLbScope] = useState<'all' | 'mine'>('all')
@@ -96,6 +101,13 @@ export default function ProgressScreen() {
     setUsers(lb ?? [])
     // Weekly league cohort — alias week_xp to xp so the row renderer is shared.
     setWeekUsers(((wk ?? []) as any[]).map(r => ({ ...r, xp: r.week_xp })))
+
+    // Tournament (best-effort; RPC is idempotent and resolves finished stages)
+    supabase.rpc('get_tournament').then(({ data: t }) => {
+      setTournament(t?.in_tournament && t.status === 'active'
+        ? { stage: Number(t.stage), stageLabel: String(t.stage_label), entrants: (t.entrants ?? []) as any[] }
+        : null)
+    })
 
     const totals: Record<string, number> = {}
     for (const r of [...(mcqC ?? []), ...(fcC ?? [])]) totals[r.topic] = (totals[r.topic] ?? 0) + Number(r.cnt)
@@ -213,12 +225,19 @@ export default function ProgressScreen() {
           const rank = activeList.findIndex(x => x.id === u.id) + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
-          const cohort = activeList.length
-          // Promotion / relegation zone dividers (weekly, unfiltered view only —
-          // profession filtering would misalign the cut lines)
-          const showZones = lbPeriod === 'week' && lbScope === 'all'
-          const promoLine = showZones && rank === 11 && cohort > 11
-          const relegLine = showZones && cohort >= 10 && rank === cohort - 4
+          // Zones mirror credit_xp EXACTLY, computed over REAL weekly entrants
+          // (not the 0-XP backfill rows), and only when the cohort is a single
+          // league — in a merged "Open" week, display ranks aren't league ranks.
+          // Rules: top 10 WITH XP promote; if the cohort has ≥10 players, the
+          // non-promoted bottom 5 demote (first demoted rank = max(11, n-4)).
+          const zoneCohort = weekUsers.length
+          const showZones = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
+          const isEntrant = showZones && rank <= zoneCohort
+          const demoStart = Math.max(11, zoneCohort - 4)
+          const inPromo = isEntrant && rank <= 10 && u.xp > 0
+          const inDemo = isEntrant && !inPromo && zoneCohort >= 10 && rank >= demoStart
+          const promoLine = showZones && zoneCohort > 10 && rank === 11
+          const relegLine = showZones && zoneCohort >= 11 && rank === demoStart && demoStart <= zoneCohort
           return (
             // Rows cascade in — delay capped so deep scrolls never wait
             <Entrance delay={Math.min(index, 8) * 35} dy={10}>
@@ -250,6 +269,9 @@ export default function ProgressScreen() {
               <View style={[s.rankBox, rankStyle ? { backgroundColor: rankStyle.bg } : { backgroundColor: C.surface3 }]}>
                 {rankStyle ? <Text style={{ fontSize: 18 }}>{rankStyle.label}</Text> : <Text style={[s.rankNum, { color: C.textFaint }]}>#{rank}</Text>}
               </View>
+              {/* Per-row zone cue — no misreading which side of the cut a row is on */}
+              {inPromo && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6 }} />}
+              {inDemo && <Ionicons name="caret-down" size={13} color={C.red} style={{ marginLeft: -6 }} />}
               <Avatar name={u.full_name} avatarUrl={u.avatar_url} size={40} />
               {/* Quiet row: the tier badge is the ONLY colored chip; the XP value
                   is the ONLY emphasized number. Everything else is neutral. */}
@@ -340,6 +362,43 @@ export default function ProgressScreen() {
               <Text style={[s.nextPillText, { color: C.teal }]}>Go →</Text>
             </View>
           </TouchableOpacity>
+          </Entrance>
+        )}
+
+        {/* Diamond Tournament — the knockout race outranks the league while live */}
+        {tournament && (
+          <Entrance delay={100}>
+          <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+            <Text style={[s.pageTitle, { color: C.text }]}>🏆 Diamond Tournament</Text>
+            <Text style={[s.leaderSub, { color: C.textFaint }]}>
+              {tournament.stageLabel} · {tournament.stage < 3 ? 'top half advance' : 'winner takes the crown'} · ends in {weekEndsIn()}
+            </Text>
+            <View style={[s.tourneyCard, { backgroundColor: C.surface, borderColor: C.amber, ...C.shadow }]}>
+              {tournament.entrants.map((e, i) => {
+                const isMe = e.id === user?.id
+                const cut = tournament.stage < 3 ? Math.max(1, Math.ceil(tournament.entrants.length / 2)) : 1
+                return (
+                  <View key={e.id}>
+                    {i === cut && tournament.entrants.length > cut && (
+                      <View style={s.zoneRow}>
+                        <View style={[s.zoneLine, { backgroundColor: C.red }]} />
+                        <Text style={[s.zoneText, { color: C.red }]}>{tournament.stage < 3 ? 'CUT LINE' : 'CROWN LINE'}</Text>
+                        <View style={[s.zoneLine, { backgroundColor: C.red }]} />
+                      </View>
+                    )}
+                    <View style={[s.tourneyRow, isMe && { backgroundColor: C.tealTint, borderRadius: 10 }]}>
+                      <Text style={[s.rankNum, { color: i < cut ? C.amber : C.textFaint, width: 26 }]}>#{i + 1}</Text>
+                      <Avatar name={e.full_name} avatarUrl={e.avatar_url} size={30} />
+                      <Text style={[s.name, { color: C.text, flex: 1, marginBottom: 0 }]} numberOfLines={1}>
+                        {e.full_name}{isMe ? ' (you)' : ''}
+                      </Text>
+                      <Text style={[s.xp, { color: C.teal }]}>{e.xp.toLocaleString()} XP</Text>
+                    </View>
+                  </View>
+                )
+              })}
+            </View>
+          </View>
           </Entrance>
         )}
 
@@ -473,6 +532,10 @@ const s = StyleSheet.create({
   nextReason: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
   nextPill: { paddingVertical: 7, paddingHorizontal: 13, borderRadius: 999 },
   nextPillText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
+
+  // Diamond Tournament
+  tourneyCard: { borderRadius: 16, borderWidth: 1.5, padding: 10, marginTop: 10 },
+  tourneyRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 8 },
 
   // Duolingo-style league header
   leagueHeader: { alignItems: 'center', marginTop: 16 },

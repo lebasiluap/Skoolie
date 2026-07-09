@@ -19,7 +19,7 @@ import { tierMeta } from '@/lib/tiers'
 import { STREAK_FREEZE_BLUE } from '@/lib/streak'
 
 export interface Celebration {
-  kind: 'level' | 'tier' | 'freeze_earned' | 'freeze_saved'
+  kind: 'level' | 'tier' | 'freeze_earned' | 'freeze_saved' | 'league' | 'tournament'
   title: string
   body: string
   mascot: 'cappy' | 'noggin' | 'buddy'

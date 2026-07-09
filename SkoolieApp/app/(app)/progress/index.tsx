@@ -491,13 +491,19 @@ export default function ProgressScreen() {
                 {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
               </Text>
               {!mixedCohort && (() => {
-                const eff = effectivePromote(myWeekLeagueId, weekUsers.length)
-                const dropLive = weekUsers.length >= 10
+                const racing = weekUsers.length
+                const eff = effectivePromote(myWeekLeagueId, racing)
+                const dropLive = racing >= 10
+                // Tiny cohorts: "Top 1 promote" is true but reads oddly —
+                // say what it means: everyone racing rises, so join the race.
+                const promoTxt = eff >= racing
+                  ? `Everyone racing ${myWeekLeagueId === 'diamond' ? 'enters the Tournament' : 'promotes'} — earn XP to join`
+                  : myWeekLeagueId === 'diamond'
+                    ? `Top ${eff} enter the Tournament`
+                    : `Top ${eff} promote`
                 return (
                   <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
-                    {myWeekLeagueId === 'diamond'
-                      ? `Top ${eff} enter the Tournament${dropLive ? ' · bottom 5 drop' : ''}`
-                      : `Top ${eff} promote${dropLive ? ' · bottom 5 drop' : ''}`}
+                    {promoTxt}{dropLive ? ' · bottom 5 drop' : ''}
                   </Text>
                 )
               })()}

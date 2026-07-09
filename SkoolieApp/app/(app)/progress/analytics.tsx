@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, Easing } from 'react-native'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
@@ -15,6 +15,7 @@ import { computeAnalytics, type Analytics, type HistRow, type SessRow, type QMet
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import Svg, { Circle } from 'react-native-svg'
+import { Entrance } from '@/components/ui/Entrance'
 import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { tierScore, tierProgress } from '@/lib/tiers'
@@ -175,7 +176,10 @@ export default function AnalyticsScreen() {
           <>
           {/* ── HERO · Where you stand ───────────────────────────────────
               The ONE tinted moment on the page: readiness ring + breakdown +
-              a quiet volume line (absorbs the old At-a-glance section). */}
+              a quiet volume line (absorbs the old At-a-glance section).
+              Sections cascade in (Entrance) — hero first, everything after
+              progressively later, matching the practice screens' rhythm. */}
+          <Entrance>
           <View style={[s.readyCard, { backgroundColor: masteryColor(a.readiness) + '10', borderColor: masteryColor(a.readiness) + '55' }]}>
             <View style={s.readyTop}>
               <Ring size={isSmall ? 96 : 116} stroke={isSmall ? 9 : 11} pct={a.readiness} color={masteryColor(a.readiness)} track={C.surface3}>
@@ -212,10 +216,11 @@ export default function AnalyticsScreen() {
               {a.distinctQuestions.toLocaleString()} questions · {a.sessions.toLocaleString()} sessions · active {a.activeDays}/30 days
             </Text>
           </View>
+          </Entrance>
 
           {/* ── Today's plan ─────────────────────────────────────────── */}
           {a.studyPlan.length > 0 && (
-            <>
+            <Entrance delay={70}>
               <Text style={[s.secLabel, { color: C.textFaint }]}>TODAY'S PLAN</Text>
               <View style={[s.planWrap, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
                 {a.studyPlan.map((p, i) => {
@@ -250,11 +255,12 @@ export default function AnalyticsScreen() {
                   )
                 })}
               </View>
-            </>
+            </Entrance>
           )}
 
           {/* ── Trends · one card, two charts ────────────────────────── */}
           <View onLayout={e => { insightsY.current = e.nativeEvent.layout.y }} />
+          <Entrance delay={140}>
           <Text style={[s.secLabel, { color: C.textFaint }]}>TRENDS · LAST 14 DAYS</Text>
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
             <Text style={[s.chartTitle, { color: C.textSoft }]}>Accuracy</Text>
@@ -263,8 +269,10 @@ export default function AnalyticsScreen() {
             <Text style={[s.chartTitle, { color: C.textSoft }]}>XP earned</Text>
             <BarChart points={a.xpByDay.map(p => p.value)} labels={a.xpByDay.map(p => p.label)} color={C.teal} C={C} />
           </View>
+          </Entrance>
 
           {/* ── How you study · behaviour + mix in one card ──────────── */}
+          <Entrance delay={210}>
           <Text style={[s.secLabel, { color: C.textFaint }]}>HOW YOU STUDY</Text>
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
             <View style={s.rowBetween}>
@@ -300,6 +308,7 @@ export default function AnalyticsScreen() {
               )
             })()}
           </View>
+          </Entrance>
 
           {/* ── Your standing · tier + peers in one card ─────────────── */}
           {(() => {
@@ -308,7 +317,7 @@ export default function AnalyticsScreen() {
               profile?.tier ?? 0,
             )
             return (
-              <>
+              <Entrance delay={280}>
                 <Text style={[s.secLabel, { color: C.textFaint }]}>YOUR STANDING</Text>
                 <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
                   <View style={s.rowBetween}>
@@ -342,11 +351,12 @@ export default function AnalyticsScreen() {
                   })}
                   <Text style={[s.note, { color: C.textFaint }]}>Ranked by XP — climb by earning more.</Text>
                 </View>
-              </>
+              </Entrance>
             )
           })()}
 
           {/* ── Subjects (drill-down) — untouched ones lead as start chips */}
+          <Entrance delay={350}>
           <Text style={[s.secLabel, { color: C.textFaint }]}>SUBJECTS</Text>
           {a.untouched.length > 0 && (
             <View style={s.untouchedRow}>
@@ -402,6 +412,7 @@ export default function AnalyticsScreen() {
               </View>
             )
           })}
+          </Entrance>
           </>
           )}
         </ScrollView>
@@ -416,20 +427,34 @@ function formatHour(h: number) {
   return `${hr}${am ? 'am' : 'pm'}`
 }
 
-/** Circular progress ring with centered children. */
+const AnimatedCircle = Animated.createAnimatedComponent(Circle)
+
+/** Circular progress ring with centered children — fills from 0 on mount. */
 function Ring({ size, stroke, pct, color, track, children }: {
   size: number; stroke: number; pct: number; color: string; track: string; children: React.ReactNode
 }) {
   const r = (size - stroke) / 2
   const circ = 2 * Math.PI * r
+  const anim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const a = Animated.timing(anim, {
+      toValue: Math.min(100, Math.max(0, pct)),
+      duration: 900,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    })
+    a.start()
+    return () => a.stop()
+  }, [pct]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={size} height={size}>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={stroke} fill="none" />
         {pct > 0 && (
-          <Circle
+          <AnimatedCircle
             cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none"
-            strokeDasharray={`${circ}`} strokeDashoffset={circ * (1 - Math.min(100, pct) / 100)}
+            strokeDasharray={`${circ}`}
+            strokeDashoffset={anim.interpolate({ inputRange: [0, 100], outputRange: [circ, 0] }) as any}
             strokeLinecap="round" transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         )}

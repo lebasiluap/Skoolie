@@ -17,6 +17,7 @@ import { tierScore, tierFromScore } from '@/lib/tiers'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
+import { Entrance } from '@/components/ui/Entrance'
 
 interface LeaderboardUser {
   id: string; full_name: string; xp: number; level: number; current_streak: number
@@ -188,7 +189,9 @@ export default function ProgressScreen() {
       <Animated.View style={[{ flex: 1 }, entrance]}>
       <FlatList
         data={loading ? [] : filteredUsers}
-        keyExtractor={u => u.id}
+        // Key includes the active filters so toggling period/scope remounts
+        // rows and replays the cascade
+        keyExtractor={u => `${lbPeriod}-${lbScope}-${u.id}`}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100, flexGrow: 1, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
         showsVerticalScrollIndicator={false}
@@ -199,7 +202,7 @@ export default function ProgressScreen() {
                 {lbPeriod === 'week' ? 'No one in your league yet this week — finish a session to enter!' : 'No one here yet'}
               </Text>
         }
-        renderItem={({ item: u }) => {
+        renderItem={({ item: u, index }) => {
           const rank = activeList.findIndex(x => x.id === u.id) + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
@@ -210,7 +213,8 @@ export default function ProgressScreen() {
           const promoLine = showZones && rank === 11 && cohort > 11
           const relegLine = showZones && cohort >= 10 && rank === cohort - 4
           return (
-            <View>
+            // Rows cascade in — delay capped so deep scrolls never wait
+            <Entrance delay={Math.min(index, 8) * 35} dy={10}>
             {promoLine && (
               <View style={s.zoneRow}>
                 <View style={[s.zoneLine, { backgroundColor: C.green }]} />
@@ -249,7 +253,7 @@ export default function ProgressScreen() {
               </View>
               <Text style={[s.xp, { color: C.teal }]}>{u.xp.toLocaleString()} XP</Text>
             </TouchableOpacity>
-            </View>
+            </Entrance>
           )
         }}
         ListHeaderComponent={
@@ -258,6 +262,7 @@ export default function ProgressScreen() {
         <Text style={[s.pageTitle, { color: C.text, paddingHorizontal: 16, paddingTop: 20, marginBottom: 14 }]}>Your progress</Text>
 
         {/* Exam readiness + learning insights — one hero, opens full Insights */}
+        <Entrance>
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => router.push('/(app)/progress/analytics' as any)}
@@ -300,9 +305,11 @@ export default function ProgressScreen() {
           {/* (strongest/focus chips removed — the Focus chip duplicated the
               "Do this next" card directly below; Strongest lives in Insights) */}
         </TouchableOpacity>
+        </Entrance>
 
         {/* Next best action — one-tap into practice */}
         {nextAction && (
+          <Entrance delay={70}>
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push({ pathname: '/(app)/practice/mcq', params: { startTopic: nextAction.topic, from: 'progress' } } as any)}
@@ -322,9 +329,11 @@ export default function ProgressScreen() {
               <Text style={[s.nextPillText, { color: C.teal }]}>Go →</Text>
             </View>
           </TouchableOpacity>
+          </Entrance>
         )}
 
         {/* Leaderboard */}
+        <Entrance delay={140}>
         <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
           <Text style={[s.pageTitle, { color: C.text }]}>Leaderboard</Text>
           <Text style={[s.leaderSub, { color: C.textFaint }]}>
@@ -408,6 +417,7 @@ export default function ProgressScreen() {
             </Text>
           )}
         </View>
+        </Entrance>
           </View>
         }
       />

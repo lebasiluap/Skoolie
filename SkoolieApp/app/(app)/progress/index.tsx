@@ -14,6 +14,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { IntroGate } from '@/components/ui/IntroGate'
 import { tierScore, tierFromScore } from '@/lib/tiers'
+import { LEAGUE_PROMOTE } from '@/lib/league'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
@@ -30,13 +31,14 @@ interface WeeklyRow extends LeaderboardUser { league: string }
 
 // Medal metals are identity colors (not theme moods) — deliberately fixed hex,
 // with alpha tints that read on both light and dark surfaces.
-// `promote` mirrors the server's league_promote_count (Duolingo-style
-// per-league counts); Diamond's top 10 enter the Tournament instead.
+// `promote` comes from lib/league (single source shared with notifications,
+// mirroring the server's league_promote_count); Diamond's top 10 enter the
+// Tournament instead of promoting.
 const LEAGUE_CONFIG = {
-  bronze:  { label: 'Bronze',  promote: 15, color: '#b45309', bg: 'rgba(180,83,9,0.1)',    emoji: '🥉' },
-  silver:  { label: 'Silver',  promote: 12, color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '🥈' },
-  gold:    { label: 'Gold',    promote: 10, color: '#d97706', bg: 'rgba(217,119,6,0.1)',    emoji: '🥇' },
-  diamond: { label: 'Diamond', promote: 10, color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    emoji: '💎' },
+  bronze:  { label: 'Bronze',  promote: LEAGUE_PROMOTE.bronze,  color: '#b45309', bg: 'rgba(180,83,9,0.1)',    emoji: '🥉' },
+  silver:  { label: 'Silver',  promote: LEAGUE_PROMOTE.silver,  color: '#6b7280', bg: 'rgba(107,114,128,0.1)', emoji: '🥈' },
+  gold:    { label: 'Gold',    promote: LEAGUE_PROMOTE.gold,    color: '#d97706', bg: 'rgba(217,119,6,0.1)',    emoji: '🥇' },
+  diamond: { label: 'Diamond', promote: LEAGUE_PROMOTE.diamond, color: '#0891b2', bg: 'rgba(8,145,178,0.1)',    emoji: '💎' },
 }
 
 const LEAGUE_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const

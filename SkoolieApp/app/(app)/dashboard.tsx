@@ -23,6 +23,7 @@ import { tierProgress, tierMeta } from '@/lib/tiers'
 import { nextBarrage, barrageDay } from '@/lib/barrage'
 import { checkWeekMoments } from '@/lib/weekMoments'
 import { rescheduleAll } from '@/lib/notifications'
+import { detectZoneEvent } from '@/lib/league'
 import { preloadSounds } from '@/lib/sounds'
 import { IntroGate } from '@/components/ui/IntroGate'
 import type { UserProfile } from '@/types'
@@ -145,14 +146,20 @@ export default function DashboardScreen() {
           const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
           const today = new Date()
           const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-          rescheduleAll({
-            userId: user.id,
-            streak,
-            practicedToday: profile.last_active_date === todayKey,
-            claimedSlotsToday: [...slots],
-            barragesToFreeze: 5 - (total % 5),
-            prefs: profile.notif_prefs,
-          })
+          // Zone transition (promotion/demotion cut) piggybacks on the same
+          // rebuild — detectZoneEvent diffs against the last zone seen this week
+          ;(async () => {
+            const zoneEvent = await detectZoneEvent(user.id)
+            rescheduleAll({
+              userId: user.id,
+              streak,
+              practicedToday: profile.last_active_date === todayKey,
+              claimedSlotsToday: [...slots],
+              barragesToFreeze: 5 - (total % 5),
+              prefs: profile.notif_prefs,
+              zoneEvent,
+            })
+          })()
         }
       })
     try {

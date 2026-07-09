@@ -11,7 +11,9 @@
  * Buddy (the speech bubble — warm best-friend energy).
  */
 import { Platform } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { barrageWindows } from '@/lib/barrage'
+import { weekStartKey, type ZoneEvent } from '@/lib/league'
 
 // expo-notifications is a NATIVE module — loading it eagerly crashes on any
 // runtime whose binary doesn't include it yet (Expo Go variants, stale dev
@@ -100,6 +102,29 @@ const LEAGUE_SUNDAY: Msg[] = [
   { title: 'Buddy 🏆', body: `Last day of the league week! Don't get relegated on a technicality — go earn some XP.` },
 ]
 
+const capWord = (w: string) => w.charAt(0).toUpperCase() + w.slice(1)
+
+/** Zone-transition messages — each kind fires AT MOST once per league week
+ *  (AsyncStorage-guarded), one evening slot per day, so it can never spam. */
+const ZONE_MSGS: Record<ZoneEvent['kind'], (e: ZoneEvent) => Msg[]> = {
+  enter_promo: e => [
+    { title: "You're in the promotion zone! 🎉", body: `Cappy checking in — #${e.rank} in ${capWord(e.league)} League. Hold it till Monday and you rise.` },
+    { title: 'Promotion zone secured 💪', body: `#${e.rank} in ${capWord(e.league)}. Someone's always lurking one place below — keep your lead.` },
+  ],
+  exit_promo: e => [
+    { title: 'You got bumped 😤', body: `Someone overtook you — you're #${e.rank} now, just outside the promotion zone. One session takes it back.` },
+    { title: 'Knocked out of the zone', body: `Buddy here — you slipped to #${e.rank} in ${capWord(e.league)}. The cut is close; a quick session puts you back inside.` },
+  ],
+  near_promo: e => [
+    { title: 'So close to promotion 👀', body: `#${e.rank} in ${capWord(e.league)} — ${e.rank - e.promoteN} place${e.rank - e.promoteN === 1 ? '' : 's'} off the zone. One Rapid Fire could do it.` },
+    { title: 'The zone is right there', body: `Noggin's math says #${e.rank} is within striking distance of promotion. A handful of questions closes it.` },
+  ],
+  enter_releg: e => [
+    { title: '⚠️ Demotion zone', body: `You've slipped to #${e.rank} in ${capWord(e.league)} — the bottom 5 drop on Monday. One session climbs you out.` },
+    { title: 'Danger zone, friend', body: `Buddy here — #${e.rank} puts you in the demotion cut. Don't let the week end there.` },
+  ],
+}
+
 let permissionAsked = false
 
 /**
@@ -139,6 +164,8 @@ interface ScheduleState {
   barragesToFreeze?: number
   /** per-category opt-outs from profile.notif_prefs — missing key = enabled */
   prefs?: import('@/types').NotifPrefs | null
+  /** league zone transition detected at app-open (lib/league.detectZoneEvent) */
+  zoneEvent?: ZoneEvent | null
 }
 
 function todayAt(h: number, m = 0): Date {
@@ -214,6 +241,28 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
       sunday.setDate(now.getDate() + ((7 - now.getDay()) % 7))   // next Sunday (today if Sunday)
       sunday.setHours(18, 0, 0, 0)
       jobs.push(sched(pick(LEAGUE_SUNDAY), sunday))
+    }
+
+    // 5) League zone transition — ONE evening ping, each kind at most once per
+    // league week. rescheduleAll cancels everything on each app open, so the
+    // guard stores the fire time: a still-future ping is re-scheduled (not
+    // lost), a past one is never repeated.
+    if (on('league') && state.zoneEvent) {
+      const e = state.zoneEvent
+      const guardKey = `zoneNotif:${weekStartKey()}:${e.kind}`
+      try {
+        const stored = await AsyncStorage.getItem(guardKey)
+        let when: Date | null = null
+        if (stored) {
+          const at2 = new Date(stored)
+          if (at2 > now) when = at2            // pending — restore after cancelAll
+        } else {
+          when = todayAt(20, 15)
+          if (when <= now) when = daysFrom(when, 1)
+          await AsyncStorage.setItem(guardKey, when.toISOString())
+        }
+        if (when) jobs.push(sched(pick(ZONE_MSGS[e.kind](e)), when))
+      } catch { /* guard failures just skip the ping */ }
     }
 
     await Promise.all(jobs)

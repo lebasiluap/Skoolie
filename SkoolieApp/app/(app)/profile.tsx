@@ -137,6 +137,7 @@ export default function ProfileScreen() {
   const [hapticsOn, setHapticsOn] = useState(profile?.haptics_enabled !== false)
   const [nameModal, setNameModal] = useState(false)
   const [nameDraft, setNameDraft] = useState(profile?.full_name ?? '')
+  const [accountDataSheet, setAccountDataSheet] = useState(false)
   const [deleteModal, setDeleteModal] = useState(false)
   const [deleteText, setDeleteText] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -728,6 +729,23 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
           </TouchableOpacity>
 
+          {/* Account & data — the deletion path lives at the bottom of this sheet */}
+          <TouchableOpacity
+            onPress={() => setAccountDataSheet(true)}
+            activeOpacity={0.75}
+            accessibilityRole="button" accessibilityLabel="Account and data"
+            style={[s.row, s.rowBorder, { borderColor: C.border }]}
+          >
+            <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
+              <Ionicons name="server-outline" size={19} color={C.textSoft} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.rowLabel, { color: C.text }]}>Account & data</Text>
+              <Text style={[s.rowSub, { color: C.textFaint }]}>How your data is stored and managed</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={17} color={C.textFaint} />
+          </TouchableOpacity>
+
           {/* Version */}
           <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
             <View style={[s.iconBox, { backgroundColor: C.surface3 }]}>
@@ -749,16 +767,6 @@ export default function ProfileScreen() {
         >
           <Text style={[s.signOutText, { color: C.red }]}>Sign out</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={confirmDeleteAccount}
-          activeOpacity={0.7}
-          accessibilityRole="button" accessibilityLabel="Delete your account permanently"
-          hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
-          style={{ alignSelf: 'center', marginTop: 16, marginBottom: 4 }}
-        >
-          <Text style={[s.deleteLink, { color: C.textFaint }]}>Delete account</Text>
-        </TouchableOpacity>
-
       </ScrollView>
       </Animated.View>
       <InterestsSheet visible={showInterests} onClose={() => setShowInterests(false)} />
@@ -894,6 +902,31 @@ export default function ProfileScreen() {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setNameModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
               <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Account & data — info sheet; deletion is the quiet last line */}
+      <Modal visible={accountDataSheet} transparent animationType="fade" onRequestClose={() => setAccountDataSheet(false)}>
+        <Pressable style={yr.overlay} onPress={() => setAccountDataSheet(false)}>
+          <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
+            <View style={[yr.handle, { backgroundColor: C.border }]} />
+            <Text style={[yr.title, { color: C.text }]}>Account & data</Text>
+            <Text style={[yr.sub, { color: C.textFaint }]}>
+              Your account stores your profile, study statistics, XP, streaks, trophies, league history, and bookmarks. Data is kept securely and used only to power the features described in our Privacy Policy. You can request a copy of your data anytime via support@skoolieapp.com.
+            </Text>
+            <TouchableOpacity onPress={() => setAccountDataSheet(false)} style={[yr.cancelBtn, { borderColor: C.border }]}>
+              <Text style={[yr.cancelText, { color: C.textSoft }]}>Done</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => { setAccountDataSheet(false); setTimeout(confirmDeleteAccount, 350) }}
+              activeOpacity={0.7}
+              accessibilityRole="button" accessibilityLabel="Delete your account permanently"
+              hitSlop={{ top: 8, bottom: 8, left: 12, right: 12 }}
+              style={{ alignSelf: 'center', marginTop: 14, marginBottom: 2 }}
+            >
+              <Text style={[s.deleteLink, { color: C.textFaint }]}>Delete my account…</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>

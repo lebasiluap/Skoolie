@@ -285,6 +285,24 @@ export default function ProfileScreen() {
         {/* ── Streak milestone tracker ──────────────────────── */}
         <StreakTracker streak={effStreak} userId={user.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} style={{ marginBottom: 14 }} />
 
+        {/* Trophy case */}
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/trophies' as any)}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Open your trophy case"
+          style={[s.trophyRow, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}
+        >
+          <View style={[s.trophyIcon, { backgroundColor: C.amberTint }]}>
+            <Text style={{ fontSize: 20 }}>🏆</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.trophyTitle, { color: C.text }]}>Trophy Case</Text>
+            <Text style={[s.trophySub, { color: C.textFaint }]}>Milestones you've earned — and the ones still waiting</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={C.textFaint} />
+        </TouchableOpacity>
+
         {/* ── Stats ─────────────────────────────────────────── */}
         <View style={s.statsGrid}>
           {([
@@ -772,6 +790,12 @@ const pr = StyleSheet.create({
 
 const s = StyleSheet.create({
   scroll: { paddingHorizontal: 18 },
+
+  // Trophy case row
+  trophyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 14 },
+  trophyIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  trophyTitle: { fontSize: 15, fontFamily: 'Nunito_800ExtraBold' },
+  trophySub: { fontSize: 12, fontFamily: 'Nunito_600SemiBold', marginTop: 1 },
 
   // Profile card
   profileCard:  { borderRadius: 24, borderWidth: 1, padding: 24, alignItems: 'center', marginBottom: 16 },

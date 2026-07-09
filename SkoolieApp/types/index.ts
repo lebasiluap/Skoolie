@@ -39,6 +39,8 @@ export interface UserProfile {
   notif_prefs: NotifPrefs | null
   /** Expo push token for server-sent notifications (zone transitions) */
   push_token: string | null
+  /** Trophy reward: 1.5× XP until this time (credit_xp honors it) */
+  xp_boost_until: string | null
   created_at: string
 }
 

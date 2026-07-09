@@ -36,6 +36,7 @@ export default function UserProfileScreen() {
   const C = useTheme()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [profile, setProfile] = useState<UserProfileData | null | undefined>(undefined)
+  const [trophies, setTrophies] = useState<{ trophy_id: string; emoji: string; title: string }[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -44,6 +45,9 @@ export default function UserProfileScreen() {
     supabase
       .rpc('get_public_profile', { p_id: id })
       .then(({ data }) => setProfile((data && data[0]) ?? null))
+    supabase
+      .rpc('get_user_trophies', { p_id: id })
+      .then(({ data }) => setTrophies((data ?? []) as any[]))
   }, [id])
 
   return (
@@ -114,6 +118,20 @@ export default function UserProfileScreen() {
               <Text style={[s.statLabel, { color: C.textFaint }]}>Level</Text>
             </View>
           </View>
+
+          {/* Trophy case */}
+          {trophies.length > 0 && (
+            <>
+              <Text style={[s.trophyHeader, { color: C.textFaint }]}>TROPHIES · {trophies.length}</Text>
+              <View style={[s.trophyWrap, { backgroundColor: C.surface, borderColor: C.border }]}>
+                {trophies.map(t => (
+                  <View key={t.trophy_id} style={[s.trophyTile, { backgroundColor: C.amberTint }]} accessible accessibilityLabel={t.title}>
+                    <Text style={{ fontSize: 20 }}>{t.emoji}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
         </ScrollView>
       )}
     </View>
@@ -135,6 +153,10 @@ const s = StyleSheet.create({
 
   profBadge: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 999, marginBottom: 18 },
   profBadgeText: { fontSize: 13, fontFamily: 'Nunito_700Bold' },
+
+  trophyHeader: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8, marginTop: 18, marginBottom: 8 },
+  trophyWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderRadius: 16, borderWidth: 1, padding: 12 },
+  trophyTile: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 
   xpSection: { width: '100%', maxWidth: 320 },
   xpLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 7 },

@@ -89,7 +89,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   if (focusSession) return null
 
   // Hidden sub-screens still belong to a tab — keep that tab highlighted.
-  const REPRESENT: Record<string, string> = { search: 'practice', bookmarks: 'practice' }
+  const REPRESENT: Record<string, string> = { search: 'practice', bookmarks: 'practice', trophies: 'profile' }
   const focusedName = state.routes[state.index]?.name
   const activeName = REPRESENT[focusedName] ?? focusedName
 

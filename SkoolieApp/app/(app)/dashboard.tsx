@@ -22,6 +22,7 @@ import { PRACTITIONER_TITLES } from '@/constants/professions'
 import { tierProgress, tierMeta } from '@/lib/tiers'
 import { nextBarrage, barrageDay } from '@/lib/barrage'
 import { checkWeekMoments } from '@/lib/weekMoments'
+import { checkTrophies } from '@/lib/trophies'
 import { rescheduleAll, registerPushToken } from '@/lib/notifications'
 import { detectZoneEvent } from '@/lib/league'
 import { preloadSounds } from '@/lib/sounds'
@@ -101,6 +102,8 @@ export default function DashboardScreen() {
     refreshProfile()
     // Week-end league result + tournament moments (AsyncStorage-deduped)
     checkWeekMoments()
+    // Trophy sweep (server-idempotent; celebrates + rewards new unlocks)
+    checkTrophies()
     // Today's Challenge status (materializes the cohort's set on first call)
     supabase.rpc('get_daily_challenge').then(({ data, error }) => {
       if (error || !data) { setChallenge(null); return }
@@ -374,6 +377,17 @@ export default function DashboardScreen() {
           return null
         })()}
 
+        {/* Trophy XP boost — quiet strip while active */}
+        {profile?.xp_boost_until && new Date(profile.xp_boost_until) > new Date() && (
+          <View style={[s.boostStrip, { backgroundColor: C.amberTint, borderColor: C.amber + '66' }]}>
+            <Ionicons name="flash" size={14} color={C.amber} />
+            <Text style={[s.boostText, { color: C.textSoft }]}>
+              <Text style={{ color: C.amber, fontFamily: 'Nunito_800ExtraBold' }}>1.5× XP boost active</Text>
+              {'  ·  ends '}{new Date(profile.xp_boost_until).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}
+            </Text>
+          </View>
+        )}
+
         {/* Today's Challenge — one card while unclaimed, one quiet line once
             done. Yields to a LIVE barrage window (one hero moment at a time;
             windows are ~20 min, the card returns right after). */}
@@ -592,6 +606,10 @@ const s = StyleSheet.create({
   barrageTitle: { fontSize: 13, fontFamily: 'Nunito_900Black', letterSpacing: 0.6 },
   barrageSub: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', marginTop: 2 },
   barrageTeaser: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 11, paddingHorizontal: 14, marginBottom: 14 },
+
+  // Trophy XP boost
+  boostStrip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 14 },
+  boostText: { flex: 1, fontSize: 12.5, fontFamily: 'Nunito_600SemiBold' },
 
   // Today's Challenge
   challengeCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, padding: 16, marginBottom: 14 },

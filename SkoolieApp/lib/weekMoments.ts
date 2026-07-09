@@ -30,15 +30,26 @@ export async function checkWeekMoments(): Promise<void> {
   try {
     const { data: r } = await supabase.rpc('get_week_result')
     if (r?.participated && await once(`weekResult:${r.week_start}`)) {
+      const podium = Number(r.reward_freezes ?? 0) > 0
+        ? ` Podium reward: ${r.reward_freezes} streak freeze${Number(r.reward_freezes) > 1 ? 's' : ''} 🧊.`
+        : ''
       if (r.outcome === 'promoted') {
         emitCelebrations([{
           kind: 'league',
           title: `${LEAGUE_LABEL[r.new_league]} League! ${LEAGUE_EMOJI[r.new_league] ?? '🏅'}`,
-          body: `You finished #${r.rank} last week with ${Number(r.week_xp).toLocaleString()} XP — promoted! New league, same rules: top 10 rise.`,
+          body: `You finished #${r.rank} last week with ${Number(r.week_xp).toLocaleString()} XP — promoted!${podium} New league, same rules: top 3 rise.`,
+          mascot: 'cappy',
+        }])
+      } else if (podium) {
+        // Diamond podium (stays, but wins freezes + tournament entry announced separately)
+        emitCelebrations([{
+          kind: 'league',
+          title: `Podium finish! #${r.rank} 🏅`,
+          body: `You closed last week #${r.rank} in ${LEAGUE_LABEL[r.league]} League.${podium}`,
           mascot: 'cappy',
         }])
       } else if (r.outcome === 'demoted') {
-        showToast(`You slipped to ${LEAGUE_LABEL[r.new_league]} League this week — top 10 gets you back.`, 'info')
+        showToast(`You slipped to ${LEAGUE_LABEL[r.new_league]} League this week — top 3 gets you back.`, 'info')
       }
     }
 

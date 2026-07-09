@@ -119,14 +119,27 @@ export default function UserProfileScreen() {
             </View>
           </View>
 
-          {/* Trophy case */}
+          {/* Trophy case — earned trophies as titled tiles */}
           {trophies.length > 0 && (
             <>
-              <Text style={[s.trophyHeader, { color: C.textFaint }]}>TROPHIES · {trophies.length}</Text>
-              <View style={[s.trophyWrap, { backgroundColor: C.surface, borderColor: C.border }]}>
+              <View style={s.trophyHeaderRow}>
+                <Text style={[s.trophyHeader, { color: C.textFaint }]}>TROPHY CASE</Text>
+                <View style={[s.trophyCount, { backgroundColor: C.amberTint }]}>
+                  <Text style={{ fontSize: 11 }}>🏆</Text>
+                  <Text style={[s.trophyCountText, { color: C.amber }]}>{trophies.length}</Text>
+                </View>
+              </View>
+              <View style={s.trophyGrid}>
                 {trophies.map(t => (
-                  <View key={t.trophy_id} style={[s.trophyTile, { backgroundColor: C.amberTint }]} accessible accessibilityLabel={t.title}>
-                    <Text style={{ fontSize: 20 }}>{t.emoji}</Text>
+                  <View
+                    key={t.trophy_id}
+                    style={[s.trophyCard, { backgroundColor: C.surface, borderColor: C.amber + '55' }]}
+                    accessible accessibilityLabel={t.title}
+                  >
+                    <View style={[s.trophyEmojiBox, { backgroundColor: C.amberTint }]}>
+                      <Text style={{ fontSize: 22 }}>{t.emoji}</Text>
+                    </View>
+                    <Text style={[s.trophyName, { color: C.textSoft }]} numberOfLines={2}>{t.title}</Text>
                   </View>
                 ))}
               </View>
@@ -154,9 +167,14 @@ const s = StyleSheet.create({
   profBadge: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 999, marginBottom: 18 },
   profBadgeText: { fontSize: 13, fontFamily: 'Nunito_700Bold' },
 
-  trophyHeader: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8, marginTop: 18, marginBottom: 8 },
-  trophyWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, borderRadius: 16, borderWidth: 1, padding: 12 },
-  trophyTile: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  trophyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 10 },
+  trophyHeader: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.8 },
+  trophyCount: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 999 },
+  trophyCountText: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', fontVariant: ['tabular-nums'] },
+  trophyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  trophyCard: { width: '31%', borderRadius: 14, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center', gap: 6 },
+  trophyEmojiBox: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  trophyName: { fontSize: 10.5, fontFamily: 'Nunito_700Bold', textAlign: 'center', lineHeight: 13 },
 
   xpSection: { width: '100%', maxWidth: 320 },
   xpLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 7 },

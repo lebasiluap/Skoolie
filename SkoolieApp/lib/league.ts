@@ -9,14 +9,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from './supabase'
 
-export const LEAGUE_PROMOTE: Record<string, number> = { bronze: 15, silver: 12, gold: 10, diamond: 10 }
+/** League v3: top 3 promote in every league (Diamond's top 3 enter the
+ *  Tournament); bottom 3 relegate; boards run 13 deep. */
+export const LEAGUE_PROMOTE: Record<string, number> = { bronze: 3, silver: 3, gold: 3, diamond: 3 }
 
-/** Adaptive cut (mirrors server league_effective_promote): Duolingo's counts
- *  assume 30-person boards — small cohorts shrink the cut so both zones stay
- *  real (top N promote, bottom 5 drop, never overlapping). */
-export function effectivePromote(league: string, cohort: number): number {
-  const base = LEAGUE_PROMOTE[league] ?? 10
-  return Math.min(base, Math.max(1, cohort - (cohort >= 10 ? 5 : 0)))
+/** Mirrors server league_effective_promote. */
+export function effectivePromote(_league: string, cohort: number): number {
+  return Math.min(3, Math.max(1, cohort - (cohort >= 10 ? 3 : 0)))
 }
 
 export type LeagueZone = 'promo' | 'near' | 'mid' | 'releg'
@@ -62,7 +61,7 @@ export async function detectZoneEvent(userId: string): Promise<ZoneEvent | null>
     const league = me.league
     const cohort = rows.length
     const promoteN = effectivePromote(league, cohort)
-    const demoStart = Math.max(promoteN + 1, cohort - 4)
+    const demoStart = Math.max(promoteN + 1, cohort - 2)
     const zone: LeagueZone =
       humanRank <= promoteN && me.week_xp > 0 ? 'promo'
         : cohort >= 10 && humanRank >= demoStart ? 'releg'

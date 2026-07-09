@@ -13,7 +13,8 @@ import { Avatar } from '@/components/ui/Avatar'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { IntroGate } from '@/components/ui/IntroGate'
 import { tierScore, tierFromScore } from '@/lib/tiers'
-import { LEAGUE_PROMOTE, effectivePromote } from '@/lib/league'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { LEAGUE_PROMOTE, effectivePromote, weekStartKey } from '@/lib/league'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
@@ -77,6 +78,32 @@ export default function ProgressScreen() {
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  // Rank movement since the last baseline (up = green, down/same = ash)
+  const [moves, setMoves] = useState<Record<string, 'up' | 'down' | 'same'>>({})
+
+  /** Compare current ranks to the last snapshot (kept fresh in ~20-min
+   *  windows) so every row can show whether it climbed, dropped, or held. */
+  async function computeMovement(rows: WeeklyRow[]) {
+    try {
+      const key = `lbRanks:${weekStartKey()}`
+      const raw = await AsyncStorage.getItem(key)
+      const now = Date.now()
+      const snap = raw ? (JSON.parse(raw) as { ts: number; ranks: Record<string, number> }) : null
+      if (snap) {
+        const mv: Record<string, 'up' | 'down' | 'same'> = {}
+        rows.forEach((u, i) => {
+          const prev = snap.ranks[u.id]
+          mv[u.id] = prev == null ? 'same' : prev > i + 1 ? 'up' : prev < i + 1 ? 'down' : 'same'
+        })
+        setMoves(mv)
+      }
+      if (!snap || now - snap.ts > 20 * 60 * 1000) {
+        const ranks: Record<string, number> = {}
+        rows.forEach((u, i) => { ranks[u.id] = i + 1 })
+        await AsyncStorage.setItem(key, JSON.stringify({ ts: now, ranks }))
+      }
+    } catch { /* movement cues are best-effort */ }
+  }
 
   // Refresh leaderboard + stats AND the in-memory profile every time the tab
   // gains focus, so XP/level/streak reflect sessions completed elsewhere.
@@ -100,7 +127,9 @@ export default function ProgressScreen() {
     ])
 
     // Weekly league cohort — alias week_xp to xp so the row renderer is shared.
-    setWeekUsers(((wk ?? []) as any[]).map(r => ({ ...r, xp: r.week_xp })))
+    const weekRows = ((wk ?? []) as any[]).map(r => ({ ...r, xp: r.week_xp })) as WeeklyRow[]
+    setWeekUsers(weekRows)
+    computeMovement(weekRows)
 
     // Tournament (best-effort; RPC is idempotent and resolves finished stages)
     supabase.rpc('get_tournament').then(({ data: t }) => {
@@ -173,7 +202,7 @@ export default function ProgressScreen() {
   // a real user their promotion (a human just below the line can still rise).
   const displayedN = activeList.length
   const promoteN = effectivePromote(myWeekLeagueId, displayedN)
-  const demoStart = Math.max(promoteN + 1, displayedN - 4)
+  const demoStart = Math.max(promoteN + 1, displayedN - 2)
   const demoLive = displayedN >= 10
   const showZones = displayedN > 0
   const promoBoundaryIdx = showZones && displayedN > promoteN ? promoteN : -1
@@ -219,7 +248,6 @@ export default function ProgressScreen() {
           // Positional zones — everyone above the green line is in the
           // promotion zone, bottom 5 below the red line (Duolingo look).
           const inPromoZone = showZones && rank <= promoteN
-          const promoEarned = inPromoZone && u.xp > 0
           const inDemo = showZones && !inPromoZone && demoLive && rank >= demoStart
           const promoLine = index === promoBoundaryIdx && promoBoundaryIdx !== -1
           // (bands may render adjacent when there's no stay zone — that's honest)
@@ -240,7 +268,7 @@ export default function ProgressScreen() {
               <View style={s.zoneRow}>
                 <View style={[s.zoneLine, { backgroundColor: C.red }]} />
                 <Ionicons name="arrow-down" size={11} color={C.red} />
-                <Text style={[s.zoneText, { color: C.red }]}>DEMOTION ZONE</Text>
+                <Text style={[s.zoneText, { color: C.red }]}>RELEGATION ZONE</Text>
                 <Ionicons name="arrow-down" size={11} color={C.red} />
                 <View style={[s.zoneLine, { backgroundColor: C.red }]} />
               </View>
@@ -250,14 +278,24 @@ export default function ProgressScreen() {
               activeOpacity={0.75}
               accessibilityRole="button"
               accessibilityLabel={`${u.full_name}${isMe ? ', you' : ''}, rank ${rank}, ${u.xp.toLocaleString()} XP. View profile`}
-              style={[s.row, { backgroundColor: isMe ? C.tealTint : C.surface, borderColor: isMe ? C.teal : C.border, marginHorizontal: 16, ...C.shadow }]}
+              // Zone tints on the ROWS themselves: promotion seats greenish,
+              // relegation seats reddish, the middle stays bland. Your own
+              // row keeps its teal identity on top of the zone.
+              style={[s.row, {
+                backgroundColor: isMe ? C.tealTint : inPromoZone ? C.greenTint : inDemo ? C.redTint : C.surface,
+                borderColor: isMe ? C.teal : inPromoZone ? C.green + '66' : inDemo ? C.red + '66' : C.border,
+                marginHorizontal: 16,
+                ...C.shadow,
+              }]}
             >
               <View style={[s.rankBox, rankStyle ? { backgroundColor: rankStyle.bg } : { backgroundColor: C.surface3 }]}>
                 {rankStyle ? <Text style={{ fontSize: 18 }}>{rankStyle.label}</Text> : <Text style={[s.rankNum, { color: C.textFaint }]}>#{rank}</Text>}
               </View>
-              {/* Per-row zone cue — no misreading which side of the cut a row is on */}
-              {inPromoZone && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6, opacity: promoEarned ? 1 : 0.3 }} />}
-              {inDemo && <Ionicons name="caret-down" size={13} color={C.red} style={{ marginLeft: -6 }} />}
+              {/* Movement since last check: climbed = green ▲, dropped = ash ▼,
+                  held = ash dash */}
+              {moves[u.id] === 'up' && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6 }} />}
+              {moves[u.id] === 'down' && <Ionicons name="caret-down" size={13} color={C.textFaint} style={{ marginLeft: -6 }} />}
+              {(moves[u.id] === 'same' || !moves[u.id]) && <Text style={{ marginLeft: -6, fontSize: 12, color: C.textFaint, fontFamily: 'Nunito_800ExtraBold' }}>–</Text>}
               <Avatar name={u.full_name} avatarUrl={u.avatar_url} size={40} />
               {/* Quiet row: the tier badge is the ONLY colored chip; the XP value
                   is the ONLY emphasized number. Everything else is neutral. */}
@@ -422,7 +460,7 @@ export default function ProgressScreen() {
               {LEAGUE_CONFIG[myWeekLeagueId].label} League
             </Text>
             <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
-              {myWeekLeagueId === 'diamond' ? `Top ${promoteN} enter the Tournament` : `Top ${promoteN} promote`}{demoLive ? ' · bottom 5 drop' : ''}
+              {myWeekLeagueId === 'diamond' ? `Top ${promoteN} enter the Tournament · podium wins freezes` : `Top ${promoteN} promote · podium wins freezes`}{demoLive ? ' · bottom 3 drop' : ''}
             </Text>
             <View style={s.leagueMetaRow}>
               <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>

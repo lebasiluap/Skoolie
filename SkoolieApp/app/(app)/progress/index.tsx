@@ -129,7 +129,6 @@ export default function ProgressScreen() {
   const overallMastery = analytics?.mastery ?? 0
   const accuracy = analytics?.accuracy ?? 0
   const retention = analytics?.retention ?? 0
-  const strongest = analytics?.strongest ?? null
   const readiness = analytics?.readiness ?? 0
   const readinessLabel = analytics?.readinessLabel ?? 'Getting started'
   const nextAction = analytics?.studyPlan[0] ?? null
@@ -264,7 +263,8 @@ export default function ProgressScreen() {
           onPress={() => router.push('/(app)/progress/analytics' as any)}
           accessibilityRole="button"
           accessibilityLabel={`Exam readiness ${readiness} percent, ${readinessLabel}. Open learning insights`}
-          style={[s.heroCard, { backgroundColor: C.surface, borderColor: C.border, marginHorizontal: 16, marginBottom: 14, ...C.shadow }]}
+          // The page's ONE tinted moment — matches the Insights hero treatment
+          style={[s.heroCard, { backgroundColor: readinessColor + '10', borderColor: readinessColor + '55', marginHorizontal: 16, marginBottom: 14 }]}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             <View style={{ flex: 1 }}>
@@ -297,23 +297,8 @@ export default function ProgressScreen() {
             ))}
           </View>
 
-          {/* Strongest / focus chips */}
-          {(strongest || nextAction) && (
-            <View style={s.heroChipRow}>
-              {strongest && (
-                <View style={[s.heroChip, { backgroundColor: C.greenTint }]}>
-                  <Ionicons name="trophy" size={12} color={C.green} />
-                  <Text style={[s.heroChipText, { color: C.green }]} numberOfLines={1}>Strongest · {strongest.topic}</Text>
-                </View>
-              )}
-              {nextAction && (
-                <View style={[s.heroChip, { backgroundColor: C.coralTint }]}>
-                  <Ionicons name="flag" size={12} color={C.coral} />
-                  <Text style={[s.heroChipText, { color: C.coral }]} numberOfLines={1}>Focus · {nextAction.topic}</Text>
-                </View>
-              )}
-            </View>
-          )}
+          {/* (strongest/focus chips removed — the Focus chip duplicated the
+              "Do this next" card directly below; Strongest lives in Insights) */}
         </TouchableOpacity>
 
         {/* Next best action — one-tap into practice */}
@@ -346,24 +331,45 @@ export default function ProgressScreen() {
             {lbPeriod === 'week' ? 'Weekly league · resets Monday' : 'Top 50 · all-time'}
           </Text>
 
-          {/* Period toggle */}
-          <View style={s.scopeRow}>
-            {LB_PERIODS.map(p => {
-              const active = lbPeriod === p.id
-              return (
-                <TouchableOpacity
-                  key={p.id}
-                  onPress={() => withFilterAnim(() => setLbPeriod(p.id))}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  accessibilityLabel={`Show ${p.label} leaderboard`}
-                  style={[s.scopeChip, { backgroundColor: active ? C.text : C.surface2, borderColor: active ? C.text : C.border }]}
-                >
-                  <Text style={[s.scopeChipText, { color: active ? C.bg : C.textSoft }]}>{p.label}</Text>
-                </TouchableOpacity>
-              )
-            })}
+          {/* ONE controls row: period (ink) + scope (teal) — was two rows
+              sandwiching the league card, five bands before the first row */}
+          <View style={[s.scopeRow, { flexWrap: 'wrap', justifyContent: 'space-between' }]}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {LB_PERIODS.map(p => {
+                const active = lbPeriod === p.id
+                return (
+                  <TouchableOpacity
+                    key={p.id}
+                    onPress={() => withFilterAnim(() => setLbPeriod(p.id))}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`Show ${p.label} leaderboard`}
+                    style={[s.scopeChip, { backgroundColor: active ? C.text : C.surface2, borderColor: active ? C.text : C.border }]}
+                  >
+                    <Text style={[s.scopeChipText, { color: active ? C.bg : C.textSoft }]}>{p.label}</Text>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {LB_SCOPES.map(scope => {
+                const active = lbScope === scope.id
+                return (
+                  <TouchableOpacity
+                    key={scope.id}
+                    onPress={() => withFilterAnim(() => setLbScope(scope.id))}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`Filter leaderboard: ${scope.label}`}
+                    style={[s.scopeChip, { backgroundColor: active ? C.teal : C.surface2, borderColor: active ? C.teal : C.border }]}
+                  >
+                    <Text style={[s.scopeChipText, { color: active ? C.onTeal : C.textSoft }]}>{scope.label}</Text>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
           </View>
 
           {/* Compact league standing */}
@@ -394,24 +400,6 @@ export default function ProgressScreen() {
               )}
             </View>
           )}
-          <View style={s.scopeRow}>
-            {LB_SCOPES.map(scope => {
-              const active = lbScope === scope.id
-              return (
-                <TouchableOpacity
-                  key={scope.id}
-                  onPress={() => withFilterAnim(() => setLbScope(scope.id))}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  accessibilityLabel={`Filter leaderboard: ${scope.label}`}
-                  style={[s.scopeChip, { backgroundColor: active ? C.teal : C.surface2, borderColor: active ? C.teal : C.border }]}
-                >
-                  <Text style={[s.scopeChipText, { color: active ? C.onTeal : C.textSoft }]}>{scope.label}</Text>
-                </TouchableOpacity>
-              )
-            })}
-          </View>
           {/* Filtered view keeps GLOBAL ranks (your true position) — say so,
               or the gaps in numbering read as missing rows */}
           {lbScope === 'mine' && (
@@ -447,9 +435,6 @@ const s = StyleSheet.create({
   heroMetricsRow: { flexDirection: 'row', borderTopWidth: 1, marginTop: 14, paddingTop: 12 },
   heroMetricVal: { fontSize: 16, fontFamily: 'Nunito_900Black', fontVariant: ['tabular-nums'] },
   heroMetricLabel: { fontSize: 10.5, fontFamily: 'Nunito_700Bold', marginTop: 1 },
-  heroChipRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  heroChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, flexShrink: 1 },
-  heroChipText: { fontSize: 11, fontFamily: 'Nunito_700Bold', flexShrink: 1 },
 
   nextCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, borderWidth: 1, padding: 14 },
   nextIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },

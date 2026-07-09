@@ -35,7 +35,6 @@ export default function AnalyticsScreen() {
   const entrance = useScreenEntrance()
   const [data, setData] = useState<Analytics | null>(null)
   const [standing, setStanding] = useState({ rankField: 0, nField: 0, rankGlobal: 0, nGlobal: 0 })
-  const [bookmarkCount, setBookmarkCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [openTopic, setOpenTopic] = useState<string | null>(null)
@@ -63,7 +62,7 @@ export default function AnalyticsScreen() {
     // RootNavigator routes that to onboarding, so this screen never strands.
     if (!user || !profile) return
     try {
-    const [{ data: hist }, { data: sess }, { data: mcqC }, { data: fcC }, { data: lb }, { count: bmCount }] = await Promise.all([
+    const [{ data: hist }, { data: sess }, { data: mcqC }, { data: fcC }, { data: lb }] = await Promise.all([
       // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
       // the limit binds, and "last 14 days" would compute from stale rows.
       supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).order('answered_at', { ascending: false }).limit(5000),
@@ -71,9 +70,7 @@ export default function AnalyticsScreen() {
       supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'mcq', p_access_key: profile.access_key ?? null }),
       supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }),
       supabase.rpc('get_leaderboard', { p_limit: 200 }),
-      supabase.from('bookmarks').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
-    setBookmarkCount(bmCount ?? 0)
     const totals: Record<string, number> = {}
     for (const r of [...(mcqC ?? []), ...(fcC ?? [])]) totals[r.topic] = (totals[r.topic] ?? 0) + Number(r.cnt)
 
@@ -176,8 +173,10 @@ export default function AnalyticsScreen() {
             </View>
           ) : (
           <>
-          {/* ── Exam readiness ───────────────────────────────────────── */}
-          <View style={[s.readyCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+          {/* ── HERO · Where you stand ───────────────────────────────────
+              The ONE tinted moment on the page: readiness ring + breakdown +
+              a quiet volume line (absorbs the old At-a-glance section). */}
+          <View style={[s.readyCard, { backgroundColor: masteryColor(a.readiness) + '10', borderColor: masteryColor(a.readiness) + '55' }]}>
             <View style={s.readyTop}>
               <Ring size={isSmall ? 96 : 116} stroke={isSmall ? 9 : 11} pct={a.readiness} color={masteryColor(a.readiness)} track={C.surface3}>
                 <Text style={[s.readyVal, { color: masteryColor(a.readiness), fontSize: isSmall ? 24 : 28 }]}>{a.readiness}%</Text>
@@ -209,33 +208,10 @@ export default function AnalyticsScreen() {
                 </View>
               ))}
             </View>
+            <Text style={[s.heroMetaLine, { color: C.textFaint, borderTopColor: C.border }]}>
+              {a.distinctQuestions.toLocaleString()} questions · {a.sessions.toLocaleString()} sessions · active {a.activeDays}/30 days
+            </Text>
           </View>
-
-          {/* ── Specialty rank ───────────────────────────────────────── */}
-          {(() => {
-            const tp = tierProgress(
-              Math.max(tierScore(a.distinctQuestions, a.diversity), profile?.tier_score ?? 0),
-              profile?.tier ?? 0,
-            )
-            return (
-              <>
-                <Text style={[s.secLabel, { color: C.textFaint }]}>SPECIALTY RANK</Text>
-                <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-                  <View style={s.rowBetween}>
-                    <TierBadge tier={tp.tier} size="md" />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Ionicons name="arrow-forward" size={13} color={C.textFaint} />
-                      <TierBadge tier={tp.tier + 1} size="md" />
-                    </View>
-                  </View>
-                  <ProgressBar progress={tp.pct} height={8} color={C.coral} style={{ marginTop: 12 }} />
-                  <Text style={[s.note, { color: C.textFaint, marginTop: 8 }]}>
-                    {tp.need - tp.have} to {tp.next.name} · your rank grows with distinct questions answered, multiplied by how broadly you practise
-                  </Text>
-                </View>
-              </>
-            )
-          })()}
 
           {/* ── Today's plan ─────────────────────────────────────────── */}
           {a.studyPlan.length > 0 && (
@@ -277,90 +253,19 @@ export default function AnalyticsScreen() {
             </>
           )}
 
-          {/* ── At a glance ──────────────────────────────────────────── */}
+          {/* ── Trends · one card, two charts ────────────────────────── */}
           <View onLayout={e => { insightsY.current = e.nativeEvent.layout.y }} />
-          <Text style={[s.secLabel, { color: C.textFaint }]}>AT A GLANCE</Text>
-          <View style={s.miniRow}>
-            {[
-              { label: 'Questions', val: a.distinctQuestions.toLocaleString(), icon: 'help-circle', color: C.teal },
-              { label: 'Sessions', val: a.sessions.toLocaleString(), icon: 'albums', color: C.coral },
-              { label: 'Active days', val: `${a.activeDays}/30`, icon: 'calendar', color: C.amber },
-              { label: 'Bookmarks', val: bookmarkCount.toLocaleString(), icon: 'bookmark', color: C.green },
-            ].map(m => (
-              <View key={m.label} style={[s.miniCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-                <View style={[s.miniIcon, { backgroundColor: m.color + '1E' }]}>
-                  <Ionicons name={m.icon as any} size={14} color={m.color} />
-                </View>
-                <Text style={[s.miniVal, { color: C.text }]}>{m.val}</Text>
-                <Text style={[s.miniLabel, { color: C.textFaint }]} numberOfLines={1}>{m.label}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* ── Accuracy trend (14 days) ─────────────────────────────── */}
-          <Text style={[s.secLabel, { color: C.textFaint }]}>ACCURACY · LAST 14 DAYS</Text>
+          <Text style={[s.secLabel, { color: C.textFaint }]}>TRENDS · LAST 14 DAYS</Text>
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+            <Text style={[s.chartTitle, { color: C.textSoft }]}>Accuracy</Text>
             <BarChart points={a.accuracyByDay.map(p => p.value)} labels={a.accuracyByDay.map(p => p.label)} missing={a.accuracyByDay.map(p => !!p.missing)} color={C.green} C={C} fixedMax={100} suffix="%" />
-          </View>
-
-          {/* ── Study mix ────────────────────────────────────────────── */}
-          {(a.mix.mcq + a.mix.flashcard + a.mix.case_study) > 0 && (() => {
-            const total = a.mix.mcq + a.mix.flashcard + a.mix.case_study
-            const rows = [
-              { label: 'MCQs', val: a.mix.mcq, color: C.teal },
-              { label: 'Flashcards', val: a.mix.flashcard, color: C.coral },
-              { label: 'Cases', val: a.mix.case_study, color: C.amber },
-            ].sort((x, y) => y.val - x.val)
-            return (
-              <>
-                <Text style={[s.secLabel, { color: C.textFaint }]}>STUDY MIX</Text>
-                <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-                  <Text style={[s.note, { color: C.textFaint, marginBottom: 10 }]}>You practise {rows[0].label} the most.</Text>
-                  {rows.map(r => (
-                    <View key={r.label} style={{ marginBottom: 10 }}>
-                      <View style={s.rowBetween}>
-                        <Text style={[s.cardText, { color: C.textSoft }]}>{r.label}</Text>
-                        <Text style={[s.cardStrong, { color: r.color }]}>{Math.round((r.val / total) * 100)}%</Text>
-                      </View>
-                      <ProgressBar progress={r.val / total} height={7} color={r.color} style={{ marginTop: 6 }} />
-                    </View>
-                  ))}
-                </View>
-              </>
-            )
-          })()}
-
-          {/* ── Peer standing ────────────────────────────────────────── */}
-          <Text style={[s.secLabel, { color: C.textFaint }]}>HOW YOU COMPARE</Text>
-          <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-            {[
-              { label: `Among ${profile?.profession ?? 'your field'}`, rank: standing.rankField, n: standing.nField },
-              { label: 'Among all students', rank: standing.rankGlobal, n: standing.nGlobal },
-            ].map(p => {
-              const ranked = p.rank > 0 && p.n > 0
-              const fill = ranked ? (p.n - p.rank + 1) / p.n : 0
-              const display = !ranked ? '—' : p.n <= 1 ? '#1' : `#${p.rank} of ${p.n}`
-              return (
-                <View key={p.label} style={{ marginBottom: 10 }}>
-                  <View style={s.rowBetween}>
-                    <Text style={[s.cardText, { color: C.textSoft }]}>{p.label}</Text>
-                    <Text style={[s.cardStrong, { color: C.teal }]}>{display}</Text>
-                  </View>
-                  <ProgressBar progress={Math.max(fill, ranked ? 0.04 : 0)} height={7} color={C.teal} style={{ marginTop: 6 }} />
-                </View>
-              )
-            })}
-            <Text style={[s.note, { color: C.textFaint }]}>Ranked by XP — climb by earning more.</Text>
-          </View>
-
-          {/* ── XP trend (14 days) ───────────────────────────────────── */}
-          <Text style={[s.secLabel, { color: C.textFaint }]}>XP · LAST 14 DAYS</Text>
-          <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+            <View style={[s.trendDivider, { backgroundColor: C.border }]} />
+            <Text style={[s.chartTitle, { color: C.textSoft }]}>XP earned</Text>
             <BarChart points={a.xpByDay.map(p => p.value)} labels={a.xpByDay.map(p => p.label)} color={C.teal} C={C} />
           </View>
 
-          {/* ── Study behaviour ──────────────────────────────────────── */}
-          <Text style={[s.secLabel, { color: C.textFaint }]}>STUDY BEHAVIOUR</Text>
+          {/* ── How you study · behaviour + mix in one card ──────────── */}
+          <Text style={[s.secLabel, { color: C.textFaint }]}>HOW YOU STUDY</Text>
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
             <View style={s.rowBetween}>
               <Text style={[s.cardText, { color: C.textSoft }]}>Most active</Text>
@@ -372,33 +277,87 @@ export default function AnalyticsScreen() {
             {a.bestHour != null && <Text style={[s.note, { color: C.textFaint, marginTop: 4 }]}>You answer most accurately around {formatHour(a.bestHour)}.</Text>}
             <View style={{ height: 10 }} />
             <BarChart points={a.byWeekday} labels={['S', 'M', 'T', 'W', 'T', 'F', 'S']} color={C.coral} C={C} highlightIndex={a.byWeekday.indexOf(Math.max(...a.byWeekday))} />
+            {(a.mix.mcq + a.mix.flashcard + a.mix.case_study) > 0 && (() => {
+              const total = a.mix.mcq + a.mix.flashcard + a.mix.case_study
+              const rows = [
+                { label: 'MCQs', val: a.mix.mcq, color: C.teal },
+                { label: 'Flashcards', val: a.mix.flashcard, color: C.coral },
+                { label: 'Cases', val: a.mix.case_study, color: C.amber },
+              ].filter(r => r.val > 0).sort((x, y) => y.val - x.val)
+              return (
+                <>
+                  <View style={[s.trendDivider, { backgroundColor: C.border }]} />
+                  {rows.map(r => (
+                    <View key={r.label} style={{ marginBottom: 10 }}>
+                      <View style={s.rowBetween}>
+                        <Text style={[s.cardText, { color: C.textSoft }]}>{r.label}</Text>
+                        <Text style={[s.cardStrong, { color: r.color }]}>{Math.round((r.val / total) * 100)}%</Text>
+                      </View>
+                      <ProgressBar progress={r.val / total} height={7} color={r.color} style={{ marginTop: 6 }} />
+                    </View>
+                  ))}
+                </>
+              )
+            })()}
           </View>
 
-          {/* ── Knowledge gaps ───────────────────────────────────────── */}
-          {(a.weakest || a.untouched.length > 0) && (
-            <>
-              <Text style={[s.secLabel, { color: C.textFaint }]}>KNOWLEDGE GAPS</Text>
-              <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
-                {a.weakest && (
-                  <TouchableOpacity style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(a.weakest!.topic)} accessibilityRole="button" accessibilityLabel={`Practice your weakest subject, ${a.weakest.topic}, ${a.weakest.accuracy} percent accuracy`}>
-                    <Ionicons name="trending-down" size={16} color={C.red} />
-                    <Text style={[s.cardText, { color: C.text, flex: 1 }]} numberOfLines={1}>Weakest: {a.weakest.topic}</Text>
-                    <Text style={[s.cardStrong, { color: C.red }]}>{a.weakest.accuracy}%</Text>
-                  </TouchableOpacity>
-                )}
-                {a.untouched.slice(0, 3).map(t => (
-                  <TouchableOpacity key={t} style={[s.gapRow, { borderBottomColor: C.border }]} onPress={() => practiceTopic(t)} accessibilityRole="button" accessibilityLabel={`Start ${t} — untouched so far`}>
-                    <Ionicons name="ellipse-outline" size={16} color={C.textFaint} />
-                    <Text style={[s.cardText, { color: C.text, flex: 1 }]} numberOfLines={1}>Untouched: {t}</Text>
-                    <Ionicons name="chevron-forward" size={15} color={C.textFaint} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </>
-          )}
+          {/* ── Your standing · tier + peers in one card ─────────────── */}
+          {(() => {
+            const tp = tierProgress(
+              Math.max(tierScore(a.distinctQuestions, a.diversity), profile?.tier_score ?? 0),
+              profile?.tier ?? 0,
+            )
+            return (
+              <>
+                <Text style={[s.secLabel, { color: C.textFaint }]}>YOUR STANDING</Text>
+                <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
+                  <View style={s.rowBetween}>
+                    <TierBadge tier={tp.tier} size="md" />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="arrow-forward" size={13} color={C.textFaint} />
+                      <TierBadge tier={tp.tier + 1} size="md" />
+                    </View>
+                  </View>
+                  <ProgressBar progress={tp.pct} height={8} color={C.coral} style={{ marginTop: 12 }} />
+                  <Text style={[s.note, { color: C.textFaint, marginTop: 8 }]}>
+                    {tp.need - tp.have} to {tp.next.name} · grows with distinct questions, multiplied by breadth
+                  </Text>
+                  <View style={[s.trendDivider, { backgroundColor: C.border }]} />
+                  {[
+                    { label: `Among ${profile?.profession ?? 'your field'}`, rank: standing.rankField, n: standing.nField },
+                    { label: 'Among all students', rank: standing.rankGlobal, n: standing.nGlobal },
+                  ].map(p => {
+                    const ranked = p.rank > 0 && p.n > 0
+                    const fill = ranked ? (p.n - p.rank + 1) / p.n : 0
+                    const display = !ranked ? '—' : p.n <= 1 ? '#1' : `#${p.rank} of ${p.n}`
+                    return (
+                      <View key={p.label} style={{ marginBottom: 10 }}>
+                        <View style={s.rowBetween}>
+                          <Text style={[s.cardText, { color: C.textSoft }]}>{p.label}</Text>
+                          <Text style={[s.cardStrong, { color: C.teal }]}>{display}</Text>
+                        </View>
+                        <ProgressBar progress={Math.max(fill, ranked ? 0.04 : 0)} height={7} color={C.teal} style={{ marginTop: 6 }} />
+                      </View>
+                    )
+                  })}
+                  <Text style={[s.note, { color: C.textFaint }]}>Ranked by XP — climb by earning more.</Text>
+                </View>
+              </>
+            )
+          })()}
 
-          {/* ── Subjects (drill-down) ────────────────────────────────── */}
+          {/* ── Subjects (drill-down) — untouched ones lead as start chips */}
           <Text style={[s.secLabel, { color: C.textFaint }]}>SUBJECTS</Text>
+          {a.untouched.length > 0 && (
+            <View style={s.untouchedRow}>
+              {a.untouched.slice(0, 3).map(t => (
+                <TouchableOpacity key={t} onPress={() => practiceTopic(t)} style={[s.untouchedChip, { backgroundColor: C.surface, borderColor: C.border }]} accessibilityRole="button" accessibilityLabel={`Start ${t} — untouched so far`}>
+                  <Ionicons name="add" size={13} color={C.teal} />
+                  <Text style={[s.untouchedChipText, { color: C.textSoft }]} numberOfLines={1}>{t}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {a.topics.filter(t => t.attempts > 0).map(t => {
             const open = openTopic === t.topic
             const tc = topicColor(t.topic)
@@ -551,15 +510,15 @@ const s = StyleSheet.create({
   planPill: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999 },
   planPillText: { fontSize: 11, fontFamily: 'Nunito_800ExtraBold' },
 
-  miniRow: { flexDirection: 'row', gap: 10, marginTop: 0 },
-  miniCard: { flex: 1, borderRadius: 16, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center' },
-  miniIcon: { width: 26, height: 26, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  miniVal: { fontSize: 17, fontFamily: 'Nunito_900Black' },
-  miniLabel: { fontSize: 10.5, fontFamily: 'Nunito_600SemiBold', marginTop: 2 },
+  heroMetaLine: { fontSize: 11.5, fontFamily: 'Nunito_600SemiBold', fontVariant: ['tabular-nums'], borderTopWidth: 1, marginTop: 14, paddingTop: 12 },
+  chartTitle: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', marginBottom: 8 },
+  trendDivider: { height: 1, marginVertical: 14 },
+  untouchedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  untouchedChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, maxWidth: '100%' },
+  untouchedChipText: { fontSize: 12.5, fontFamily: 'Nunito_700Bold', flexShrink: 1 },
 
   tIcon: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
 
-  gapRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth },
 
   subjHead: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   subList: { borderTopWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 10 },

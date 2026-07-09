@@ -90,8 +90,9 @@ export default function AnalyticsScreen() {
 
     setData(computeAnalytics((hist ?? []) as HistRow[], (sess ?? []) as SessRow[], qMeta, totals))
 
-    // Rank standing (leaderboard is sorted by XP desc)
-    const peers = (lb ?? []) as any[]
+    // Rank standing (leaderboard is sorted by XP desc; pacers excluded —
+    // "how you compare" means against real people)
+    const peers = ((lb ?? []) as any[]).filter(p => !p.is_bot)
     const field = peers.filter(p => p.profession === profile.profession)
     setStanding({
       rankGlobal: peers.findIndex(p => p.id === user.id) + 1,

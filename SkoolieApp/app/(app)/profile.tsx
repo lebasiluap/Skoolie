@@ -9,6 +9,7 @@ import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode, ThemeMode } from '@/contexts/ThemeContext'
 import { Avatar } from '@/components/ui/Avatar'
+import { AVATAR_PRESETS } from '@/lib/avatars'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
@@ -122,6 +123,7 @@ export default function ProfileScreen() {
   const [pendingYear, setPendingYear] = useState<string | null>(null)
   const [profSaving, setProfSaving] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarSheet, setAvatarSheet] = useState(false)
 
   if (!profile || !user) return null
 
@@ -186,6 +188,21 @@ export default function ProfileScreen() {
     }
   }
 
+  /** Avatar tap → choose between the preset gallery and a photo upload. */
+  function chooseAvatar() {
+    Alert.alert('Profile picture', 'Pick an avatar from the gallery or upload your own photo.', [
+      { text: 'Choose avatar', onPress: () => setAvatarSheet(true) },
+      { text: 'Upload photo', onPress: pickAndUploadAvatar },
+      { text: 'Cancel', style: 'cancel' },
+    ])
+  }
+
+  async function selectPreset(id: number) {
+    setAvatarSheet(false)
+    await supabase.from('user_profiles').update({ avatar_url: `preset:${id}` }).eq('id', user!.id)
+    await refreshProfile()
+  }
+
   async function pickAndUploadAvatar() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!perm.granted) {
@@ -235,7 +252,7 @@ export default function ProfileScreen() {
 
         {/* ── Profile card ──────────────────────────────────── */}
         <View style={[s.profileCard, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg }]}>
-          <TouchableOpacity onPress={pickAndUploadAvatar} activeOpacity={0.8} style={s.avatarWrap}>
+          <TouchableOpacity onPress={chooseAvatar} activeOpacity={0.8} style={s.avatarWrap} accessibilityRole="button" accessibilityLabel="Change profile picture">
             <Avatar name={profile.full_name} avatarUrl={profile.avatar_url} size={80} />
             <View style={[s.avatarBadge, { backgroundColor: C.teal, borderColor: C.surface }]}>
               {avatarUploading
@@ -689,6 +706,40 @@ export default function ProfileScreen() {
                 <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
               </TouchableOpacity>
             </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Avatar preset gallery — the built-in set anyone can wear */}
+      <Modal visible={avatarSheet} transparent animationType="fade" onRequestClose={() => setAvatarSheet(false)}>
+        <Pressable style={yr.overlay} onPress={() => setAvatarSheet(false)}>
+          <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
+            <Text style={[yr.title, { color: C.text }]}>Choose your avatar</Text>
+            <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', paddingVertical: 6 }}>
+                {AVATAR_PRESETS.map(p => {
+                  const selected = profile.avatar_url === `preset:${p.id}`
+                  return (
+                    <TouchableOpacity
+                      key={p.id}
+                      onPress={() => selectPreset(p.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Avatar ${p.emoji}`}
+                      style={{
+                        width: 54, height: 54, borderRadius: 27, backgroundColor: p.bg,
+                        alignItems: 'center', justifyContent: 'center',
+                        borderWidth: selected ? 3 : 0, borderColor: C.teal,
+                      }}
+                    >
+                      <Text style={{ fontSize: 26 }}>{p.emoji}</Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
+            </ScrollView>
+            <TouchableOpacity onPress={() => setAvatarSheet(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
+              <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
+            </TouchableOpacity>
           </Pressable>
         </Pressable>
       </Modal>

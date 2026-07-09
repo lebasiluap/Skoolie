@@ -39,38 +39,54 @@ export const TERMS: LegalDoc = {
     },
     {
       heading: '4. License and acceptable use',
-      body: 'We grant you a personal, non-exclusive, non-transferable, revocable license to use the Service for your own study. You agree not to: copy, scrape, resell, or redistribute the question bank or other content; share your account; reverse-engineer the app; use automated tools to access the Service; attempt to manipulate scores, streaks, XP, leagues, or other gamification systems; or use the Service in any unlawful way.',
+      body: 'Subject to your continued compliance with these Terms, we grant you a limited, personal, non-exclusive, non-transferable, non-sublicensable, revocable license to access and use the Service for your own individual study purposes. Except as expressly permitted herein, you shall not, and shall not permit or assist any third party to: (a) copy, extract, scrape, harvest, download in bulk, resell, sublicense, publish, or otherwise redistribute the question bank, explanations, case studies, or any other content comprising the Service; (b) share, lend, lease, or otherwise make your account credentials available to any other person; (c) decompile, disassemble, reverse-engineer, or otherwise attempt to derive the source code, underlying algorithms, or data structures of the Service; (d) deploy any robot, spider, crawler, or other automated means to access the Service or extract data therefrom; (e) manipulate, or attempt to manipulate, any score, streak, experience point, league standing, tier, tournament, or other gamification mechanism, whether by technical exploitation, collusion, or otherwise; (f) circumvent or attempt to circumvent any technical, security, or access-control measure; or (g) use the Service in violation of any applicable law, regulation, or third-party right.',
     },
     {
-      heading: '5. Our content and your data',
-      body: 'The Service, including all questions, explanations, characters, artwork, and software, is owned by us or our licensors and protected by intellectual property laws. Your study statistics and progress data are yours; we use them to operate the features described in our Privacy Policy.',
+      heading: '5. Intellectual property; our content and your data',
+      body: 'The Service — including without limitation all questions, answers, explanations, distractor rationales, case vignettes, characters, mascots, illustrations, artwork, animations, sounds, trademarks, trade dress, software, and the selection, arrangement, and compilation thereof — is owned by us or our licensors and is protected by copyright, trademark, and other intellectual property laws of Ghana and other jurisdictions. No right, title, or interest in or to the Service or any content therein is transferred to you by virtue of these Terms or your use of the Service, other than the limited license expressly granted in Section 4. Your individual study statistics and progress data remain yours; you grant us a worldwide, royalty-free license to process such data as necessary to operate, maintain, improve, and secure the features of the Service, as further described in our Privacy Policy.',
     },
     {
-      heading: '6. Gamification',
-      body: 'XP, levels, streaks, streak freezes, tiers, leagues, and similar features are part of the Service experience. They have no monetary value, cannot be sold or exchanged, and may be adjusted, rebalanced, or reset as we improve the Service (for example, to correct bugs or prevent abuse). To keep competitions active, leaderboards may include simulated participants ("pacers") operated by Skoolie and marked with a ✦ symbol; pacers never affect promotions, relegations, tournaments, or any outcome for real users, and are phased out as boards fill with real participants.',
+      heading: '6. Gamification systems; virtual items',
+      body: 'Experience points ("XP"), levels, streaks, streak freezes, specialty tiers, leagues, tournaments, badges, and similar features and virtual items (collectively, "Gamification Elements") form part of the Service experience. Gamification Elements: (a) are licensed, not sold; (b) have no cash, monetary, or real-world value; (c) are not redeemable, refundable, transferable, or exchangeable for currency, goods, or services of any kind; and (d) may be modified, rebalanced, capped, suspended, reset, or discontinued at our sole discretion at any time, including without limitation to correct errors, address abuse, maintain competitive integrity, or otherwise improve the Service. You acknowledge that any expectation of continuity in respect of Gamification Elements is expressly disclaimed.',
     },
     {
-      heading: '7. Fees',
-      body: 'The Service is currently free. We may introduce paid features or subscriptions in the future; if we do, pricing and terms will be presented clearly before you are charged, and these Terms will be updated accordingly.',
+      heading: '7. Competitive features; service liveness and simulated participants',
+      body: 'Leaderboards, leagues, tournaments, and other competitive features (collectively, "Competitive Features") rank participants according to XP earned within defined periods, subject to the promotion, relegation, and qualification rules displayed in the Service from time to time, which rules we may amend in accordance with Section 6. Tie rankings are resolved in favour of the participant who attained the relevant score earliest. In order to ensure the continuity, liveness, quality assurance, load-representativeness, and engagement of Competitive Features — in particular during periods of limited concurrent participation, service testing, or the introduction of new cohorts, professions, or geographies — the Service may include automated, system-operated, or otherwise simulated participant accounts (howsoever designated, including as "pacers"), whose scores, statistics, profiles, avatars, streaks, and other displayed attributes are generated programmatically. Such simulated participants: (i) are operated solely by or on behalf of Skoolie; (ii) do not correspond to natural persons; (iii) are excluded from the computation of all promotion, relegation, tournament-qualification, tournament-advancement, and prize or reward outcomes affecting users, such that no user outcome is ever determined, diminished, or displaced by a simulated participant; and (iv) may be introduced, adjusted, reduced, or retired by us at any time, including automatically as genuine participation increases. Your continued use of Competitive Features constitutes acknowledgement and acceptance of the foregoing.',
     },
     {
-      heading: '8. Termination',
-      body: 'You may stop using the Service or request deletion of your account at any time by contacting us. We may suspend or terminate accounts that violate these Terms, abuse the Service, or harm other users, with or without notice depending on severity.',
+      heading: '8. Fees',
+      body: 'The Service is currently provided free of charge. We reserve the right to introduce fees, subscriptions, or paid features in the future. In such event, applicable pricing and payment terms will be presented clearly before you incur any charge, and these Terms will be updated accordingly. Continued use of free portions of the Service will not require payment.',
     },
     {
-      heading: '9. Disclaimers and limitation of liability',
-      body: 'The Service is provided "as is" and "as available" without warranties of any kind, express or implied. To the maximum extent permitted by law, we are not liable for any indirect, incidental, special, or consequential damages, or for loss of data, opportunities, or exam outcomes, arising from your use of the Service. Nothing in these Terms excludes liability that cannot be excluded by law.',
+      heading: '9. Third-party services',
+      body: 'The Service may interoperate with third-party services, including authentication providers (such as Google and Apple), push-notification infrastructure, and hosting providers. Your use of such third-party services may be subject to separate terms and privacy policies of the relevant providers, and we are not responsible for the acts or omissions of such providers.',
     },
     {
-      heading: '10. Changes to these Terms',
-      body: 'We may update these Terms from time to time. If we make material changes, we will notify you in the app or by email before the changes take effect. Continuing to use the Service after changes take effect means you accept the updated Terms.',
+      heading: '10. Suspension and termination',
+      body: 'You may discontinue use of the Service, or request deletion of your account and associated data, at any time by contacting us at the address in Section 16. We may suspend, restrict, or terminate your access to all or part of the Service, with or without notice depending on the severity of the circumstances, where we reasonably believe that you have violated these Terms, abused or attempted to abuse the Service or its Gamification Elements or Competitive Features, harmed or threatened other users, or exposed us to legal liability. Sections 5, 6, 7, 11, 12, 13, 14, and 15 survive any termination.',
     },
     {
-      heading: '11. Governing law',
-      body: 'These Terms are governed by the laws of the Republic of Ghana, without regard to conflict-of-law principles. Disputes will be subject to the jurisdiction of the courts of Ghana, unless mandatory law in your country of residence provides otherwise.',
+      heading: '11. Disclaimers',
+      body: 'THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, OR AVAILABILITY. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE, THAT DEFECTS WILL BE CORRECTED, OR THAT USE OF THE SERVICE WILL PRODUCE ANY PARTICULAR ACADEMIC OR EXAMINATION OUTCOME.',
     },
     {
-      heading: '12. Contact',
+      heading: '12. Limitation of liability',
+      body: 'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL WE, OUR OFFICERS, EMPLOYEES, CONTRACTORS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, GOODWILL, OPPORTUNITY, OR EXAMINATION OR CAREER OUTCOME, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR AGGREGATE LIABILITY FOR ALL CLAIMS RELATING TO THE SERVICE SHALL NOT EXCEED THE GREATER OF THE AMOUNTS PAID BY YOU TO US IN THE TWELVE MONTHS PRECEDING THE CLAIM AND ONE HUNDRED GHANA CEDIS (GHS 100). NOTHING IN THESE TERMS EXCLUDES OR LIMITS LIABILITY THAT CANNOT BE EXCLUDED OR LIMITED UNDER APPLICABLE LAW.',
+    },
+    {
+      heading: '13. Indemnity',
+      body: 'You agree to indemnify and hold harmless Skoolie and its officers, employees, and contractors from and against any claims, damages, liabilities, costs, and expenses (including reasonable legal fees) arising out of or related to your violation of these Terms, your misuse of the Service, or your violation of any law or third-party right.',
+    },
+    {
+      heading: '14. Changes to these Terms',
+      body: 'We may amend these Terms from time to time. Where a change is material, we will provide notice in the app or by email before the change takes effect. Your continued use of the Service after the effective date of any amendment constitutes acceptance of the amended Terms. If you do not agree to an amendment, your sole remedy is to discontinue use of the Service.',
+    },
+    {
+      heading: '15. Governing law; severability; entire agreement',
+      body: 'These Terms are governed by the laws of the Republic of Ghana, without regard to conflict-of-law principles, and disputes shall be subject to the exclusive jurisdiction of the courts of Ghana, save where mandatory law of your country of residence provides otherwise. If any provision of these Terms is held invalid or unenforceable, the remaining provisions shall continue in full force and effect, and the invalid provision shall be reformed to the minimum extent necessary. These Terms, together with the Privacy Policy, constitute the entire agreement between you and us regarding the Service and supersede all prior understandings. Our failure to enforce any provision is not a waiver of our right to do so later.',
+    },
+    {
+      heading: '16. Contact',
       body: 'Questions about these Terms? Contact us at support@skoolieapp.com.',
     },
   ],

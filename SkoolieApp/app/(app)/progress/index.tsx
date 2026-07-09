@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, FlatList } from 'react-native'
-import { withFilterAnim } from '@/lib/anim'
 import { computeAnalytics, type Analytics, type QMeta, type HistRow, type SessRow } from '@/lib/analytics'
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
@@ -69,9 +68,7 @@ export default function ProgressScreen() {
   const C = useTheme()
   const { user, profile, refreshProfile } = useAuth()
   const entrance = useScreenEntrance()
-  const [users, setUsers] = useState<LeaderboardUser[]>([])
   const [weekUsers, setWeekUsers] = useState<WeeklyRow[]>([])
-  const [lbPeriod, setLbPeriod] = useState<'week' | 'all'>('week')
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   // Diamond Tournament — active entry shows the knockout race above the league
   const [tournament, setTournament] = useState<{
@@ -80,7 +77,6 @@ export default function ProgressScreen() {
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [lbScope, setLbScope] = useState<'all' | 'mine'>('all')
 
   // Refresh leaderboard + stats AND the in-memory profile every time the tab
   // gains focus, so XP/level/streak reflect sessions completed elsewhere.
@@ -91,10 +87,9 @@ export default function ProgressScreen() {
 
   async function load() {
     try {
-    const [{ data: lb }, { data: wk }, { data: sessions }, { data: hist }, { data: mcqC }, { data: fcC }] = await Promise.all([
-      // RLS only permits reading your own user_profiles row, so the leaderboard
-      // must come from a SECURITY DEFINER RPC that returns public columns only.
-      supabase.rpc('get_leaderboard', { p_limit: 50 }),
+    const [{ data: wk }, { data: sessions }, { data: hist }, { data: mcqC }, { data: fcC }] = await Promise.all([
+      // The board IS the weekly league for your profession (Duolingo model) —
+      // no all-time board, no scope filters. SECURITY DEFINER RPC.
       supabase.rpc('get_weekly_league'),
       // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
       // the limit binds, and recent activity would silently vanish from stats.
@@ -104,7 +99,6 @@ export default function ProgressScreen() {
       profile ? supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }) : Promise.resolve({ data: [] }),
     ])
 
-    setUsers(lb ?? [])
     // Weekly league cohort — alias week_xp to xp so the row renderer is shared.
     setWeekUsers(((wk ?? []) as any[]).map(r => ({ ...r, xp: r.week_xp })))
 
@@ -164,58 +158,26 @@ export default function ProgressScreen() {
   const nextAction = analytics?.studyPlan[0] ?? null
   const readinessColor = readiness >= 75 ? C.green : readiness >= 50 ? C.teal : readiness >= 30 ? C.amber : C.red
 
-  // Which board is showing: weekly league cohort or all-time top 50.
-  // Cold start: the weekly board backfills with the all-time list at 0 XP so it
-  // never looks empty — anyone who earns weekly XP immediately floats above them.
-  const weeklyIds = new Set(weekUsers.map(u => u.id))
-  const weekMerged: LeaderboardUser[] = [
-    ...weekUsers,
-    ...users.filter(u => !weeklyIds.has(u.id)).map(u => ({ ...u, xp: 0 })),
-  ]
-  const activeList: LeaderboardUser[] = lbPeriod === 'week' ? weekMerged : users
-  // Weekly view: league comes from the standings (promotion/relegation);
-  // all-time view keeps the lifetime-XP league thresholds.
-  // Unranked users default to bronze (where a fresh entrant lands) — never
-  // borrow another user's league for the label.
-  const myWeekLeagueId = (weekUsers.find(u => u.id === user?.id)?.league ?? 'bronze') as keyof typeof LEAGUE_CONFIG
-  // Low-DAU cold start: the server merges all leagues into one global race until
-  // there are enough weekly players for real cohorts — label it honestly.
-  const mixedCohort = new Set(weekUsers.map(u => u.league)).size > 1
-  const profCap = profile ? profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1) : 'Mine'
-  const filteredUsers = lbScope === 'mine' ? activeList.filter(u => u.profession === profile?.profession) : activeList
-  const LB_SCOPES: { id: 'all' | 'mine'; label: string }[] = [
-    { id: 'all', label: 'Everyone' },
-    { id: 'mine', label: profCap },
-  ]
-  const LB_PERIODS: { id: 'week' | 'all'; label: string }[] = [
-    { id: 'week', label: 'This week' },
-    { id: 'all', label: 'All-time' },
-  ]
+  // The board IS your profession's weekly league (Duolingo's parallel
+  // instances) — the server already scopes rows to (my profession, my league)
+  // and fills quiet weeks with pacers.
+  const activeList: LeaderboardUser[] = weekUsers
+  const filteredUsers = activeList
+  const myWeekLeagueId = (weekUsers.find(u => u.id === user?.id)?.league ?? weekUsers[0]?.league ?? 'bronze') as keyof typeof LEAGUE_CONFIG
   const effectiveStreak = computeEffectiveStreak(profile?.current_streak, profile?.last_active_date)
 
-  // ── Zone math over HUMANS ONLY (pacer bots are display-only) ─────────────
-  // Bots interleave in display order, so the cut lines are positional: the
-  // promotion band sits under the promoteN-th promoting HUMAN row, and the
-  // demotion band above the first demoted human — wherever those fall.
-  const humanRacers = weekUsers.filter(u => !u.is_bot)
-  const zoneCohortH = humanRacers.length
-  const promoteNH = effectivePromote(myWeekLeagueId, zoneCohortH)
-  const demoStartH = Math.max(promoteNH + 1, zoneCohortH - 4)
-  const demoLiveH = zoneCohortH >= 10
-  const showZonesGlobal = lbPeriod === 'week' && lbScope === 'all' && !mixedCohort
-  let promoBoundaryIdx = -1
-  let relegBoundaryIdx = -1
-  if (showZonesGlobal) {
-    let h = 0
-    for (let i = 0; i < activeList.length; i++) {
-      if (!activeList[i].is_bot) {
-        h++
-        if (h === promoteNH && promoBoundaryIdx === -1) promoBoundaryIdx = i + 1
-        if (demoLiveH && h === demoStartH && relegBoundaryIdx === -1) relegBoundaryIdx = i
-      }
-    }
-    if (promoBoundaryIdx >= activeList.length) promoBoundaryIdx = -1  // nothing below the cut
-  }
+  // ── Positional zones (Duolingo look) ──────────────────────────────────────
+  // The bands mark the DISPLAYED cut: everyone above the green line is in the
+  // promotion zone, the bottom 5 sit under the red line. Server outcomes rank
+  // humans against humans only, so a pacer occupying a visual seat never costs
+  // a real user their promotion (a human just below the line can still rise).
+  const displayedN = activeList.length
+  const promoteN = effectivePromote(myWeekLeagueId, displayedN)
+  const demoStart = Math.max(promoteN + 1, displayedN - 4)
+  const demoLive = displayedN >= 10
+  const showZones = displayedN > 0
+  const promoBoundaryIdx = showZones && displayedN > promoteN ? promoteN : -1
+  const relegBoundaryIdx = showZones && demoLive ? demoStart - 1 : -1
 
   /** Returns 0 if user hasn't practiced today or yesterday — prevents stale streak display */
   function liveStreak(u: LeaderboardUser): number {
@@ -238,9 +200,7 @@ export default function ProgressScreen() {
       <Animated.View style={[{ flex: 1 }, entrance]}>
       <FlatList
         data={loading ? [] : filteredUsers}
-        // Key includes the active filters so toggling period/scope remounts
-        // rows and replays the cascade
-        keyExtractor={u => `${lbPeriod}-${lbScope}-${u.id}`}
+        keyExtractor={u => u.id}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100, flexGrow: 1, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }}
         showsVerticalScrollIndicator={false}
@@ -248,24 +208,22 @@ export default function ProgressScreen() {
         ListEmptyComponent={
           loading ? <SkeletonList rows={6} style={{ marginTop: 8 }} />
             : <Text style={[s.emptyLb, { color: C.textFaint }]}>
-                {lbPeriod === 'week' ? 'No one in your league yet this week — finish a session to enter!' : 'No one here yet'}
+                No one in your league yet this week — finish a session to enter!
               </Text>
         }
         renderItem={({ item: u, index }) => {
-          const rank = activeList.findIndex(x => x.id === u.id) + 1
+          const rank = index + 1
           const isMe = u.id === user?.id
           const rankStyle = RANK_STYLES[rank]
           const isDiamond = myWeekLeagueId === 'diamond'
-          // Human-rank-based zones; bots (display-only) never get carets and
-          // never shift the cuts. Bands come from the precomputed boundaries.
-          const humansAbove = activeList.slice(0, rank - 1).filter(x => !x.is_bot).length
-          const humanRank = u.is_bot ? 0 : humansAbove + 1
-          const inPromoZone = showZonesGlobal && !u.is_bot && humanRank <= promoteNH
+          // Positional zones — everyone above the green line is in the
+          // promotion zone, bottom 5 below the red line (Duolingo look).
+          const inPromoZone = showZones && rank <= promoteN
           const promoEarned = inPromoZone && u.xp > 0
-          const inDemo = showZonesGlobal && !u.is_bot && !promoEarned && demoLiveH && humanRank >= demoStartH
-          const promoLine = showZonesGlobal && index === promoBoundaryIdx
+          const inDemo = showZones && !inPromoZone && demoLive && rank >= demoStart
+          const promoLine = index === promoBoundaryIdx && promoBoundaryIdx !== -1
           // (bands may render adjacent when there's no stay zone — that's honest)
-          const relegLine = showZonesGlobal && index === relegBoundaryIdx && relegBoundaryIdx !== -1
+          const relegLine = index === relegBoundaryIdx && relegBoundaryIdx !== -1
           return (
             // Rows cascade in — delay capped so deep scrolls never wait
             <Entrance delay={Math.min(index, 8) * 35} dy={10}>
@@ -305,7 +263,7 @@ export default function ProgressScreen() {
                   is the ONLY emphasized number. Everything else is neutral. */}
               <View style={{ flex: 1 }}>
                 <Text style={[s.name, { color: C.text }]} numberOfLines={1}>
-                  {u.full_name}{isMe ? ' (you)' : ''}{u.is_bot ? <Text style={{ color: C.textFaint }}> ✦</Text> : null}
+                  {u.full_name}{isMe ? ' (you)' : ''}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
                   <TierBadge tier={u.tier ?? 0} size="sm" />
@@ -430,116 +388,49 @@ export default function ProgressScreen() {
           </Entrance>
         )}
 
-        {/* Leaderboard */}
+        {/* Leaderboard — your profession's weekly league, nothing else.
+            (All-time XP lives on individual profiles.) */}
         <Entrance delay={140}>
         <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
           <Text style={[s.pageTitle, { color: C.text }]}>Leaderboard</Text>
           <Text style={[s.leaderSub, { color: C.textFaint }]}>
-            {lbPeriod === 'week' ? 'Weekly league · resets Monday' : 'Top 50 · all-time'}
+            {profile ? `${profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)} league` : 'Weekly league'} · resets Monday
           </Text>
 
-          {/* ONE controls row: period (ink) + scope (teal) — was two rows
-              sandwiching the league card, five bands before the first row */}
-          <View style={[s.scopeRow, { flexWrap: 'wrap', justifyContent: 'space-between' }]}>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {LB_PERIODS.map(p => {
-                const active = lbPeriod === p.id
+          {/* Duolingo-style league header: shield ladder (your league lit),
+              league name, live rule line, week countdown. Zones live IN the
+              list as dividers. */}
+          <View style={s.leagueHeader}>
+            <View style={s.shieldRow}>
+              {LEAGUE_ORDER.map(id => {
+                const lg = LEAGUE_CONFIG[id]
+                const active = id === myWeekLeagueId
                 return (
-                  <TouchableOpacity
-                    key={p.id}
-                    onPress={() => withFilterAnim(() => setLbPeriod(p.id))}
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`Show ${p.label} leaderboard`}
-                    style={[s.scopeChip, { backgroundColor: active ? C.text : C.surface2, borderColor: active ? C.text : C.border }]}
+                  <View
+                    key={id}
+                    style={[s.shield, active
+                      ? { backgroundColor: lg.bg, borderColor: lg.color, transform: [{ scale: 1.12 }] }
+                      : { backgroundColor: C.surface2, borderColor: C.border }]}
+                    accessible accessibilityLabel={`${lg.label} league${active ? ', your current league' : ''}`}
                   >
-                    <Text style={[s.scopeChipText, { color: active ? C.bg : C.textSoft }]}>{p.label}</Text>
-                  </TouchableOpacity>
+                    <Text style={{ fontSize: 22, opacity: active ? 1 : 0.35 }}>{lg.emoji}</Text>
+                  </View>
                 )
               })}
             </View>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {LB_SCOPES.map(scope => {
-                const active = lbScope === scope.id
-                return (
-                  <TouchableOpacity
-                    key={scope.id}
-                    onPress={() => withFilterAnim(() => setLbScope(scope.id))}
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`Filter leaderboard: ${scope.label}`}
-                    style={[s.scopeChip, { backgroundColor: active ? C.teal : C.surface2, borderColor: active ? C.teal : C.border }]}
-                  >
-                    <Text style={[s.scopeChipText, { color: active ? C.onTeal : C.textSoft }]}>{scope.label}</Text>
-                  </TouchableOpacity>
-                )
-              })}
+            <Text style={[s.leagueTitle, { color: C.text }]}>
+              {LEAGUE_CONFIG[myWeekLeagueId].label} League
+            </Text>
+            <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
+              {myWeekLeagueId === 'diamond' ? `Top ${promoteN} enter the Tournament` : `Top ${promoteN} promote`}{demoLive ? ' · bottom 5 drop' : ''}
+            </Text>
+            <View style={s.leagueMetaRow}>
+              <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>
+                <Ionicons name="time-outline" size={13} color={C.amber} />
+                <Text style={[s.countdownText, { color: C.amber }]}>Ends in {weekEndsIn()}</Text>
+              </View>
             </View>
           </View>
-
-          {/* Duolingo-style league header: the shield strip shows the ladder
-              (your league lit, the rest quiet), then the league name and the
-              week countdown. The promotion/demotion zones live IN the list
-              as dividers — no explainer chips. */}
-          {lbPeriod === 'week' && (
-            <View style={s.leagueHeader}>
-              <View style={s.shieldRow}>
-                {LEAGUE_ORDER.map(id => {
-                  const lg = LEAGUE_CONFIG[id]
-                  const active = !mixedCohort && id === myWeekLeagueId
-                  return (
-                    <View
-                      key={id}
-                      style={[s.shield, active
-                        ? { backgroundColor: lg.bg, borderColor: lg.color, transform: [{ scale: 1.12 }] }
-                        : { backgroundColor: C.surface2, borderColor: C.border }]}
-                      accessible accessibilityLabel={`${lg.label} league${active ? ', your current league' : ''}`}
-                    >
-                      <Text style={{ fontSize: 22, opacity: active ? 1 : 0.35 }}>{lg.emoji}</Text>
-                    </View>
-                  )
-                })}
-              </View>
-              <Text style={[s.leagueTitle, { color: C.text }]}>
-                {mixedCohort ? 'Open League' : `${LEAGUE_CONFIG[myWeekLeagueId].label} League`}
-              </Text>
-              {!mixedCohort && (() => {
-                const racing = weekUsers.filter(u => !u.is_bot).length
-                const eff = effectivePromote(myWeekLeagueId, racing)
-                const dropLive = racing >= 10
-                // Tiny cohorts: "Top 1 promote" is true but reads oddly —
-                // say what it means: everyone racing rises, so join the race.
-                const promoTxt = eff >= racing
-                  ? `Everyone racing ${myWeekLeagueId === 'diamond' ? 'enters the Tournament' : 'promotes'} — earn XP to join`
-                  : myWeekLeagueId === 'diamond'
-                    ? `Top ${eff} enter the Tournament`
-                    : `Top ${eff} promote`
-                return (
-                  <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 2 }]}>
-                    {promoTxt}{dropLive ? ' · bottom 5 drop' : ''}
-                  </Text>
-                )
-              })()}
-              <View style={s.leagueMetaRow}>
-                <View style={[s.countdownPill, { backgroundColor: C.amberTint }]}>
-                  <Ionicons name="time-outline" size={13} color={C.amber} />
-                  <Text style={[s.countdownText, { color: C.amber }]}>Ends in {weekEndsIn()}</Text>
-                </View>
-                {mixedCohort && (
-                  <Text style={[s.leaderSub, { color: C.textFaint, flexShrink: 1 }]}>All leagues race together this week</Text>
-                )}
-              </View>
-            </View>
-          )}
-          {/* Filtered view keeps GLOBAL ranks (your true position) — say so,
-              or the gaps in numbering read as missing rows */}
-          {lbScope === 'mine' && (
-            <Text style={[s.leaderSub, { color: C.textFaint, marginTop: 8 }]}>
-              Showing overall ranks — numbers skip where other professions place.
-            </Text>
-          )}
         </View>
         </Entrance>
           </View>
@@ -553,9 +444,6 @@ export default function ProgressScreen() {
 const s = StyleSheet.create({
   pageTitle: { fontSize: 20, fontFamily: 'Nunito_900Black', letterSpacing: -0.3 },
   leaderSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', marginTop: 2 },
-  scopeRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  scopeChip: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1 },
-  scopeChipText: { fontSize: 13, fontFamily: 'Nunito_700Bold' },
   emptyLb: { textAlign: 'center', marginTop: 24, fontSize: 14, fontFamily: 'Nunito_600SemiBold' },
   sectionTitle: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold', letterSpacing: 0.6 },
   sectionTitleSub: { fontSize: 13, fontFamily: 'Nunito_600SemiBold' },

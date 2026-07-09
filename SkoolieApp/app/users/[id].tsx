@@ -70,7 +70,7 @@ export default function UserProfileScreen() {
             <View style={s.avatarRow}>
               <Avatar name={profile.full_name} avatarUrl={profile.avatar_url} size={80} />
             </View>
-            <Text style={[s.name, { color: C.text }]}>{profile.full_name}{profile.is_bot ? <Text style={{ color: C.textFaint }}> ✦</Text> : null}</Text>
+            <Text style={[s.name, { color: C.text }]}>{profile.full_name}</Text>
 
             {/* Profession badge */}
             {(() => {

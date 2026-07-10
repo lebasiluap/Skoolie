@@ -22,8 +22,27 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Skoolie — Healthcare Test Companion",
-  description: "Ace your pharmacy, medicine, and nursing exams with smart MCQs, flashcards, and case studies.",
+  metadataBase: new URL("https://skoolieapp.com"),
+  title: "Skoolie — Study smarter. Pass with confidence.",
+  description:
+    "MCQs, flashcards, and clinical cases for pharmacy, medicine, and nursing students — with streaks, leagues, and a daily challenge that make exam prep feel like a game.",
+  openGraph: {
+    title: "Skoolie — Study smarter. Pass with confidence.",
+    description:
+      "50,000+ MCQs, flashcards, and clinical cases with streaks, leagues, and a daily challenge. Exam prep that feels like a game you actually want to win.",
+    url: "https://skoolieapp.com",
+    siteName: "Skoolie",
+    images: [{ url: "/icon.png", width: 512, height: 512, alt: "Skoolie — Cappy the mascot" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Skoolie — Study smarter. Pass with confidence.",
+    description:
+      "Exam prep for health students that feels like a game you actually want to win.",
+    images: ["/icon.png"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import PageTracker from "@/components/PageTracker";
@@ -10,6 +10,16 @@ const nunito = Nunito({
   variable: "--font-nunito",
   display: "swap",
 });
+
+// Tint the browser chrome (iOS Safari status bar / Android address bar) to
+// match the dark landing hero instead of defaulting to white, and let the
+// page extend into the notch/safe areas like native-feeling sites do.
+export const viewport: Viewport = {
+  themeColor: "#0C1211",
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Skoolie — Healthcare Test Companion",

@@ -18,7 +18,7 @@ function detectPlatform(): Platform {
   return 'unknown'
 }
 
-function AppleLogo() {
+export function AppleLogo() {
   return (
     <svg width="22" height="26" viewBox="0 0 22 26" fill="currentColor" aria-hidden="true">
       <path d="M18.3 13.8c0-3 2.5-4.5 2.6-4.6-1.4-2.1-3.6-2.4-4.4-2.4-1.9-.2-3.6 1.1-4.6 1.1-1 0-2.4-1.1-4-1-2 0-3.9 1.2-5 3-2.1 3.7-.5 9.2 1.5 12.2 1 1.5 2.2 3.1 3.8 3 1.5-.1 2.1-1 4-1s2.4 1 4 .9c1.6 0 2.7-1.5 3.7-3 1.2-1.7 1.6-3.3 1.7-3.4-.1 0-3.2-1.3-3.3-4.8zM15.3 4.8c.8-1 1.4-2.4 1.2-3.8-1.2 0-2.7.8-3.5 1.8-.8.9-1.5 2.3-1.3 3.7 1.4.1 2.8-.7 3.6-1.7z" />
@@ -26,7 +26,7 @@ function AppleLogo() {
   )
 }
 
-function PlayLogo() {
+export function PlayLogo() {
   return (
     <svg width="22" height="24" viewBox="0 0 24 26" aria-hidden="true">
       <path d="M1.3.8C1 1.2.8 1.7.8 2.4v21.2c0 .7.2 1.2.5 1.6L13.4 13 1.3.8z" fill="#00D7FE" />

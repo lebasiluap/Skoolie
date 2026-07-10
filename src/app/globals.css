@@ -153,3 +153,51 @@ button { font-family: inherit; }
     transition-duration: .01ms !important;
   }
 }
+
+/* ─── Landing page (marketing) ──────────────────────────────────────── */
+/* The landing design is theme-fixed (dark hero + light feature sections),
+   so pin the light token values on its root — it must render identically
+   even when html[data-theme="dark"] flips the global tokens. */
+.lp-root {
+  --bg:            #EEF2F1;
+  --surface:       #FFFFFF;
+  --surface-2:     #F1F5F4;
+  --surface-3:     #E8EEEC;
+  --text:          #16221F;
+  --text-soft:     #56655F;
+  --text-faint:    #90A099;
+  --border:        #E2E9E6;
+  --border-strong: #D3DDD9;
+  --teal:          #0E9E8E;
+  --teal-deep:     #0A6E62;
+  --teal-tint:     #E1F3EF;
+  --teal-tint-2:   #D2ECE7;
+  --on-teal:       #FFFFFF;
+  --coral:         #F2774E;
+  --coral-deep:    #C9542F;
+  --coral-tint:    #FCE9E0;
+  --green:         #1F9E63;
+  --green-tint:    #E0F3E9;
+  --amber:         #DC8B33;
+  --amber-tint:    #FAEEDB;
+  --red:           #DE5249;
+  --red-tint:      #FAE5E3;
+  --gold:          #DBA431;
+}
+
+@keyframes lp-floaty  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+@keyframes lp-floaty2 { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-24px) rotate(3deg); } }
+@keyframes lp-bobble  { 0%, 100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-10px) rotate(-2deg); } }
+@keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes lp-flick   { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.12) rotate(3deg); } }
+
+.lp-nav-btn { background: var(--teal); transition: background .2s ease; }
+.lp-nav-btn:hover { background: var(--teal-deep); }
+
+.lp-badge { transition: transform .2s ease; }
+.lp-badge:hover { transform: translateY(-3px) scale(1.02); }
+
+/* Hero game chips hide below 1150px viewport width */
+@media (max-width: 1149.98px) {
+  .lp-hero-decor { display: none !important; }
+}

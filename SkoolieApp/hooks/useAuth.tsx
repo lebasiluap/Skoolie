@@ -90,12 +90,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Hold `loading` true until it resolves, so the router doesn't momentarily treat
     // the not-yet-loaded profile as "missing" and flash the onboarding (course
     // selection) screen before the dashboard.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // CRITICAL: never await supabase calls INSIDE this callback — supabase-js
+    // holds an internal auth lock while dispatching the event, and a query
+    // issued under it can deadlock. Symptom: Apple/Google sign-in succeeded
+    // but the UI hung on "Signing in…" until an app restart. setTimeout(0)
+    // defers the profile fetch until after the lock is released.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session?.user) {
         setLoading(true)
-        await loadProfile(session.user.id)
-        setLoading(false)
+        const uid = session.user.id
+        setTimeout(async () => {
+          await loadProfile(uid)
+          setLoading(false)
+        }, 0)
       } else {
         authGenRef.current++
         prevProfileRef.current = null

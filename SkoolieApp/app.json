@@ -30,7 +30,8 @@
       "package": "com.skoolie.app",
       "versionCode": 1,
       "permissions": [
-        "CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -53,6 +54,13 @@
     "scheme": "skoolie",
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "84f84d1c-56f3-485b-a7e2-8545e7633dd5"
+      }
+    },
+    "owner": "lebasiluap"
   }
 }

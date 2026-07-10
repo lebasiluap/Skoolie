@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.skoolie.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "appleTeamId": "62X7N85N4Y",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow Skoolie to access your photo library to set a profile picture.",

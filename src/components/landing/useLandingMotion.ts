@@ -18,6 +18,13 @@ import { useEffect, type RefObject } from 'react'
  *  5. Count-up stats   — [data-count] + optional [data-suffix]
  *  6. Readiness ring   — [data-ring] + [data-ringnum] + [data-bar]
  *
+ * 4–6 are REPLAYABLE: each element animates in when it enters the viewport
+ * and is silently reset (transitions disabled, start values restored) once
+ * it is 100% out of view, so scrolling back replays the animation. The gap
+ * between the enter threshold (≥15/40/60% visible) and the reset condition
+ * (fully out) is a hysteresis dead-band — nothing toggles at the boundary,
+ * so slow or fast scrolling can never flicker-loop an element.
+ *
  * Parallax and drift are combined into a single translate3d per frame.
  * Document tops are cached on init / resize / ~600ms after mount (transform
  * cleared before measuring) so the loop never reads getBoundingClientRect
@@ -160,7 +167,7 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       }
     }
 
-    /* ── Scroll reveals (variant-aware, one-shot) ──────────────── */
+    /* ── Scroll reveals (variant-aware, replayable) ────────────── */
     if (!reduce) {
       const HIDDEN: Record<string, string> = {
         up: 'translateY(44px)',
@@ -185,66 +192,117 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
         return { variant, delay }
       }
       const reveals = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
-      for (const el of reveals) {
+      /* Instant (transition-less) reset to the hidden pose — only ever
+         applied while the element is fully off-screen, so it can't flash. */
+      const toHidden = (el: HTMLElement) => {
         const { variant } = conf(el)
+        el.style.transition = 'none'
         el.style.opacity = '0'
         el.style.transform = HIDDEN[variant]
         if (variant === 'blur') el.style.filter = 'blur(8px)'
       }
+      for (const el of reveals) toHidden(el)
+      const shown = new Set<HTMLElement>()
+      const inTimers = new Map<HTMLElement, number>()
       const io = new IntersectionObserver(
         (entries) => {
           for (const en of entries) {
-            if (!en.isIntersecting) continue
             const el = en.target as HTMLElement
-            const { variant, delay: d } = conf(el)
-            const tEase = variant === 'pop' ? SPRING : EASE
-            const tDur = variant === 'pop' ? '.65s' : '.8s'
-            el.style.transition = `opacity .8s ${d}ms ${EASE}, transform ${tDur} ${d}ms ${tEase}, filter .8s ${d}ms ${EASE}`
-            el.style.opacity = '1'
-            el.style.transform = SHOWN[variant] || 'translateY(0)'
-            if (variant === 'blur') el.style.filter = 'blur(0px)'
-            /* .lp-in unlocks CSS child choreography once the element lands */
-            window.setTimeout(() => el.classList.add('lp-in'), d + 180)
-            io.unobserve(el)
+            if (en.isIntersecting && en.intersectionRatio + 0.001 >= 0.15) {
+              /* ≥15% visible → animate in (setting the transition in the
+                 same style recalc as the target values starts the tween) */
+              if (shown.has(el)) continue
+              shown.add(el)
+              const { variant, delay: d } = conf(el)
+              const tEase = variant === 'pop' ? SPRING : EASE
+              const tDur = variant === 'pop' ? '.65s' : '.8s'
+              el.style.transition = `opacity .8s ${d}ms ${EASE}, transform ${tDur} ${d}ms ${tEase}, filter .8s ${d}ms ${EASE}`
+              el.style.opacity = '1'
+              el.style.transform = SHOWN[variant] || 'translateY(0)'
+              if (variant === 'blur') el.style.filter = 'blur(0px)'
+              /* .lp-in unlocks CSS child choreography once the element lands */
+              inTimers.set(
+                el,
+                window.setTimeout(() => el.classList.add('lp-in'), d + 180)
+              )
+            } else if (!en.isIntersecting) {
+              /* 100% out of view → silent reset so re-entry replays.
+                 Removing .lp-in also rewinds the CSS child animations. */
+              if (!shown.has(el)) continue
+              shown.delete(el)
+              const t = inTimers.get(el)
+              if (t !== undefined) {
+                window.clearTimeout(t)
+                inTimers.delete(el)
+              }
+              el.classList.remove('lp-in')
+              toHidden(el)
+            }
+            /* 0 < ratio < 15%: hysteresis dead-band — never toggle here */
           }
         },
-        { threshold: 0.15 }
+        { threshold: [0, 0.15] }
       )
       for (const el of reveals) io.observe(el)
-      cleanups.push(() => io.disconnect())
+      cleanups.push(() => {
+        io.disconnect()
+        for (const t of inTimers.values()) window.clearTimeout(t)
+      })
     }
 
     /* ── Stat count-ups ([data-count]) ─────────────────────────── */
     if (!reduce) {
       const counters = Array.from(root.querySelectorAll<HTMLElement>('[data-count]'))
       if (counters.length) {
-        for (const el of counters) el.textContent = `0${el.dataset.suffix || ''}`
+        const resetCount = (el: HTMLElement) => {
+          el.textContent = `0${el.dataset.suffix || ''}`
+        }
+        for (const el of counters) resetCount(el)
+        const counting = new Set<HTMLElement>() // "fired while visible"
+        const countRafs = new Map<HTMLElement, number>()
         const io3 = new IntersectionObserver(
           (entries) => {
             for (const en of entries) {
-              if (!en.isIntersecting) continue
               const el = en.target as HTMLElement
-              const target = parseInt(el.dataset.count || '0', 10)
-              const suffix = el.dataset.suffix || ''
-              const t0 = performance.now()
-              const tick = (t: number) => {
-                const p = Math.min((t - t0) / 1500, 1)
-                const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
-                el.textContent = `${Math.round(target * ease).toLocaleString('en-US')}${suffix}`
-                if (p < 1) requestAnimationFrame(tick)
+              if (en.isIntersecting && en.intersectionRatio + 0.001 >= 0.6) {
+                if (counting.has(el)) continue
+                counting.add(el)
+                const target = parseInt(el.dataset.count || '0', 10)
+                const suffix = el.dataset.suffix || ''
+                const t0 = performance.now()
+                const tick = (t: number) => {
+                  const p = Math.min((t - t0) / 1500, 1)
+                  const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
+                  el.textContent = `${Math.round(target * ease).toLocaleString('en-US')}${suffix}`
+                  if (p < 1) countRafs.set(el, requestAnimationFrame(tick))
+                  else countRafs.delete(el)
+                }
+                countRafs.set(el, requestAnimationFrame(tick))
+              } else if (!en.isIntersecting) {
+                /* fully off-screen → stop any in-flight tween and rewind
+                   to 0 silently, ready to replay (dead-band: 0 < r < 60%) */
+                if (!counting.has(el)) continue
+                counting.delete(el)
+                const r = countRafs.get(el)
+                if (r !== undefined) {
+                  cancelAnimationFrame(r)
+                  countRafs.delete(el)
+                }
+                resetCount(el)
               }
-              requestAnimationFrame(tick)
-              io3.unobserve(el)
             }
           },
-          { threshold: 0.6 }
+          { threshold: [0, 0.6] }
         )
         for (const el of counters) io3.observe(el)
-        cleanups.push(() => io3.disconnect())
+        cleanups.push(() => {
+          io3.disconnect()
+          for (const r of countRafs.values()) cancelAnimationFrame(r)
+        })
       }
     }
 
-    /* ── Readiness ring + topic bars animate once on view ──────── */
+    /* ── Readiness ring + topic bars (replay on each re-entry) ─── */
     const ring = root.querySelector<SVGCircleElement>('[data-ring]')
     const num = root.querySelector<HTMLElement>('[data-ringnum]')
     if (ring) {
@@ -275,29 +333,60 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
           ring.closest<HTMLElement>('[data-tilt]') ??
           (ring.ownerSVGElement?.parentElement as HTMLElement | null) ??
           root
-        let fired = false
+        /* JSX puts the tween transitions inline on the ring/bars — capture
+           them so resets can go through `transition: none` and replays can
+           restore the originals (React won't re-apply them for us). */
+        const ringTransition = ring.style.transition
+        const barTransitions = new Map<HTMLElement, string>()
+        for (const bar of bars) barTransitions.set(bar, bar.style.transition)
+        const startDash = `0 ${circ.toFixed(1)}`
+        let fired = false // "fired while visible"
+        let ringRaf = 0
         const io2 = new IntersectionObserver(
           (entries) => {
-            if (fired || !entries.some((e) => e.isIntersecting)) return
-            fired = true
-            ring.setAttribute('stroke-dasharray', finalDash)
-            const t0 = performance.now()
-            const tick = (t: number) => {
-              const p = Math.min((t - t0) / 1400, 1)
-              const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
-              if (num) num.textContent = `${Math.round(target * ease)}%`
-              if (p < 1) requestAnimationFrame(tick)
+            for (const en of entries) {
+              if (en.isIntersecting && en.intersectionRatio + 0.001 >= 0.4) {
+                if (fired) continue
+                fired = true
+                /* restore the transition in the same recalc as the value
+                   change so the tween runs from the reset start values */
+                ring.style.transition = ringTransition
+                ring.setAttribute('stroke-dasharray', finalDash)
+                const t0 = performance.now()
+                const tick = (t: number) => {
+                  const p = Math.min((t - t0) / 1400, 1)
+                  const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
+                  if (num) num.textContent = `${Math.round(target * ease)}%`
+                  if (p < 1) ringRaf = requestAnimationFrame(tick)
+                }
+                ringRaf = requestAnimationFrame(tick)
+                for (const bar of bars) {
+                  bar.style.transition = barTransitions.get(bar) || ''
+                  bar.style.width = `${bar.dataset.bar}%`
+                }
+              } else if (!en.isIntersecting) {
+                /* card 100% out of view → instant, invisible rewind
+                   (dead-band 0 < r < 40% prevents boundary flicker) */
+                if (!fired) continue
+                fired = false
+                cancelAnimationFrame(ringRaf)
+                ring.style.transition = 'none'
+                ring.setAttribute('stroke-dasharray', startDash)
+                if (num) num.textContent = '0%'
+                for (const bar of bars) {
+                  bar.style.transition = 'none'
+                  bar.style.width = '0%'
+                }
+              }
             }
-            requestAnimationFrame(tick)
-            for (const bar of bars) {
-              bar.style.width = `${bar.dataset.bar}%`
-            }
-            io2.disconnect()
           },
-          { threshold: 0.4 }
+          { threshold: [0, 0.4] }
         )
         io2.observe(card)
-        cleanups.push(() => io2.disconnect())
+        cleanups.push(() => {
+          io2.disconnect()
+          cancelAnimationFrame(ringRaf)
+        })
       }
     }
 

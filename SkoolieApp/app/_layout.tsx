@@ -42,10 +42,13 @@ function RootNavigator() {
       // while it exchanges the URL tokens for a session
       || (segments[0] === 'auth' && (segments as string[])[1] === 'callback')
 
+    // OAuth deep link (skoolie://auth/callback) arrives BEFORE a session
+    // exists — it must never be redirected away while exchanging tokens.
+    const isOauthCallback = segments[0] === 'auth' && (segments as string[])[1] === 'callback'
     if (!session) {
       // Onboarding lives in (auth) but REQUIRES a session — signing out from
       // it must land back on login, not leave the form sitting there.
-      if (!inAuth || authScreen === 'onboarding') router.replace('/(auth)/login')
+      if ((!inAuth || authScreen === 'onboarding') && !isOauthCallback) router.replace('/(auth)/login')
     } else if (selfRouting) {
       // let the screen finish its own flow
     } else if (!profile) {

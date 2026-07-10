@@ -55,11 +55,11 @@ export default function FlashcardClient({
     if (index + 1 >= workingSet.length) {
       if (!reviewingMissed) {
         const supabase = createClient()
-        const xpEarned = newKnown * 5
+        // Parity with the mobile app: flashcards are self-graded and earn NO XP —
+        // otherwise the shared weekly league can be farmed by spamming "Got it".
         const now = new Date().toISOString()
         await Promise.allSettled([
           supabase.rpc('update_streak', { user_id: userId }),
-          xpEarned > 0 ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }) : Promise.resolve(),
           supabase.from('user_question_history').upsert(
             workingSet.map(q => ({
               user_id: userId, question_id: q.id, question_type: 'flashcard',

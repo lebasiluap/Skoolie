@@ -28,8 +28,13 @@ async function once(key: string): Promise<boolean> {
 
 export async function checkWeekMoments(): Promise<void> {
   try {
+    // Namespace dedupe keys by user — on a shared device, a second account
+    // must not inherit the first account's "already celebrated" flags.
+    const { data: { session } } = await supabase.auth.getSession()
+    const uid = session?.user?.id
+    if (!uid) return
     const { data: r } = await supabase.rpc('get_week_result')
-    if (r?.participated && await once(`weekResult:${r.week_start}`)) {
+    if (r?.participated && await once(`weekResult:${uid}:${r.week_start}`)) {
       const podium = Number(r.reward_freezes ?? 0) > 0
         ? ` Podium reward: ${r.reward_freezes} streak freeze${Number(r.reward_freezes) > 1 ? 's' : ''} 🧊.`
         : ''
@@ -56,7 +61,7 @@ export async function checkWeekMoments(): Promise<void> {
     const { data: t } = await supabase.rpc('get_tournament')
     if (!t?.in_tournament) return
     if (t.status === 'active') {
-      if (await once(`tourneyStage:${t.cohort_week}:${t.stage}`)) {
+      if (await once(`tourneyStage:${uid}:${t.cohort_week}:${t.stage}`)) {
         emitCelebrations([{
           kind: 'tournament',
           title: t.stage === 1 ? 'Diamond Tournament! 🏆' : t.stage === 2 ? 'Semifinals! 🏆' : 'The Finals! 👑',
@@ -68,7 +73,7 @@ export async function checkWeekMoments(): Promise<void> {
           mascot: 'cappy',
         }])
       }
-    } else if (await once(`tourneyEnd:${t.cohort_week}`)) {
+    } else if (await once(`tourneyEnd:${uid}:${t.cohort_week}`)) {
       if (t.status === 'champion') {
         emitCelebrations([{
           kind: 'tournament',

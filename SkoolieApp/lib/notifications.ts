@@ -280,7 +280,7 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
     // lost), a past one is never repeated.
     if (on('league') && state.zoneEvent) {
       const e = state.zoneEvent
-      const guardKey = `zoneNotif:${weekStartKey()}:${e.kind}`
+      const guardKey = `zoneNotif:${state.userId}:${weekStartKey()}:${e.kind}`
       try {
         const stored = await AsyncStorage.getItem(guardKey)
         let when: Date | null = null

@@ -64,11 +64,13 @@ export async function detectZoneEvent(userId: string): Promise<ZoneEvent | null>
     const demoStart = Math.max(promoteN + 1, cohort - 2)
     const zone: LeagueZone =
       humanRank <= promoteN && me.week_xp > 0 ? 'promo'
-        : cohort >= 10 && humanRank >= demoStart ? 'releg'
+        // bronze is the floor — no relegation exists there
+        : cohort >= 10 && league !== 'bronze' && humanRank >= demoStart ? 'releg'
           : humanRank <= promoteN + 2 ? 'near'
             : 'mid'
 
-    const prevKey = `leagueZone:${weekStartKey()}`
+    // User-namespaced — account switches on one device must not inherit zones
+    const prevKey = `leagueZone:${userId}:${weekStartKey()}`
     const prev = (await AsyncStorage.getItem(prevKey)) as LeagueZone | null
     await AsyncStorage.setItem(prevKey, zone)
 

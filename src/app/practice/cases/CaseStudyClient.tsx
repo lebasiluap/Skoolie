@@ -84,10 +84,10 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       return
     }
     const supabase = createClient()
-    const xpEarned = score * 10
+    // Server-authoritative XP: same path as the mobile app (boost, clamps, weekly league)
     await Promise.allSettled([
+      supabase.rpc('credit_xp', { p_kind: 'case_study', p_score: score, p_total: cs.questions.length, p_timed: false }),
       supabase.rpc('update_streak', { user_id: userId }),
-      xpEarned > 0 ? supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }) : Promise.resolve(),
     ])
     setPhase('done')
   }

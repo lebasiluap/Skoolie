@@ -49,16 +49,23 @@ export function IntroGate({ introKey, when }: Props) {
     if (introLock && introLock !== introKey) return
     introLock = introKey
     setVisible(true)
-  }, [when, seen, visible, profile, introKey])
+    // Record "seen" the moment it SHOWS, not on dismiss — if the host screen
+    // unmounts under the modal (practice-stack collapse, navigation.reset),
+    // dismiss never runs and the intro repeated forever.
+    locallySeen.add(introKey)
+    if (user) {
+      const next = [...new Set([...(profile.intros_seen ?? []), introKey])]
+      supabase.from('user_profiles').update({ intros_seen: next }).eq('id', user.id)
+        .then(() => refreshProfile())
+    }
+  }, [when, seen, visible, profile, introKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function dismiss() {
-    locallySeen.add(introKey)   // immediate — never re-show while the write is in flight
+  // If we unmount while holding the lock, release it so other intros can show.
+  useEffect(() => () => { if (introLock === introKey) introLock = null }, [introKey])
+
+  function dismiss() {
     setVisible(false)
     if (introLock === introKey) introLock = null
-    if (!user || !profile) return
-    const next = [...new Set([...(profile.intros_seen ?? []), introKey])]
-    await supabase.from('user_profiles').update({ intros_seen: next }).eq('id', user.id)
-    refreshProfile()
   }
 
   if (!visible) return null

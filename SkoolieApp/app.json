@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.skoolie.app",
+      "buildNumber": "1",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow Skoolie to access your photo library to set a profile picture.",
         "NSCameraUsageDescription": "Allow Skoolie to use your camera to take a profile photo."
@@ -27,9 +28,8 @@
         "backgroundColor": "#0a0a0a"
       },
       "package": "com.skoolie.app",
+      "versionCode": 1,
       "permissions": [
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
         "CAMERA"
       ]
     },

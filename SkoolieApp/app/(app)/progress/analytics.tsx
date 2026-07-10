@@ -485,7 +485,7 @@ function BarChart({ points, labels, color, C, fixedMax, suffix = '', highlightIn
           <View key={i} style={s.chartCol}>
             {i === hi && !isMissing && (
               <View style={[s.chartBubble, { backgroundColor: color }]}>
-                <Text style={[s.chartBubbleText, { color: C.onTeal }]}>{v}{suffix}</Text>
+                <Text style={[s.chartBubbleText, { color: C.onTeal }]} numberOfLines={1} maxFontSizeMultiplier={1.1}>{v}{suffix}</Text>
               </View>
             )}
             <View style={[s.bar, {
@@ -558,7 +558,10 @@ const s = StyleSheet.create({
   chartRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   chartCol: { flex: 1, height: 84, justifyContent: 'flex-end', alignItems: 'center' },
   bar: { width: '100%', borderRadius: 4, minHeight: 3 },
-  chartBubble: { paddingVertical: 2, paddingHorizontal: 6, borderRadius: 7, marginBottom: 4 },
+  // Negative horizontal margin lets the pill overflow its narrow bar column so
+  // 3-digit values ("134", "60%") never wrap onto two lines; zIndex draws it
+  // above the neighboring bars.
+  chartBubble: { paddingVertical: 2, paddingHorizontal: 6, borderRadius: 7, marginBottom: 4, marginHorizontal: -16, alignSelf: 'center', alignItems: 'center', zIndex: 2 },
   chartBubbleText: { fontSize: 9, fontFamily: 'Nunito_800ExtraBold' },
   chartLabel: { flex: 1, fontSize: 9, textAlign: 'center', marginTop: 4 },
 

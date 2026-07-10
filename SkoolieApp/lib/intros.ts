@@ -33,7 +33,7 @@ export const INTROS: Record<IntroKey, { mascot: IntroMascot; title: string; body
   league: {
     mascot: 'buddy',
     title: 'The weekly league',
-    body: "Everyone's weekly XP resets Monday. Finish top 10 in your league to get promoted; the bottom 5 drop down. Your all-time XP is safe — this is just the weekly race.",
+    body: "Everyone's weekly XP resets Monday. Finish top 3 in your league to get promoted; the bottom 3 drop down. Your all-time XP is safe — this is just the weekly race.",
   },
   barrage: {
     mascot: 'buddy',

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing, TextInput, Linking } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing, TextInput, Linking, KeyboardAvoidingView, Platform } from 'react-native'
 import Constants from 'expo-constants'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
+// RN core Clipboard (deprecated but present in the binary — expo-clipboard
+// would require a native rebuild, not worth it for a fallback path)
+import { Clipboard } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
@@ -142,6 +145,23 @@ export default function ProfileScreen() {
   const [deleteText, setDeleteText] = useState('')
   const [deleting, setDeleting] = useState(false)
 
+  // Local toggle state is optimistic — but the same settings can change from
+  // OUTSIDE this screen (TopBar's TimedModeSheet writes timed_mode/seconds),
+  // and tab screens stay mounted, so mount-time seeding goes stale. Re-sync
+  // from the profile whenever the underlying fields change.
+  useEffect(() => {
+    if (!profile) return
+    setAllowRepeat(profile.allow_repeat_questions ?? true)
+    setShowTags(profile.show_question_tags ?? true)
+    setNotifPrefs(profile.notif_prefs ?? {})
+    setTimedOn(profile.timed_mode ?? false)
+    setTimedSecs(profile.timed_seconds ?? 30)
+    setSoundOn(profile.sound_enabled !== false)
+    setHapticsOn(profile.haptics_enabled !== false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.allow_repeat_questions, profile?.show_question_tags, profile?.notif_prefs,
+      profile?.timed_mode, profile?.timed_seconds, profile?.sound_enabled, profile?.haptics_enabled])
+
   if (!profile || !user) return null
 
   const profMeta    = PROF_META[profile.profession] ?? { label: profile.profession, color: C.textSoft, bg: C.surface3 }
@@ -229,17 +249,27 @@ export default function ProfileScreen() {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true, aspect: [1, 1], quality: 0.8,
+      base64: true,   // we upload raw bytes — {uri} objects upload garbage in RN
     })
     if (res.canceled) return
     const asset = res.assets[0]
+    if (!asset.base64) { Alert.alert('Upload failed', "Couldn't read the selected image."); return }
     setAvatarUploading(true)
     try {
       const ext         = asset.uri.split('.').pop()?.toLowerCase() ?? 'jpg'
       const contentType = ext === 'png' ? 'image/png' : 'image/jpeg'
-      const path        = `${user!.id}.${ext}`
+      // Storage RLS requires the object to live in a folder named after the
+      // user's id (foldername(name)[1] = auth.uid()) — root-level names fail.
+      const path        = `${user!.id}/avatar.${ext}`
+      // Decode base64 → ArrayBuffer. Passing {uri,type,name} to supabase-js in
+      // React Native silently uploads the descriptor object (a ~240-byte
+      // non-image), which rendered as a blank avatar.
+      const bin = globalThis.atob(asset.base64)
+      const bytes = new Uint8Array(bin.length)
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, { uri: asset.uri, type: contentType, name: path } as any, { upsert: true, contentType })
+        .upload(path, bytes.buffer as ArrayBuffer, { upsert: true, contentType })
       if (uploadError) { Alert.alert('Upload failed', uploadError.message); return }
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       await supabase.from('user_profiles').update({ avatar_url: `${publicUrl}?t=${Date.now()}` }).eq('id', user!.id)
@@ -273,9 +303,19 @@ export default function ProfileScreen() {
   async function saveName() {
     const clean = nameDraft.trim().replace(/\s+/g, ' ')
     if (clean.length < 2) { Alert.alert('Name too short', 'Please enter at least 2 characters.'); return }
-    if (clean.length > 60) { Alert.alert('Name too long', 'Please keep it under 60 characters.'); return }
+    if (clean.length > 30) { Alert.alert('Name too long', 'Please keep it under 30 characters — long names get cut off on leaderboards.'); return }
     const { error } = await supabase.from('user_profiles').update({ full_name: clean }).eq('id', user!.id)
-    if (error) { Alert.alert('Error', error.message); return }
+    if (error) {
+      // Server-enforced name rules (trigger raises coded messages)
+      if (error.message.includes('NAME_RATE_LIMIT')) {
+        Alert.alert('Slow down', "You've changed your name 3 times in the last 30 days — you can change it again later.")
+      } else if (error.message.includes('NAME_NOT_ALLOWED')) {
+        Alert.alert('Name not allowed', 'That name contains words we can\'t put on a leaderboard. Pick something else.')
+      } else {
+        Alert.alert('Error', "Couldn't save your name — please try again.")
+      }
+      return
+    }
     await refreshProfile()
     setNameModal(false)
   }
@@ -326,7 +366,7 @@ export default function ProfileScreen() {
               }
             </View>
           </TouchableOpacity>
-          <Text style={[s.name, { color: C.text }]}>{getDisplayName(profile)}</Text>
+          <Text style={[s.name, { color: C.text }]} numberOfLines={1} ellipsizeMode="tail">{getDisplayName(profile)}</Text>
           <Text style={[s.email, { color: C.textFaint }]}>{user.email}</Text>
           <View style={s.pills}>
             <View style={[s.pill, { backgroundColor: profMeta.bg }]}>
@@ -714,7 +754,24 @@ export default function ProfileScreen() {
 
           {/* Contact support */}
           <TouchableOpacity
-            onPress={() => Linking.openURL('mailto:support@skoolieapp.com').catch(() => showToast('Email support@skoolieapp.com', 'info'))}
+            onPress={async () => {
+              // Prefill subject + account/version footer so support emails are triageable.
+              // Chain: default mail app → Gmail app → copy address to clipboard.
+              const subject = encodeURIComponent('Skoolie support request')
+              const body = encodeURIComponent(
+                `\n\n\n—\nAccount: ${user?.email ?? ''}\nApp version: ${Constants.expoConfig?.version ?? '1.0.0'}`,
+              )
+              try {
+                await Linking.openURL(`mailto:support@skoolieapp.com?subject=${subject}&body=${body}`)
+              } catch {
+                try {
+                  await Linking.openURL(`googlegmail://co?to=support@skoolieapp.com&subject=${subject}&body=${body}`)
+                } catch {
+                  try { Clipboard.setString('support@skoolieapp.com') } catch {}
+                  showToast('Address copied — email support@skoolieapp.com', 'info')
+                }
+              }
+            }}
             activeOpacity={0.75}
             accessibilityRole="button" accessibilityLabel="Contact support by email"
             style={[s.row, s.rowBorder, { borderColor: C.border }]}
@@ -883,6 +940,8 @@ export default function ProfileScreen() {
       {/* Edit name */}
       <Modal visible={nameModal} transparent animationType="fade" onRequestClose={() => setNameModal(false)}>
         <Pressable style={yr.overlay} onPress={() => setNameModal(false)}>
+          {/* Bottom sheets sit exactly where the keyboard appears — lift with it */}
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
             <View style={[yr.handle, { backgroundColor: C.border }]} />
             <Text style={[yr.title, { color: C.text }]}>Your name</Text>
@@ -891,7 +950,7 @@ export default function ProfileScreen() {
               value={nameDraft}
               onChangeText={setNameDraft}
               autoFocus
-              maxLength={60}
+              maxLength={30}
               placeholder="Your name"
               placeholderTextColor={C.textFaint}
               style={[s.modalInput, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
@@ -904,6 +963,7 @@ export default function ProfileScreen() {
               <Text style={[yr.cancelText, { color: C.textSoft }]}>Cancel</Text>
             </TouchableOpacity>
           </Pressable>
+          </KeyboardAvoidingView>
         </Pressable>
       </Modal>
 
@@ -935,6 +995,7 @@ export default function ProfileScreen() {
       {/* Delete account — final stage: type DELETE to unlock the button */}
       <Modal visible={deleteModal} transparent animationType="fade" onRequestClose={() => setDeleteModal(false)}>
         <Pressable style={yr.overlay} onPress={() => setDeleteModal(false)}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
             <View style={[yr.handle, { backgroundColor: C.border }]} />
             <Text style={[yr.title, { color: C.red }]}>Delete your account</Text>
@@ -971,6 +1032,7 @@ export default function ProfileScreen() {
               <Text style={[yr.cancelText, { color: C.textSoft }]}>Keep my account</Text>
             </TouchableOpacity>
           </Pressable>
+          </KeyboardAvoidingView>
         </Pressable>
       </Modal>
 

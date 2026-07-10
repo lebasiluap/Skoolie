@@ -30,7 +30,10 @@ export interface Celebration {
 export function diffProfiles(prev: UserProfile, next: UserProfile): Celebration[] {
   const out: Celebration[] = []
 
-  if ((next.level ?? 1) > (prev.level ?? 1)) {
+  // Levels 5/10/25/50 have their own trophies (lvl_5 … lvl_50) whose ceremony
+  // already announces the milestone — showing both read as a duplicate.
+  const TROPHY_LEVELS = new Set([5, 10, 25, 50])
+  if ((next.level ?? 1) > (prev.level ?? 1) && !TROPHY_LEVELS.has(next.level ?? 1)) {
     out.push({
       kind: 'level',
       title: `Level ${next.level}!`,
@@ -51,10 +54,15 @@ export function diffProfiles(prev: UserProfile, next: UserProfile): Celebration[
   }
 
   if ((next.streak_freezes ?? 0) > (prev.streak_freezes ?? 0)) {
+    // Source-agnostic copy: freezes come from barrages, trophy rewards, AND
+    // podium prizes — the old "Five barrages down" line was wrong for most.
+    const gained = (next.streak_freezes ?? 0) - (prev.streak_freezes ?? 0)
     out.push({
       kind: 'freeze_earned',
-      title: 'Streak Freeze earned! ❄️',
-      body: 'Five barrages down — a freeze is now banked. Miss a day and it spends itself automatically to keep your streak alive.',
+      title: gained > 1 ? `${gained} Streak Freezes earned! ❄️` : 'Streak Freeze earned! ❄️',
+      body: gained > 1
+        ? `${gained} freezes are now banked. Miss a day and one spends itself automatically to keep your streak alive.`
+        : 'A freeze is now banked. Miss a day and it spends itself automatically to keep your streak alive.',
       mascot: 'noggin',
       accent: STREAK_FREEZE_BLUE,
     })

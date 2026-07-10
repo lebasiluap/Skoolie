@@ -81,11 +81,8 @@ export default function MCQClient({
     setTotalXP(x => x + xpEarned)
     setAnswers(prev => ({ ...prev, [question.id]: selected }))
     setPhase('review')
-    const supabase = createClient()
-    await Promise.allSettled([
-      supabase.rpc('increment_xp', { user_id: userId, amount: xpEarned }),
-      supabase.rpc('update_streak', { user_id: userId }),
-    ])
+    // XP is credited ONCE at session end via credit_xp (server-authoritative:
+    // boost, clamping, weekly league) — per-answer increment_xp bypassed all of it.
   }
 
   async function handleNext() {
@@ -94,13 +91,18 @@ export default function MCQClient({
       const now = new Date().toISOString()
       const finalAnswers = { ...answers, [question.id]: selected! }
       const finalScore = score + (isCorrect ? 0 : 0) // score already updated
+      // Server-authoritative XP: same path as the mobile app (boost, clamps, league)
+      const { data: creditedXp } = await supabase.rpc('credit_xp', {
+        p_kind: 'mcq', p_score: finalScore, p_total: shuffledQs.length, p_timed: false,
+      })
       await Promise.allSettled([
+        supabase.rpc('update_streak', { user_id: userId }),
         supabase.from('quiz_sessions').insert({
           user_id: userId,
           question_ids: shuffledQs.map(sq => sq.id),
           answers: finalAnswers,
           score: finalScore,
-          xp_earned: totalXP,
+          xp_earned: typeof creditedXp === 'number' ? creditedXp : totalXP,
           completed_at: now,
         }),
         supabase.from('user_question_history').upsert(

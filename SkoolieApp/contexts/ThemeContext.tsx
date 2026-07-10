@@ -44,18 +44,31 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // dissolves outward — no flash of the new theme, then a flash of the overlay.
   const prevIsDark = useRef<boolean | null>(null)
   const overlayOpacity = useRef(new Animated.Value(0)).current
-  const [overlayColor, setOverlayColor] = useState<string | null>(null)
+  // Counter forces the effect below to re-run even if the color repeats
+  const [overlay, setOverlay] = useState<{ color: string; n: number } | null>(null)
+  const overlayColor = overlay?.color ?? null
 
   function beginDissolve(leavingDark: boolean) {
-    setOverlayColor(leavingDark ? Colors.dark.bg : Colors.light.bg)
     overlayOpacity.setValue(1)
+    setOverlay(o => ({ color: leavingDark ? Colors.dark.bg : Colors.light.bg, n: (o?.n ?? 0) + 1 }))
+  }
+
+  // Start the dissolve AFTER the overlay view is mounted. Starting it in the
+  // same commit occasionally no-oped with the native driver (animation bound
+  // before the native node existed), leaving the old-theme overlay stuck at
+  // full opacity — the "toggle does nothing" one-time bug. The failsafe
+  // guarantees the overlay can never linger even if the animation dies.
+  useEffect(() => {
+    if (!overlay) return
     Animated.timing(overlayOpacity, {
       toValue: 0,
       duration: 520,
       easing: Easing.inOut(Easing.ease),
       useNativeDriver: true,
-    }).start(() => setOverlayColor(null))
-  }
+    }).start(() => setOverlay(null))
+    const failsafe = setTimeout(() => setOverlay(null), 800)
+    return () => clearTimeout(failsafe)
+  }, [overlay?.n]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // System-driven flips (mode='system' and the OS toggles) — no user handler fires, so animate here.
   useEffect(() => {
@@ -82,7 +95,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     <ThemeContext.Provider value={{ isDark, themeMode, setThemeMode, toggleDark }}>
       <View style={{ flex: 1 }}>
         {children}
-        {overlayColor && (
+        {overlayColor != null && (
           <Animated.View
             pointerEvents="none"
             style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor, opacity: overlayOpacity }]}

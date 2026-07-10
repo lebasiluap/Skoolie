@@ -1146,7 +1146,9 @@ export default function MCQScreen() {
           </TouchableOpacity>
           {questionIds && (
             <TouchableOpacity onPress={() => backToBookmarks()} style={{ alignSelf: 'center', marginTop: 6 }}>
-              <Text style={[s.resultBtnText, { color: C.textFaint, fontSize: 13 }]}>← Back to bookmarks</Text>
+              <Text style={[s.resultBtnText, { color: C.textFaint, fontSize: 13 }]}>
+                ← Back to {from === 'search' ? 'search' : from === 'history' ? 'Time Capsule' : 'bookmarks'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>

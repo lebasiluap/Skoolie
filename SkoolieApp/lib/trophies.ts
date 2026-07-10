@@ -23,7 +23,13 @@ function rewardLine(t: EarnedTrophy): string {
   return parts.length ? ` Reward: ${parts.join(' · ')}.` : ''
 }
 
+// In-flight guard: dashboard focus can fire in quick succession (tab
+// switching) — never let two sweeps race each other.
+let inFlight = false
+
 export async function checkTrophies(): Promise<void> {
+  if (inFlight) return
+  inFlight = true
   try {
     const { data, error } = await supabase.rpc('check_trophies')
     if (error || !Array.isArray(data) || data.length === 0) return
@@ -52,4 +58,5 @@ export async function checkTrophies(): Promise<void> {
       }])
     }
   } catch { /* best-effort */ }
+  finally { inFlight = false }
 }

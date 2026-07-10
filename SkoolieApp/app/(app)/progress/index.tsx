@@ -85,7 +85,7 @@ export default function ProgressScreen() {
    *  windows) so every row can show whether it climbed, dropped, or held. */
   async function computeMovement(rows: WeeklyRow[]) {
     try {
-      const key = `lbRanks:${weekStartKey()}`
+      const key = `lbRanks:${user?.id ?? 'anon'}:${weekStartKey()}`
       const raw = await AsyncStorage.getItem(key)
       const now = Date.now()
       const snap = raw ? (JSON.parse(raw) as { ts: number; ranks: Record<string, number> }) : null
@@ -203,7 +203,8 @@ export default function ProgressScreen() {
   const displayedN = activeList.length
   const promoteN = effectivePromote(myWeekLeagueId, displayedN)
   const demoStart = Math.max(promoteN + 1, displayedN - 2)
-  const demoLive = displayedN >= 10
+  // Bronze is the floor — nobody relegates OUT of it, so never show the zone there
+  const demoLive = displayedN >= 10 && myWeekLeagueId !== 'bronze'
   const showZones = displayedN > 0
   const promoBoundaryIdx = showZones && displayedN > promoteN ? promoteN : -1
   const relegBoundaryIdx = showZones && demoLive ? demoStart - 1 : -1

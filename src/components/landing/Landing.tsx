@@ -271,8 +271,9 @@ export default function Landing() {
             background: 'radial-gradient(ellipse 40% 32% at 72% 68%, rgba(242,119,78,.16), transparent 70%)',
           }}
         />
-        {/* dot grid depth layer */}
+        {/* dot grid depth layer (heavy full-viewport paint — ≥700px only) */}
         <div
+          className="lp-depth-lg"
           data-para="0.5"
           data-mouse="14"
           style={{
@@ -597,8 +598,9 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
-        {/* depth layers — back glow (always on) + front glow / dot grid /
-            drifting emojis (lp-depth-lg: hidden < 700px for mobile perf) */}
+        {/* depth layers — glows + drifting emojis run at every width (cheap
+            composited transforms; they carry mobile's ambient motion), only
+            the dot grid (lp-depth-lg) sits out < 700px */}
         <div
           data-para="0.6"
           style={{
@@ -613,7 +615,6 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="-0.45"
           style={{
             position: 'absolute',
@@ -639,26 +640,23 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="-0.6"
           aria-hidden="true"
-          style={{ position: 'absolute', top: '14%', left: '4%', fontSize: 58, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '14%', left: '4%', fontSize: 'clamp(44px, 10vw, 58px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty2 7s ease-in-out infinite' }}>💊</div>
         </div>
         <div
-          className="lp-depth-lg"
           data-para="0.45"
           aria-hidden="true"
-          style={{ position: 'absolute', top: '38%', right: '3%', fontSize: 74, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '38%', right: '3%', fontSize: 'clamp(54px, 12vw, 74px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty 6.2s ease-in-out .5s infinite' }}>🩺</div>
         </div>
         <div
-          className="lp-depth-lg"
           data-para="-0.3"
           aria-hidden="true"
-          style={{ position: 'absolute', bottom: '10%', left: '7%', fontSize: 46, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', bottom: '10%', left: '7%', fontSize: 'clamp(36px, 8vw, 46px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-bobble 5.4s ease-in-out 1s infinite' }}>🧠</div>
         </div>
@@ -1127,8 +1125,8 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
-        {/* depth layers — coral glow (always on) + teal glow / dot grid /
-            drifting emojis (hidden < 700px) */}
+        {/* depth layers — glows + drifting emojis at every width; only the
+            dot grid (lp-depth-lg) hidden < 700px */}
         <div
           data-para="0.8"
           style={{
@@ -1143,7 +1141,6 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="-0.5"
           style={{
             position: 'absolute',
@@ -1169,26 +1166,23 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="-0.55"
           aria-hidden="true"
-          style={{ position: 'absolute', top: '10%', left: '3%', fontSize: 60, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '10%', left: '3%', fontSize: 'clamp(46px, 10vw, 60px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty 6.6s ease-in-out infinite' }}>🔥</div>
         </div>
         <div
-          className="lp-depth-lg"
           data-para="0.4"
           aria-hidden="true"
-          style={{ position: 'absolute', top: '48%', right: '2.5%', fontSize: 48, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '48%', right: '2.5%', fontSize: 'clamp(38px, 8vw, 48px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-bobble 5.8s ease-in-out .7s infinite' }}>⚡</div>
         </div>
         <div
-          className="lp-depth-lg"
           data-para="-0.35"
           aria-hidden="true"
-          style={{ position: 'absolute', bottom: '6%', right: '8%', fontSize: 66, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', bottom: '6%', right: '8%', fontSize: 'clamp(50px, 11vw, 66px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty2 7.4s ease-in-out 1.2s infinite' }}>🏆</div>
         </div>
@@ -1246,7 +1240,7 @@ export default function Landing() {
                 in a parallax shim (odd +0.08 / even -0.08, ≥700px only) so the
                 grid subtly scissors as you scroll. */}
             <div data-para="0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="up" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: 'var(--coral-deep)' }}>Streaks &amp; freezes</div>
                 <div style={{ fontSize: 26, animation: 'lp-flick 1.8s ease-in-out infinite', display: 'inline-block' }}>
@@ -1272,7 +1266,7 @@ export default function Landing() {
 
             {/* Leagues */}
             <div data-para="-0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Weekly leagues</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div
@@ -1377,7 +1371,7 @@ export default function Landing() {
 
             {/* Daily challenge */}
             <div data-para="0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--amber)' }}>Daily challenge</div>
               <div
                 style={{
@@ -1436,7 +1430,7 @@ export default function Landing() {
 
             {/* Rapid fire */}
             <div data-para="-0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="up" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: PERI_DEEP }}>Rapid fire</div>
                 <div
@@ -1486,7 +1480,7 @@ export default function Landing() {
 
             {/* Time capsule */}
             <div data-para="0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Time capsule</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div
@@ -1545,7 +1539,7 @@ export default function Landing() {
 
             {/* Search & bookmarks */}
             <div data-para="-0.08" data-para-min="700">
-            <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
+            <div className="lp-breathe" data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Search &amp; bookmarks</div>
               <div
                 style={{
@@ -1599,8 +1593,8 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
-        {/* depth layers — teal glow (always on) + coral glow / drifting
-            emojis (hidden < 700px) */}
+        {/* depth layers — glows + drifting emojis run at every width (no
+            dot grid in this section, so nothing sits out on mobile) */}
         <div
           data-para="-0.6"
           style={{
@@ -1615,7 +1609,6 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="0.5"
           style={{
             position: 'absolute',
@@ -1629,18 +1622,16 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="-0.4"
           aria-hidden="true"
-          style={{ position: 'absolute', top: '12%', left: '3%', fontSize: 52, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', top: '12%', left: '3%', fontSize: 'clamp(40px, 9vw, 52px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty 6.8s ease-in-out .3s infinite' }}>📈</div>
         </div>
         <div
-          className="lp-depth-lg"
           data-para="0.35"
           aria-hidden="true"
-          style={{ position: 'absolute', bottom: '8%', right: '4%', fontSize: 62, opacity: 0.12, pointerEvents: 'none' }}
+          style={{ position: 'absolute', bottom: '8%', right: '4%', fontSize: 'clamp(48px, 10vw, 62px)', opacity: 0.12, pointerEvents: 'none' }}
         >
           <div style={{ animation: 'lp-floaty2 7.6s ease-in-out infinite' }}>💉</div>
         </div>
@@ -1719,6 +1710,7 @@ export default function Landing() {
           </div>
           <div data-reveal="right" data-reveal-delay="120" style={{ perspective: 1000 }}>
             <div
+              className="lp-breathe"
               data-tilt="1"
               style={{
                 background: 'var(--surface)',
@@ -1889,7 +1881,6 @@ export default function Landing() {
             }}
           />
           <div
-            className="lp-depth-lg"
             data-para="-0.4"
             style={{
               position: 'absolute',
@@ -2017,8 +2008,8 @@ export default function Landing() {
             background: 'radial-gradient(ellipse 50% 40% at 50% 45%, rgba(14,158,142,.22), transparent 70%)',
           }}
         />
-        {/* depth layers — teal glow (always on, the mobile mover) + coral
-            glow / dot grid (hidden < 700px) */}
+        {/* depth layers — glows at every width; only the dot grid
+            (lp-depth-lg) hidden < 700px */}
         <div
           data-para="-0.3"
           style={{
@@ -2033,7 +2024,6 @@ export default function Landing() {
           }}
         />
         <div
-          className="lp-depth-lg"
           data-para="0.5"
           style={{
             position: 'absolute',

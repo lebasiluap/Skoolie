@@ -365,11 +365,23 @@ button { font-family: inherit; }
   100% { transform: translateY(0); }
 }
 
-/* ── Heavier decorative depth layers (extra glows, dot grids, drifting
-      emojis, tailored ring) sit out below 700px — each section keeps at
-      least one always-on parallax layer so mobile still feels alive ── */
+/* ── Dot-grid depth layers (lp-depth-lg) are full-viewport repeating
+      gradients — the one genuinely heavy decorative paint — so they sit
+      out below 700px. Glows and drifting emojis are cheap composited
+      transforms and stay on: they carry mobile's ambient depth now that
+      mouse drift is dead on touch ── */
 @media (max-width: 699.98px) {
   .lp-depth-lg { display: none !important; }
+}
+
+/* ── Touch devices have no hover tilt, so the gamification + analytics
+      cards get a slow breathing scale — never fully static. Animating the
+      standalone `scale` property composes with the inline `transform` the
+      JS runtime writes (reveals + touchstart pulse), so nothing is stomped.
+      Reduced motion is neutralized by the global .01ms override above. ── */
+@keyframes lp-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.015; } }
+@media (hover: none) {
+  .lp-breathe { animation: lp-breathe 4s ease-in-out infinite; }
 }
 
 /* Nav + hero tighten on small screens */
@@ -388,8 +400,6 @@ button { font-family: inherit; }
   .lp-h2-br { display: none; }
   /* three floating mascots crowd a 360px hero — Buddy sits this one out */
   .lp-hero-buddy { display: none; }
-  /* gentler float amplitudes where elements are small and close together */
-  @keyframes lp-floaty  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes lp-floaty2 { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-12px) rotate(1.5deg); } }
-  @keyframes lp-bobble  { 0%, 100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(-6px) rotate(-1deg); } }
+  /* float keyframes intentionally NOT reduced here: full-amplitude floats
+     are cheap transform loops and mobile needs the extra life */
 }

@@ -129,22 +129,26 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       mx = lerp(mx, tmx, 0.06)
       my = lerp(my, tmy, 0.06)
       const vh = window.innerHeight
+      const vw = window.innerWidth
       const sy = window.scrollY
+      /* touch devices have no mouse drift, so scroll parallax is mobile's
+         main ambient motion source — run it ~1.4× faster below 700px */
+      const paraBoost = vw < 700 ? 1.4 : 1
       for (const el of els) {
         let x = 0
         let y = 0
         let speed = parseFloat(el.dataset.para || '0')
-        if (el.dataset.paraMin && window.innerWidth < parseFloat(el.dataset.paraMin)) speed = 0
+        if (el.dataset.paraMin && vw < parseFloat(el.dataset.paraMin)) speed = 0
         if (speed) {
           const g = geom.get(el)
           if (g) {
             const p = (g.docTop + g.h / 2 - sy - vh / 2) / vh
-            y += p * speed * 90 * intensity
+            y += p * speed * 90 * intensity * paraBoost
           }
         }
         const ms = parseFloat(el.dataset.mouse || '0')
         if (ms) {
-          const mScale = Math.min(1, window.innerWidth / 1500) // tame drift on narrow screens
+          const mScale = Math.min(1, vw / 1500) // tame drift on narrow screens
           x += mx * ms * intensity * mScale
           y += my * ms * intensity * mScale
         }
@@ -203,21 +207,37 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
 
     /* ── Scroll reveals (variant-aware, replayable) ────────────── */
     if (!reduce) {
-      const HIDDEN: Record<string, string> = {
-        up: 'translateY(44px)',
-        left: 'translateX(-60px)',
-        right: 'translateX(60px)',
-        zoom: 'scale(.85)',
-        flip: 'perspective(900px) rotateX(14deg) translateY(20px)',
-        blur: 'translateY(14px)',
-        'rise-rotate': 'translateY(40px) rotate(2deg)',
-        pop: 'scale(.55)',
-      }
+      /* small screens get ~1.3× reveal travel and a slightly longer tween —
+         the motion has to cover more relative viewport to be felt on a phone */
+      const small = window.innerWidth < 700
+      const HIDDEN: Record<string, string> = small
+        ? {
+            up: 'translateY(58px)',
+            left: 'translateX(-76px)',
+            right: 'translateX(76px)',
+            zoom: 'scale(.8)',
+            flip: 'perspective(900px) rotateX(16deg) translateY(26px)',
+            blur: 'translateY(18px)',
+            'rise-rotate': 'translateY(52px) rotate(2.5deg)',
+            pop: 'scale(.5)',
+          }
+        : {
+            up: 'translateY(44px)',
+            left: 'translateX(-60px)',
+            right: 'translateX(60px)',
+            zoom: 'scale(.85)',
+            flip: 'perspective(900px) rotateX(14deg) translateY(20px)',
+            blur: 'translateY(14px)',
+            'rise-rotate': 'translateY(40px) rotate(2deg)',
+            pop: 'scale(.55)',
+          }
       const SHOWN: Record<string, string> = {
         flip: 'perspective(900px) rotateX(0deg) translateY(0)',
       }
       const EASE = 'cubic-bezier(.2,.8,.25,1)'
       const SPRING = 'cubic-bezier(.34,1.56,.64,1)' // overshoot for "pop"
+      const DUR = small ? '.95s' : '.8s'
+      const POP_DUR = small ? '.75s' : '.65s'
       const conf = (el: HTMLElement) => {
         const raw = el.dataset.reveal || 'up'
         const legacy = /^\d+$/.test(raw)
@@ -249,8 +269,8 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
               shown.add(el)
               const { variant, delay: d } = conf(el)
               const tEase = variant === 'pop' ? SPRING : EASE
-              const tDur = variant === 'pop' ? '.65s' : '.8s'
-              el.style.transition = `opacity .8s ${d}ms ${EASE}, transform ${tDur} ${d}ms ${tEase}, filter .8s ${d}ms ${EASE}`
+              const tDur = variant === 'pop' ? POP_DUR : DUR
+              el.style.transition = `opacity ${DUR} ${d}ms ${EASE}, transform ${tDur} ${d}ms ${tEase}, filter ${DUR} ${d}ms ${EASE}`
               el.style.opacity = '1'
               el.style.transform = SHOWN[variant] || 'translateY(0)'
               if (variant === 'blur') el.style.filter = 'blur(0px)'

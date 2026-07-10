@@ -1,4 +1,20 @@
 # Skoolie — Release Readiness Report
+
+## Delta audit (July 10, pre-TestFlight) — PASSED
+All 12 changed areas since the first audit re-verified adversarially (two passes): profile modals/keyboard/name rules, IntroGate rewrite, theme dissolve, auth generation guard, routing guards, OAuth callback alias, league zone guards + namespaced keys, flashcard fallbacks, app.json/entitlements store-readiness, feature-lab isolation (zero imports, migrations inert), intros copy, strict tsc. One P1 found and FIXED: the Android OAuth deep link was redirected to login pre-session (guard exemption hoisted). No P0s. **Verdict: production-ready for TestFlight** pending the owner checklist below.
+
+## Pre-TestFlight owner checklist (Paul)
+1. Push notifications (only real feature gap): `npm i -g eas-cli && eas login && cd SkoolieApp && eas init` → `eas credentials` (iOS push key; Android FCM needs Firebase project + google-services.json). Can ship TestFlight WITHOUT this — local notifications work; zone pushes stay dead until done.
+2. Supabase dashboard: remove `exp://*/--/auth/callback` redirect URL; remove `host.exp.Exponent` from Apple provider Client IDs; enable HaveIBeenPwned password check (Auth settings).
+3. Rotate the burned Vercel token + Resend API key.
+4. Resend inbound for support@: MX record in Vercel DNS + webhook → support-inbox function + 2 secrets (function already deployed). MUST work before public launch; optional for TestFlight.
+5. Decide Yumeko: restore from snapshot_yumeko or keep as-is.
+6. Build & archive: `npx expo prebuild -p ios --clean` (picks up buildNumber/icons cleanly), open Xcode → Product → Archive → Distribute → TestFlight. Xcode flips aps-environment to production automatically.
+7. App Store Connect: create the app record (com.skoolie.app), screenshots, description, privacy questionnaire (data collected: email, name, usage stats — linked to identity; no tracking), age rating, review notes with a TEST ACCOUNT login for Apple reviewers.
+8. Play later: same repo is Android-ready (versionCode 1, permissions trimmed); needs a keystore + Play Console listing when you're ready.
+9. Content: repopulate genuinely-easy questions (your Opus workflow) — regrading will validate labels automatically as answers accumulate.
+10. Legal: entity/lawyer skim of lib/legal.ts; host nothing extra — /terms + /privacy already live on skoolieapp.com.
+
 July 9, 2026 · Full-organization audit (QA × 4 departments, Security, Performance, Release Management)
 
 ## How this was run

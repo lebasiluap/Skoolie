@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "564852042290",
+    "project_id": "skoolie-e4e5c",
+    "storage_bucket": "skoolie-e4e5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:564852042290:android:e3144c3b24b72525606a2b",
+        "android_client_info": {
+          "package_name": "com.skoolie.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-tnd8e8Jz6UGFuT_Jdb1aWwHDuOHvbyo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

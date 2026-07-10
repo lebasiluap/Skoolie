@@ -378,6 +378,9 @@ button { font-family: inherit; }
       mouse drift is dead on touch ── */
 @media (max-width: 699.98px) {
   .lp-depth-lg { display: none !important; }
+  /* CTA Noggin bubble: nowrap text extends under Cappy (higher z-index) once
+     the mascot trio compresses, so it sits out below 700px */
+  .lp-cta-bubble { display: none !important; }
 }
 
 /* ── Touch devices have no hover tilt, so the gamification + analytics
@@ -404,6 +407,14 @@ button { font-family: inherit; }
   }
   /* hard line-breaks in section H2s wrap naturally on narrow screens */
   .lp-h2-br { display: none; }
+  /* hero H1: drop the forced break and tighten the clamp so "Know exactly
+     what to study next." wraps into balanced lines instead of orphaning
+     "what" — 42px min overflows a 320px column (!important beats inline) */
+  .lp-h1-br { display: none; }
+  .lp-hero h1 {
+    font-size: clamp(36px, 10.6vw, 42px) !important;
+    text-wrap: balance;
+  }
   /* three floating mascots crowd a 360px hero — Buddy sits this one out */
   .lp-hero-buddy { display: none; }
   /* float keyframes intentionally NOT reduced here: full-amplitude floats

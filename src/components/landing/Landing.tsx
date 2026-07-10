@@ -446,7 +446,10 @@ export default function Landing() {
             }}
           >
             Know exactly what
-            <br />
+            {/* forced break wraps "what" onto its own line below ~640px, so
+                the br joins .lp-h2-br in sitting out on small screens and the
+                H1 wraps naturally (font clamp tightened in globals.css) */}
+            <br className="lp-h1-br" />
             {/* gradient scoped to one unwrappable word group so a line wrap
                 never smears the teal→coral ramp into muddy midtones */}
             <span style={{ color: TEAL_BRIGHT }}>to study</span>{' '}
@@ -542,9 +545,11 @@ export default function Landing() {
           <p
             style={{
               margin: '36px 0 0',
-              fontSize: 14,
+              /* tracked uppercase runs ~320px at 14px/2px — clamp both so the
+                 line stays single-line down to a 320px viewport */
+              fontSize: 'clamp(12.5px, 3.6vw, 14px)',
               fontWeight: 900,
-              letterSpacing: 2,
+              letterSpacing: 'clamp(1.1px, 0.5vw, 2px)',
               textTransform: 'uppercase',
               color: CORAL_BRIGHT,
             }}
@@ -637,7 +642,7 @@ export default function Landing() {
         >
           {(
             [
-              { icon: '⚕️', text: 'Built by a pharmacist (PharmD)' },
+              { icon: '⚕️', text: '100% built by a pharmacist (PharmD)' },
               { icon: '📚', text: 'Drawn from trusted clinical textbooks' },
               { icon: '💡', text: 'An explanation with every answer' },
               { icon: '📊', text: 'Difficulty calibrated by real student performance' },
@@ -692,7 +697,9 @@ export default function Landing() {
           </div>
           <div style={{ marginTop: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div data-reveal="left" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <BuddyIdle size={52} style={{ flexShrink: 0 }} />
+              {/* mascots shrink a touch on narrow screens so the bubbles keep
+                  near-full width instead of getting squeezed */}
+              <BuddyIdle size={52} style={{ flexShrink: 0, width: 'clamp(40px, 12vw, 52px)', height: 'auto' }} />
               <div
                 style={{
                   background: 'var(--surface)',
@@ -728,7 +735,7 @@ export default function Landing() {
               >
                 I know exactly what to practice today.
               </div>
-              <CappyHappy size={52} style={{ flexShrink: 0 }} />
+              <CappyHappy size={52} style={{ flexShrink: 0, width: 'clamp(40px, 12vw, 52px)', height: 'auto' }} />
             </div>
           </div>
         </div>
@@ -1894,7 +1901,10 @@ export default function Landing() {
                 'Consistency and long-term retention, tracked over time',
                 'Weak topics turned into your next study session',
               ].map((line) => (
-                <div key={line} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                /* flex-start (not center) so when a line wraps on narrow
+                   screens the check pins to the first line — no hanging
+                   indent, no floating checkmark between wrapped lines */
+                <div key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <span
                     style={{
                       width: 26,
@@ -1912,7 +1922,7 @@ export default function Landing() {
                   >
                     ✓
                   </span>
-                  <span style={{ fontSize: 15.5, fontWeight: 700 }}>{line}</span>
+                  <span style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.45, marginTop: 2 }}>{line}</span>
                 </div>
               ))}
             </div>
@@ -2265,8 +2275,11 @@ export default function Landing() {
             <div data-para="-0.2" style={{ zIndex: 1 }}>
               <div style={{ animation: 'lp-bobble 5s ease-in-out .3s infinite', position: 'relative' }}>
                 {/* Noggin speech bubble — same chat-bubble language as the
-                    cases mockup; bobbles with him */}
+                    cases mockup; bobbles with him. Below 700px the mascot trio
+                    compresses and the nowrap bubble slides under Cappy
+                    (higher z-index), so it sits out (lp-cta-bubble) */}
                 <div
+                  className="lp-cta-bubble"
                   style={{
                     position: 'absolute',
                     bottom: '98%',

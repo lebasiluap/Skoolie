@@ -244,33 +244,61 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       }
     }
 
-    /* ── Readiness ring + topic bars animate on view ───────────── */
+    /* ── Readiness ring + topic bars animate once on view ──────── */
     const ring = root.querySelector<SVGCircleElement>('[data-ring]')
     const num = root.querySelector<HTMLElement>('[data-ringnum]')
     if (ring) {
-      const io2 = new IntersectionObserver(
-        (entries) => {
-          if (!entries.some((e) => e.isIntersecting)) return
-          const target = 78
-          const circ = 2 * Math.PI * 62
-          ring.setAttribute('stroke-dasharray', `${((circ * target) / 100).toFixed(1)} ${circ.toFixed(1)}`)
-          const t0 = performance.now()
-          const tick = (t: number) => {
-            const p = Math.min((t - t0) / 1400, 1)
-            const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
-            if (num) num.textContent = `${Math.round(target * ease)}%`
-            if (p < 1) requestAnimationFrame(tick)
-          }
-          requestAnimationFrame(tick)
-          for (const bar of Array.from(root.querySelectorAll<HTMLElement>('[data-bar]'))) {
-            bar.style.width = `${bar.dataset.bar}%`
-          }
-          io2.disconnect()
-        },
-        { threshold: 0.4 }
-      )
-      io2.observe(ring)
-      cleanups.push(() => io2.disconnect())
+      const target = 78
+      const circ = 2 * Math.PI * 62
+      const finalDash = `${((circ * target) / 100).toFixed(1)} ${circ.toFixed(1)}`
+      const bars = Array.from(root.querySelectorAll<HTMLElement>('[data-bar]'))
+
+      if (reduce) {
+        /* Reduced motion: render final values immediately, no tweens */
+        ring.style.transition = 'none'
+        ring.setAttribute('stroke-dasharray', finalDash)
+        if (num) num.textContent = `${target}%`
+        for (const bar of bars) {
+          bar.style.transition = 'none'
+          bar.style.width = `${bar.dataset.bar}%`
+        }
+      } else {
+        /* Observe the HTML card, NOT the <circle>: Chromium's
+           IntersectionObserver treats SVG child elements as having no
+           layout box, so observing the circle never reports an
+           intersection and the whole choreography sat at 0 forever.
+           Watching the card also matches the intent: fire when the card
+           itself is ~40% visible, independent of reveal-state ordering
+           (opacity/transform on the [data-reveal] wrapper don't affect
+           intersection geometry). */
+        const card =
+          ring.closest<HTMLElement>('[data-tilt]') ??
+          (ring.ownerSVGElement?.parentElement as HTMLElement | null) ??
+          root
+        let fired = false
+        const io2 = new IntersectionObserver(
+          (entries) => {
+            if (fired || !entries.some((e) => e.isIntersecting)) return
+            fired = true
+            ring.setAttribute('stroke-dasharray', finalDash)
+            const t0 = performance.now()
+            const tick = (t: number) => {
+              const p = Math.min((t - t0) / 1400, 1)
+              const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
+              if (num) num.textContent = `${Math.round(target * ease)}%`
+              if (p < 1) requestAnimationFrame(tick)
+            }
+            requestAnimationFrame(tick)
+            for (const bar of bars) {
+              bar.style.width = `${bar.dataset.bar}%`
+            }
+            io2.disconnect()
+          },
+          { threshold: 0.4 }
+        )
+        io2.observe(card)
+        cleanups.push(() => io2.disconnect())
+      }
     }
 
     return () => {

@@ -7,8 +7,16 @@ import { useEffect, type RefObject } from 'react'
  *  1. Scroll parallax  — [data-para] (speed), optional [data-para-min] (min vw)
  *  2. Mouse drift      — [data-mouse] (strength), lerped at 0.06/frame
  *  3. 3D tilt          — [data-tilt], optional [data-base] base transform
- *  4. Scroll reveals   — [data-reveal] (stagger delay in ms)
- *  5. Readiness ring   — [data-ring] + [data-ringnum] + [data-bar]
+ *                        (mouse-driven on fine pointers; touch devices get a
+ *                        250ms touchstart tilt pulse instead)
+ *  4. Scroll reveals   — [data-reveal] = variant name (up | left | right |
+ *                        zoom | flip | blur | rise-rotate | pop) or a bare
+ *                        number (legacy: "up" with that delay). Stagger via
+ *                        [data-reveal-delay]. Revealed elements gain .lp-in
+ *                        so CSS can choreograph children (week checkmarks,
+ *                        leaderboard rows, combo bar).
+ *  5. Count-up stats   — [data-count] + optional [data-suffix]
+ *  6. Readiness ring   — [data-ring] + [data-ringnum] + [data-bar]
  *
  * Parallax and drift are combined into a single translate3d per frame.
  * Document tops are cached on init / resize / ~600ms after mount (transform
@@ -27,8 +35,21 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const intensity = reduce ? 0 : MOTION_INTENSITY
-    const tiltOn = !reduce
+    /* tilt is mouse-driven — skip it entirely on touch / coarse-pointer devices */
+    const tiltOn = !reduce && window.matchMedia('(hover: hover) and (pointer: fine)').matches
     const cleanups: Array<() => void> = []
+
+    /* ── Hero decor chips fade once the page scrolls (never touch the nav) ── */
+    const decor = Array.from(root.querySelectorAll<HTMLElement>('.lp-hero-decor'))
+    if (decor.length) {
+      const onDecorScroll = () => {
+        const hide = window.scrollY > 60
+        for (const el of decor) el.classList.toggle('lp-decor-hide', hide)
+      }
+      onDecorScroll()
+      window.addEventListener('scroll', onDecorScroll, { passive: true })
+      cleanups.push(() => window.removeEventListener('scroll', onDecorScroll))
+    }
 
     /* ── Scroll parallax + mouse drift ─────────────────────────── */
     const els = Array.from(root.querySelectorAll<HTMLElement>('[data-para], [data-mouse]'))
@@ -58,7 +79,7 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       tmx = (e.clientX / window.innerWidth - 0.5) * 2
       tmy = (e.clientY / window.innerHeight - 0.5) * 2
     }
-    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mousemove', onMouseMove, { passive: true })
     cleanups.push(() => window.removeEventListener('mousemove', onMouseMove))
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
@@ -116,24 +137,74 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
           card.removeEventListener('mouseleave', onLeave)
         })
       }
+    } else if (!reduce) {
+      /* Touch replacement: a brief tilt pulse on tap (250ms, transform-only).
+         Phones (.lp-phone) are excluded — below 1050px their transform is
+         pinned flat by CSS, so a pulse there would be a no-op anyway. */
+      for (const card of Array.from(root.querySelectorAll<HTMLElement>('[data-tilt]:not(.lp-phone)'))) {
+        const base = card.dataset.base || ''
+        let back = 0
+        const onTouch = () => {
+          window.clearTimeout(back)
+          card.style.transition = 'transform .25s cubic-bezier(.2,.8,.25,1)'
+          card.style.transform = `perspective(900px) ${base} rotateX(3deg) scale(.985)`
+          back = window.setTimeout(() => {
+            card.style.transform = base
+          }, 250)
+        }
+        card.addEventListener('touchstart', onTouch, { passive: true })
+        cleanups.push(() => {
+          card.removeEventListener('touchstart', onTouch)
+          window.clearTimeout(back)
+        })
+      }
     }
 
-    /* ── Scroll reveals ────────────────────────────────────────── */
+    /* ── Scroll reveals (variant-aware, one-shot) ──────────────── */
     if (!reduce) {
+      const HIDDEN: Record<string, string> = {
+        up: 'translateY(44px)',
+        left: 'translateX(-60px)',
+        right: 'translateX(60px)',
+        zoom: 'scale(.85)',
+        flip: 'perspective(900px) rotateX(14deg) translateY(20px)',
+        blur: 'translateY(14px)',
+        'rise-rotate': 'translateY(40px) rotate(2deg)',
+        pop: 'scale(.55)',
+      }
+      const SHOWN: Record<string, string> = {
+        flip: 'perspective(900px) rotateX(0deg) translateY(0)',
+      }
+      const EASE = 'cubic-bezier(.2,.8,.25,1)'
+      const SPRING = 'cubic-bezier(.34,1.56,.64,1)' // overshoot for "pop"
+      const conf = (el: HTMLElement) => {
+        const raw = el.dataset.reveal || 'up'
+        const legacy = /^\d+$/.test(raw)
+        const variant = legacy || !(raw in HIDDEN) ? 'up' : raw
+        const delay = parseInt(el.dataset.revealDelay || (legacy ? raw : '0'), 10) || 0
+        return { variant, delay }
+      }
       const reveals = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
       for (const el of reveals) {
+        const { variant } = conf(el)
         el.style.opacity = '0'
-        el.style.transform = 'translateY(44px)'
+        el.style.transform = HIDDEN[variant]
+        if (variant === 'blur') el.style.filter = 'blur(8px)'
       }
       const io = new IntersectionObserver(
         (entries) => {
           for (const en of entries) {
             if (!en.isIntersecting) continue
             const el = en.target as HTMLElement
-            const d = parseInt(el.dataset.reveal || '0', 10)
-            el.style.transition = `opacity .8s ${d}ms cubic-bezier(.2,.8,.25,1), transform .8s ${d}ms cubic-bezier(.2,.8,.25,1)`
+            const { variant, delay: d } = conf(el)
+            const tEase = variant === 'pop' ? SPRING : EASE
+            const tDur = variant === 'pop' ? '.65s' : '.8s'
+            el.style.transition = `opacity .8s ${d}ms ${EASE}, transform ${tDur} ${d}ms ${tEase}, filter .8s ${d}ms ${EASE}`
             el.style.opacity = '1'
-            el.style.transform = 'translateY(0)'
+            el.style.transform = SHOWN[variant] || 'translateY(0)'
+            if (variant === 'blur') el.style.filter = 'blur(0px)'
+            /* .lp-in unlocks CSS child choreography once the element lands */
+            window.setTimeout(() => el.classList.add('lp-in'), d + 180)
             io.unobserve(el)
           }
         },
@@ -141,6 +212,36 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
       )
       for (const el of reveals) io.observe(el)
       cleanups.push(() => io.disconnect())
+    }
+
+    /* ── Stat count-ups ([data-count]) ─────────────────────────── */
+    if (!reduce) {
+      const counters = Array.from(root.querySelectorAll<HTMLElement>('[data-count]'))
+      if (counters.length) {
+        for (const el of counters) el.textContent = `0${el.dataset.suffix || ''}`
+        const io3 = new IntersectionObserver(
+          (entries) => {
+            for (const en of entries) {
+              if (!en.isIntersecting) continue
+              const el = en.target as HTMLElement
+              const target = parseInt(el.dataset.count || '0', 10)
+              const suffix = el.dataset.suffix || ''
+              const t0 = performance.now()
+              const tick = (t: number) => {
+                const p = Math.min((t - t0) / 1500, 1)
+                const ease = 1 - Math.pow(1 - p, 3) // cubic ease-out
+                el.textContent = `${Math.round(target * ease).toLocaleString('en-US')}${suffix}`
+                if (p < 1) requestAnimationFrame(tick)
+              }
+              requestAnimationFrame(tick)
+              io3.unobserve(el)
+            }
+          },
+          { threshold: 0.6 }
+        )
+        for (const el of counters) io3.observe(el)
+        cleanups.push(() => io3.disconnect())
+      }
     }
 
     /* ── Readiness ring + topic bars animate on view ───────────── */

@@ -101,6 +101,7 @@ function PhoneFrame({
 }) {
   return (
     <div
+      className="lp-phone"
       data-tilt="1"
       data-base={base}
       style={{
@@ -138,7 +139,7 @@ const gridCard: React.CSSProperties = {
   background: 'var(--surface)',
   border: '1px solid var(--border)',
   borderRadius: 26,
-  padding: 28,
+  padding: 'clamp(20px, 5vw, 28px)',
   boxShadow: '0 12px 28px -16px rgba(16,40,36,.20)',
 }
 
@@ -161,21 +162,21 @@ const cardBody: React.CSSProperties = {
 
 function StreakDay({ state, label }: { state: 'done' | 'frozen' | 'future'; label: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+    <div className="lp-day" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
       {state === 'future' ? (
-        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px dashed var(--border-strong)' }} />
+        <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px dashed var(--border-strong)' }} />
       ) : (
         <div
           style={{
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             borderRadius: '50%',
             background: state === 'frozen' ? PERI : 'var(--coral)',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 15,
+            fontSize: 14,
           }}
         >
           {state === 'frozen' ? '🧊' : '✓'}
@@ -198,6 +199,7 @@ export default function Landing() {
     >
       {/* ══════════════ NAV ══════════════ */}
       <div
+        className="lp-nav"
         style={{
           position: 'fixed',
           top: 0,
@@ -210,7 +212,7 @@ export default function Landing() {
           padding: '16px 32px',
           backdropFilter: 'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
-          background: 'rgba(12,18,17,.55)',
+          background: 'rgba(12,18,17,.74)',
           borderBottom: '1px solid rgba(233,240,238,.07)',
         }}
       >
@@ -237,6 +239,7 @@ export default function Landing() {
 
       {/* ══════════════ HERO ══════════════ */}
       <section
+        className="lp-hero"
         style={{
           position: 'relative',
           minHeight: '100vh',
@@ -283,7 +286,7 @@ export default function Landing() {
         />
 
         {/* floating mascots */}
-        <div data-para="-0.9" data-mouse="46" style={{ position: 'absolute', top: '13%', right: '3%', zIndex: 2 }}>
+        <div data-para="-0.9" data-mouse="28" style={{ position: 'absolute', top: '13%', right: '3%', zIndex: 2 }}>
           <div style={{ animation: 'lp-floaty 5.2s ease-in-out infinite' }}>
             <CappyIdle
               size={180}
@@ -291,7 +294,7 @@ export default function Landing() {
             />
           </div>
         </div>
-        <div data-para="-0.5" data-mouse="-34" style={{ position: 'absolute', bottom: '5%', left: '3%', zIndex: 2 }}>
+        <div data-para="-0.5" data-mouse="-22" style={{ position: 'absolute', bottom: '5%', left: '3%', zIndex: 2 }}>
           <div style={{ animation: 'lp-floaty2 6.4s ease-in-out infinite' }}>
             <NogginIdle
               size={150}
@@ -299,7 +302,12 @@ export default function Landing() {
             />
           </div>
         </div>
-        <div data-para="-1.3" data-mouse="60" style={{ position: 'absolute', top: '14%', left: '5%', zIndex: 2 }}>
+        <div
+          className="lp-hero-buddy"
+          data-para="-1.3"
+          data-mouse="30"
+          style={{ position: 'absolute', top: '14%', left: '5%', zIndex: 2 }}
+        >
           <div style={{ animation: 'lp-bobble 4.6s ease-in-out infinite' }}>
             <BuddyIdle
               size={110}
@@ -308,12 +316,14 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* floating game chips (hidden below 1150px) */}
+        {/* floating game chips (hidden below 1150px, kept in the hero's outer
+            margins so they never cross the 980px content column, and faded out
+            via .lp-decor-hide once scrollY > 60 so they never meet the nav) */}
         <div
           className="lp-hero-decor"
-          data-para="-1.6"
-          data-mouse="52"
-          style={{ position: 'absolute', bottom: '26%', right: '6%', zIndex: 2 }}
+          data-para="-0.9"
+          data-mouse="26"
+          style={{ position: 'absolute', bottom: '30%', right: '4%', zIndex: 1 }}
         >
           <div
             style={{
@@ -333,9 +343,9 @@ export default function Landing() {
         </div>
         <div
           className="lp-hero-decor"
-          data-para="-0.7"
-          data-mouse="-48"
-          style={{ position: 'absolute', bottom: '32%', left: '6%', zIndex: 2 }}
+          data-para="-0.5"
+          data-mouse="-24"
+          style={{ position: 'absolute', bottom: '30%', left: '4%', zIndex: 1 }}
         >
           <div
             style={{
@@ -359,9 +369,9 @@ export default function Landing() {
         </div>
         <div
           className="lp-hero-decor"
-          data-para="-2"
-          data-mouse="38"
-          style={{ position: 'absolute', top: '9%', left: '34%', zIndex: 2 }}
+          data-para="-1.1"
+          data-mouse="22"
+          style={{ position: 'absolute', top: '34%', left: '3%', zIndex: 1 }}
         >
           <div
             style={{
@@ -383,6 +393,7 @@ export default function Landing() {
         {/* headline */}
         <div data-mouse="-10" style={{ position: 'relative', zIndex: 5, maxWidth: 980, margin: '0 auto' }}>
           <div
+            className="lp-eyebrow"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -404,24 +415,28 @@ export default function Landing() {
           <h1
             style={{
               margin: 0,
-              fontSize: 'clamp(54px, 8.5vw, 118px)',
+              fontSize: 'clamp(42px, 8.5vw, 118px)',
               fontWeight: 900,
-              lineHeight: 0.98,
-              letterSpacing: -3,
+              lineHeight: 1.02,
+              letterSpacing: '-0.028em',
               color: INK,
             }}
           >
             Study smarter.
             <br />
+            {/* gradient scoped to one unwrappable word group so a line wrap
+                never smears the teal→coral ramp into muddy midtones */}
+            <span style={{ color: TEAL_BRIGHT }}>Pass with</span>{' '}
             <span
               style={{
-                background: `linear-gradient(100deg, ${TEAL_BRIGHT} 20%, ${CORAL_BRIGHT} 80%)`,
+                whiteSpace: 'nowrap',
+                background: `linear-gradient(100deg, ${TEAL_BRIGHT} 0%, ${CORAL_BRIGHT} 88%)`,
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 color: 'transparent',
               }}
             >
-              Pass with confidence.
+              confidence.
             </span>
           </h1>
           <p
@@ -449,6 +464,8 @@ export default function Landing() {
           >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
               <span
+                data-count="50000"
+                data-suffix="+"
                 style={{
                   fontSize: 'clamp(28px, 3.4vw, 42px)',
                   fontWeight: 900,
@@ -464,7 +481,16 @@ export default function Landing() {
               </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 'clamp(28px, 3.4vw, 42px)', fontWeight: 900, color: CORAL_BRIGHT, letterSpacing: -1 }}>
+              <span
+                data-count="5"
+                style={{
+                  fontSize: 'clamp(28px, 3.4vw, 42px)',
+                  fontWeight: 900,
+                  color: CORAL_BRIGHT,
+                  letterSpacing: -1,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 5
               </span>
               <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: INK_FAINT }}>
@@ -472,7 +498,17 @@ export default function Landing() {
               </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 'clamp(28px, 3.4vw, 42px)', fontWeight: 900, color: INK, letterSpacing: -1 }}>
+              <span
+                data-count="100"
+                data-suffix="%"
+                style={{
+                  fontSize: 'clamp(28px, 3.4vw, 42px)',
+                  fontWeight: 900,
+                  color: INK,
+                  letterSpacing: -1,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 100%
               </span>
               <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: INK_FAINT }}>
@@ -530,15 +566,23 @@ export default function Landing() {
           zIndex: 6,
         }}
       >
-        <div style={{ display: 'inline-flex', gap: 44, animation: 'lp-marquee 26s linear infinite', willChange: 'transform' }}>
-          {[0, 1].map((dup) =>
-            MARQUEE_ITEMS.map((item, i) => (
-              <Fragment key={`${dup}-${i}`}>
-                <span style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>{item}</span>
-                <span style={{ color: '#7ED9CC', fontWeight: 900 }}>✦</span>
-              </Fragment>
-            ))
-          )}
+        {/* reveal lives on its own wrapper — the outer bar owns rotate() and
+            the track owns the marquee animation, so neither gets clobbered */}
+        <div data-reveal="blur">
+          <div style={{ display: 'inline-flex', gap: 44, animation: 'lp-marquee 26s linear infinite', willChange: 'transform' }}>
+            {/* 4 copies (-50% loop = 2 sets) so one set narrower than a 1920px
+                viewport can never expose a gap at the tail of the loop */}
+            {[0, 1, 2, 3].map((dup) =>
+              MARQUEE_ITEMS.map((item, i) => (
+                <Fragment key={`${dup}-${i}`}>
+                  <span style={{ color: '#fff', fontWeight: 900, fontSize: 18 }}>{item}</span>
+                  <span className="lp-star" style={{ color: '#7ED9CC', fontWeight: 900 }}>
+                    ✦
+                  </span>
+                </Fragment>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -547,7 +591,7 @@ export default function Landing() {
         style={{
           background: 'var(--bg)',
           color: 'var(--text)',
-          padding: '140px 24px 160px',
+          padding: 'clamp(90px, 10vw, 140px) 24px clamp(100px, 12vw, 160px)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -566,24 +610,25 @@ export default function Landing() {
         />
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
           <div
-            data-reveal="0"
+            data-reveal="blur"
             style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--teal)' }}
           >
             Three ways to master it
           </div>
           <h2
-            data-reveal="80"
+            data-reveal="flip"
+            data-reveal-delay="80"
             style={{
               margin: '14px auto 0',
               maxWidth: 720,
-              fontSize: 'clamp(38px, 5vw, 62px)',
+              fontSize: 'clamp(34px, 5vw, 62px)',
               fontWeight: 900,
-              letterSpacing: -2,
-              lineHeight: 1.04,
+              letterSpacing: '-0.03em',
+              lineHeight: 1.06,
             }}
           >
             Question by question,
-            <br />
+            <br className="lp-h2-br" />
             you become the clinician.
           </h2>
           <p
@@ -602,18 +647,21 @@ export default function Landing() {
           </p>
 
           <div
+            className="lp-phones"
             style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: 'clamp(8px, 3vw, 44px) clamp(24px, 3vw, 44px)',
+              gap: '48px clamp(24px, 3vw, 44px)',
               marginTop: 130,
               perspective: 1400,
               flexWrap: 'wrap',
             }}
           >
-            {/* Phone 1: MCQ */}
-            <div data-para="0.25" data-para-min="1050" data-reveal="0">
+            {/* Phone 1: MCQ — enters from the left (reveal sits on an inner
+                wrapper so the parallax transform on the outer never stomps it) */}
+            <div data-para="0.25" data-para-min="1050">
+              <div data-reveal="left">
               <PhoneFrame base="rotateY(14deg) rotateX(2deg)" shadow="0 40px 80px -30px rgba(16,40,36,.5)">
                 <div style={{ padding: '48px 16px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -722,6 +770,7 @@ export default function Landing() {
                     </div>
                   </div>
                   <div
+                    className="lp-submit-pulse"
                     style={{
                       marginTop: 12,
                       background: 'var(--teal)',
@@ -742,10 +791,12 @@ export default function Landing() {
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-soft)', maxWidth: 240, margin: '4px auto 0' }}>
                 MCQs with explanations that teach, not just grade
               </div>
+              </div>
             </div>
 
-            {/* Phone 2: Flashcards (center, forward) */}
-            <div data-para="-0.15" data-para-min="1050" data-reveal="120" style={{ zIndex: 3 }}>
+            {/* Phone 2: Flashcards (center, forward) — zooms in */}
+            <div data-para="-0.15" data-para-min="1050" style={{ zIndex: 3 }}>
+              <div data-reveal="zoom" data-reveal-delay="80">
               <PhoneFrame base="scale(1.08)" shadow="0 50px 100px -30px rgba(16,40,36,.55)">
                 <div
                   style={{
@@ -851,10 +902,12 @@ export default function Landing() {
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-soft)', maxWidth: 240, margin: '4px auto 0' }}>
                 Spaced repetition with Noggin cheering you on
               </div>
+              </div>
             </div>
 
-            {/* Phone 3: Cases */}
-            <div data-para="0.25" data-para-min="1050" data-reveal="240">
+            {/* Phone 3: Cases — enters from the right */}
+            <div data-para="0.25" data-para-min="1050">
+              <div data-reveal="right" data-reveal-delay="160">
               <PhoneFrame base="rotateY(-14deg) rotateX(2deg)" shadow="0 40px 80px -30px rgba(16,40,36,.5)">
                 <div style={{ padding: '48px 16px 16px', textAlign: 'left' }}>
                   <div style={{ display: 'flex', gap: 6 }}>
@@ -1004,6 +1057,7 @@ export default function Landing() {
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-soft)', maxWidth: 240, margin: '4px auto 0' }}>
                 Full vignettes that rehearse real clinical reasoning
               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1014,7 +1068,7 @@ export default function Landing() {
         style={{
           background: 'var(--bg)',
           color: 'var(--text)',
-          padding: '40px 24px 150px',
+          padding: '40px 24px clamp(100px, 11vw, 150px)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -1034,7 +1088,7 @@ export default function Landing() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 70px' }}>
             <div
-              data-reveal="0"
+              data-reveal="blur"
               style={{
                 fontSize: 13,
                 fontWeight: 900,
@@ -1049,10 +1103,10 @@ export default function Landing() {
               data-reveal="80"
               style={{
                 margin: '14px 0 0',
-                fontSize: 'clamp(38px, 5vw, 62px)',
+                fontSize: 'clamp(34px, 5vw, 62px)',
                 fontWeight: 900,
-                letterSpacing: -2,
-                lineHeight: 1.04,
+                letterSpacing: '-0.03em',
+                lineHeight: 1.06,
               }}
             >
               Studying that fights back.
@@ -1075,20 +1129,21 @@ export default function Landing() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              /* min(320px, 100%) so a 360px viewport can't force overflow */
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))',
               gap: 22,
               perspective: 1200,
             }}
           >
-            {/* Streaks */}
-            <div data-tilt="1" data-reveal="0" style={gridCard}>
+            {/* Streaks — cards alternate up / zoom / rise-rotate */}
+            <div data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: 'var(--coral-deep)' }}>Streaks &amp; freezes</div>
                 <div style={{ fontSize: 26, animation: 'lp-flick 1.8s ease-in-out infinite', display: 'inline-block' }}>
                   🔥
                 </div>
               </div>
-              <div style={{ marginTop: 20, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+              <div className="lp-week" style={{ marginTop: 20, display: 'flex', gap: 6, justifyContent: 'space-between' }}>
                 <StreakDay state="done" label="M" />
                 <StreakDay state="done" label="T" />
                 <StreakDay state="frozen" label="W" />
@@ -1105,10 +1160,11 @@ export default function Landing() {
             </div>
 
             {/* Leagues */}
-            <div data-tilt="1" data-reveal="80" style={gridCard}>
+            <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Weekly leagues</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div
+                  className="lp-row"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1139,6 +1195,7 @@ export default function Landing() {
                   <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--teal-deep)' }}>2,140 XP</span>
                 </div>
                 <div
+                  className="lp-row lp-row-you"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1170,6 +1227,7 @@ export default function Landing() {
                   <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--teal-deep)' }}>2,085 XP</span>
                 </div>
                 <div
+                  className="lp-row"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1205,7 +1263,7 @@ export default function Landing() {
             </div>
 
             {/* Daily challenge */}
-            <div data-tilt="1" data-reveal="160" style={gridCard}>
+            <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--amber)' }}>Daily challenge</div>
               <div
                 style={{
@@ -1262,7 +1320,7 @@ export default function Landing() {
             </div>
 
             {/* Rapid fire */}
-            <div data-tilt="1" data-reveal="0" style={gridCard}>
+            <div data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: PERI_DEEP }}>Rapid fire</div>
                 <div
@@ -1279,9 +1337,11 @@ export default function Landing() {
                 </div>
               </div>
               <div style={{ marginTop: 20, height: 12, background: PERI_TINT, borderRadius: 999, overflow: 'hidden' }}>
+                {/* full-width bar depleted to 62% via scaleX on reveal (transform-only) */}
                 <div
+                  className="lp-combo-fill"
                   style={{
-                    width: '62%',
+                    width: '100%',
                     height: '100%',
                     background: `linear-gradient(90deg, ${PERI}, ${PERI_LIGHT})`,
                     borderRadius: 999,
@@ -1308,7 +1368,7 @@ export default function Landing() {
             </div>
 
             {/* Time capsule */}
-            <div data-tilt="1" data-reveal="80" style={gridCard}>
+            <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Time capsule</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div
@@ -1365,7 +1425,7 @@ export default function Landing() {
             </div>
 
             {/* Search & bookmarks */}
-            <div data-tilt="1" data-reveal="160" style={gridCard}>
+            <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Search &amp; bookmarks</div>
               <div
                 style={{
@@ -1413,7 +1473,7 @@ export default function Landing() {
         style={{
           background: 'var(--surface-3)',
           color: 'var(--text)',
-          padding: '150px 24px',
+          padding: 'clamp(96px, 11vw, 150px) 24px',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -1435,38 +1495,44 @@ export default function Landing() {
             maxWidth: 1100,
             margin: '0 auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: 70,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))',
+            gap: 'clamp(44px, 7vw, 70px)',
             alignItems: 'center',
           }}
         >
           <div>
             <div
-              data-reveal="0"
+              data-reveal="left"
               style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--teal)' }}
             >
               Unique learning insights
             </div>
             <h2
-              data-reveal="80"
+              data-reveal="left"
+              data-reveal-delay="80"
               style={{
                 margin: '14px 0 0',
-                fontSize: 'clamp(36px, 4.5vw, 56px)',
+                fontSize: 'clamp(31px, 4.5vw, 56px)',
                 fontWeight: 900,
-                letterSpacing: -2,
-                lineHeight: 1.05,
+                letterSpacing: '-0.03em',
+                lineHeight: 1.08,
               }}
             >
               Walk into exam day knowing exactly where you stand.
             </h2>
             <p
-              data-reveal="160"
+              data-reveal="left"
+              data-reveal-delay="160"
               style={{ margin: '20px 0 0', fontSize: 18, fontWeight: 600, lineHeight: 1.6, color: 'var(--text-soft)' }}
             >
               A readiness score with a transparent formula, a prioritized daily plan, and weak-topic drill-downs —
               analytics that measure real clinical preparedness, not raw grind.
             </p>
-            <div data-reveal="240" style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div
+              data-reveal="left"
+              data-reveal-delay="240"
+              style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}
+            >
               {[
                 'Readiness score you can actually trust',
                 'A daily plan that targets your weakest topics first',
@@ -1495,13 +1561,13 @@ export default function Landing() {
               ))}
             </div>
           </div>
-          <div data-reveal="120" style={{ perspective: 1000 }}>
+          <div data-reveal="right" data-reveal-delay="120" style={{ perspective: 1000 }}>
             <div
               data-tilt="1"
               style={{
                 background: 'var(--surface)',
                 borderRadius: 30,
-                padding: 34,
+                padding: 'clamp(22px, 4.5vw, 34px)',
                 boxShadow: '0 28px 56px -22px rgba(16,40,36,.32)',
                 border: '1px solid var(--border)',
               }}
@@ -1517,7 +1583,16 @@ export default function Landing() {
               >
                 Exam readiness
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 28, marginTop: 18 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                  gap: 'clamp(18px, 3vw, 28px)',
+                  marginTop: 18,
+                }}
+              >
                 <div style={{ position: 'relative', width: 150, height: 150, flexShrink: 0 }}>
                   <svg width="150" height="150" viewBox="0 0 150 150">
                     <circle cx="75" cy="75" r="62" fill="none" stroke="var(--surface-3)" strokeWidth="14" />
@@ -1556,7 +1631,7 @@ export default function Landing() {
                     </span>
                   </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ flex: '1 1 190px', display: 'flex', flexDirection: 'column', gap: 14 }}>
                   {(
                     [
                       { label: 'Cardiovascular', pct: 86, color: 'var(--green)', delay: '.2s' },
@@ -1615,14 +1690,17 @@ export default function Landing() {
       </section>
 
       {/* ══════════════ TAILORED ══════════════ */}
-      <section style={{ background: 'var(--bg)', padding: '150px 24px', position: 'relative', overflow: 'hidden' }}>
+      <section
+        style={{ background: 'var(--bg)', padding: 'clamp(96px, 11vw, 150px) 20px', position: 'relative', overflow: 'hidden' }}
+      >
         <div
+          data-reveal="zoom"
           style={{
             maxWidth: 1100,
             margin: '0 auto',
             background: 'linear-gradient(140deg, #0A6E62, #084F47)',
-            borderRadius: 44,
-            padding: 'clamp(40px, 6vw, 80px)',
+            borderRadius: 'clamp(28px, 5vw, 44px)',
+            padding: 'clamp(32px, 6vw, 80px) clamp(20px, 5vw, 80px)',
             position: 'relative',
             overflow: 'hidden',
             boxShadow: '0 40px 80px -30px rgba(10,110,98,.5)',
@@ -1654,7 +1732,7 @@ export default function Landing() {
           />
           <div style={{ position: 'relative', textAlign: 'center', color: '#fff' }}>
             <div
-              data-reveal="0"
+              data-reveal="blur"
               style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: '#7ED9CC' }}
             >
               Indexed to your world
@@ -1664,10 +1742,10 @@ export default function Landing() {
               style={{
                 margin: '14px auto 0',
                 maxWidth: 680,
-                fontSize: 'clamp(34px, 4.5vw, 54px)',
+                fontSize: 'clamp(29px, 4.5vw, 54px)',
                 fontWeight: 900,
-                letterSpacing: -2,
-                lineHeight: 1.06,
+                letterSpacing: '-0.03em',
+                lineHeight: 1.08,
               }}
             >
               Questions tailored to your profession, your year, your country.
@@ -1752,7 +1830,7 @@ export default function Landing() {
         style={{
           background: DARK_BG,
           color: INK,
-          padding: '160px 24px 80px',
+          padding: 'clamp(110px, 12vw, 160px) 24px 80px',
           position: 'relative',
           overflow: 'hidden',
           textAlign: 'center',
@@ -1769,28 +1847,32 @@ export default function Landing() {
         />
         <div style={{ position: 'relative', maxWidth: 800, margin: '0 auto' }}>
           <div
-            data-reveal="0"
+            data-reveal="pop"
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 4, marginBottom: 34 }}
           >
-            <div data-para="-0.4" style={{ zIndex: 1 }}>
+            <div data-para="-0.2" style={{ zIndex: 1 }}>
               <div style={{ animation: 'lp-bobble 5s ease-in-out .3s infinite' }}>
-                <NogginHappy size={92} />
+                <NogginHappy size={92} style={{ width: 'clamp(64px, 20vw, 92px)', height: 'auto' }} />
               </div>
             </div>
-            <div data-para="-0.8" style={{ zIndex: 2 }}>
+            <div data-para="-0.35" style={{ zIndex: 2 }}>
               <div style={{ animation: 'lp-floaty 4.6s ease-in-out infinite' }}>
-                <CappyHappy size={130} style={{ filter: 'drop-shadow(0 20px 30px rgba(0,0,0,.5))' }} />
+                <CappyHappy
+                  size={130}
+                  style={{ width: 'clamp(92px, 28vw, 130px)', height: 'auto', filter: 'drop-shadow(0 20px 30px rgba(0,0,0,.5))' }}
+                />
               </div>
             </div>
-            <div data-para="-0.5" style={{ zIndex: 1 }}>
+            <div data-para="-0.25" style={{ zIndex: 1 }}>
               <div style={{ animation: 'lp-floaty2 5.4s ease-in-out .6s infinite' }}>
-                <BuddyHappy size={86} />
+                <BuddyHappy size={86} style={{ width: 'clamp(60px, 18vw, 86px)', height: 'auto' }} />
               </div>
             </div>
           </div>
           <h2
-            data-reveal="80"
-            style={{ margin: 0, fontSize: 'clamp(42px, 6vw, 78px)', fontWeight: 900, letterSpacing: -2.5, lineHeight: 1.02 }}
+            data-reveal="flip"
+            data-reveal-delay="80"
+            style={{ margin: 0, fontSize: 'clamp(36px, 6vw, 78px)', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.05 }}
           >
             Your exam is coming.
             <br />
@@ -1828,7 +1910,7 @@ export default function Landing() {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: INK_FAINT }}>
             © 2026 Skoolie · Made for health students
           </span>
-          <div style={{ display: 'flex', gap: 22, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px 22px', alignItems: 'center', flexWrap: 'wrap' }}>
             <Link href="/terms" style={{ fontSize: 13.5, fontWeight: 800, color: INK_SOFT, textDecoration: 'none' }}>
               Terms
             </Link>

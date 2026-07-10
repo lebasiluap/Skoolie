@@ -191,13 +191,127 @@ button { font-family: inherit; }
 @keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes lp-flick   { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.12) rotate(3deg); } }
 
-.lp-nav-btn { background: var(--teal); transition: background .2s ease; }
-.lp-nav-btn:hover { background: var(--teal-deep); }
+.lp-nav-btn { background: var(--teal); transition: background .2s ease, transform .15s ease; }
+.lp-badge   { transition: transform .18s ease; }
 
-.lp-badge { transition: transform .2s ease; }
-.lp-badge:hover { transform: translateY(-3px) scale(1.02); }
+/* hover affordances only where a real hover exists… */
+@media (hover: hover) {
+  .lp-nav-btn:hover { background: var(--teal-deep); }
+  .lp-badge:hover   { transform: translateY(-3px) scale(1.02); }
+}
+/* …and every tappable element presses down on :active (touch feedback) */
+.lp-nav-btn:active { background: var(--teal-deep); transform: scale(.95); }
+.lp-badge:active   { transform: scale(.97); }
+.lp-root a:active  { opacity: .72; }
+
+/* ── Ambient motion (scroll-triggered or looping — never hover-gated) ── */
+
+/* hero eyebrow pill: slow shimmer sweep (transform-only, overflow-clipped) */
+.lp-eyebrow { position: relative; overflow: hidden; }
+.lp-eyebrow::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 46%;
+  background: linear-gradient(105deg, transparent, rgba(126,217,204,.28), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  animation: lp-shimmer 4.2s ease-in-out 1.5s infinite;
+  pointer-events: none;
+}
+@keyframes lp-shimmer {
+  0%       { transform: translateX(-130%) skewX(-18deg); }
+  55%, 100% { transform: translateX(360%) skewX(-18deg); }
+}
+
+/* SUBMIT button in the MCQ phone: gentle heartbeat */
+.lp-submit-pulse { animation: lp-pulse 2.4s ease-in-out infinite; }
+@keyframes lp-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+
+/* marquee ✦ separators: slow spin */
+.lp-star { display: inline-block; animation: lp-spin 7s linear infinite; }
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+
+/* ── Reveal choreography: .lp-in is added by useLandingMotion when a
+      [data-reveal] element lands, unlocking its children (all `both` fill,
+      so pre-reveal they simply hold their resting state) ── */
+
+/* streak card: week checkmarks pop in left → right */
+.lp-in .lp-week .lp-day > :first-child {
+  animation: lp-day-pop .45s cubic-bezier(.34,1.56,.64,1) both;
+}
+.lp-in .lp-week .lp-day:nth-child(2) > :first-child { animation-delay: .08s; }
+.lp-in .lp-week .lp-day:nth-child(3) > :first-child { animation-delay: .16s; }
+.lp-in .lp-week .lp-day:nth-child(4) > :first-child { animation-delay: .24s; }
+.lp-in .lp-week .lp-day:nth-child(5) > :first-child { animation-delay: .32s; }
+.lp-in .lp-week .lp-day:nth-child(6) > :first-child { animation-delay: .40s; }
+.lp-in .lp-week .lp-day:nth-child(7) > :first-child { animation-delay: .48s; }
+@keyframes lp-day-pop {
+  from { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.18); opacity: 1; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* leaderboard: rows slide in one-by-one; the "You" row lands with a bounce */
+.lp-in .lp-row { animation: lp-row-in .45s cubic-bezier(.2,.8,.25,1) both; }
+.lp-in .lp-row:nth-child(1) { animation-delay: .1s; }
+.lp-in .lp-row:nth-child(2) { animation-delay: .24s; }
+.lp-in .lp-row:nth-child(3) { animation-delay: .38s; }
+.lp-in .lp-row-you {
+  animation:
+    lp-row-in .45s .24s cubic-bezier(.2,.8,.25,1) both,
+    lp-you-bounce .55s .8s ease-in-out;
+}
+@keyframes lp-row-in {
+  from { transform: translateX(-18px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes lp-you-bounce {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.05); }
+  70%      { transform: scale(.98); }
+}
+
+/* rapid-fire combo bar: depletes 100% → 62% on reveal (scaleX = no layout).
+   Resting transform matches the animation's end state, so reduced-motion /
+   pre-reveal simply shows the 62% bar. */
+.lp-combo-fill { transform: scaleX(.62); transform-origin: left center; }
+.lp-in .lp-combo-fill { animation: lp-deplete 1.5s .3s cubic-bezier(.3,.8,.3,1) both; }
+@keyframes lp-deplete { from { transform: scaleX(1); } to { transform: scaleX(.62); } }
+
+/* Hero game chips: fade out once scrolling starts so they never mingle
+   with the fixed nav (class toggled from useLandingMotion at scrollY > 60) */
+.lp-hero-decor { transition: opacity .22s ease; }
+.lp-hero-decor.lp-decor-hide { opacity: 0; pointer-events: none; }
 
 /* Hero game chips hide below 1150px viewport width */
 @media (max-width: 1149.98px) {
   .lp-hero-decor { display: none !important; }
+}
+
+/* Phones section: flat, generously spaced vertical stack on small screens
+   (kills base rotateY/scale + perspective; parallax already stops < 1050px) */
+@media (max-width: 1049.98px) {
+  .lp-phones { margin-top: 56px !important; perspective: none !important; }
+  .lp-phone  { transform: none !important; width: min(272px, 78vw) !important; }
+}
+
+/* Nav + hero tighten on small screens */
+@media (max-width: 640px) {
+  .lp-nav { padding: 10px 16px !important; }
+  .lp-nav-btn { padding: 9px 16px !important; font-size: 14px !important; }
+  .lp-hero { padding: 118px 20px 110px !important; }
+  .lp-eyebrow {
+    font-size: 11px !important;
+    letter-spacing: 1.8px !important;
+    line-height: 1.6;
+    padding: 7px 14px !important;
+  }
+  /* hard line-breaks in section H2s wrap naturally on narrow screens */
+  .lp-h2-br { display: none; }
+  /* three floating mascots crowd a 360px hero — Buddy sits this one out */
+  .lp-hero-buddy { display: none; }
+  /* gentler float amplitudes where elements are small and close together */
+  @keyframes lp-floaty  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes lp-floaty2 { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-12px) rotate(1.5deg); } }
+  @keyframes lp-bobble  { 0%, 100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(-6px) rotate(-1deg); } }
 }

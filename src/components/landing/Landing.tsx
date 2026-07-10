@@ -521,36 +521,36 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* scroll cue */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 30,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 5,
-            color: INK_FAINT,
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: 3,
-            textTransform: 'uppercase',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 8,
+        {/* scroll cue — big teal pill + bouncing chevron; smooth-scrolls to the
+            practice-modes section on tap. Fades out (lp-decor-hide, toggled by
+            useLandingMotion) once the user scrolls, exactly like the chips. */}
+        <button
+          type="button"
+          className="lp-scroll-cue"
+          aria-label="Scroll to explore"
+          onClick={() => {
+            const target = document.getElementById('lp-explore')
+            if (!target) return
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
           }}
         >
-          <span>Scroll</span>
-          <div
-            style={{
-              width: 2,
-              height: 34,
-              background: `linear-gradient(${TEAL_BRIGHT}, transparent)`,
-              borderRadius: 2,
-              animation: 'lp-floaty 1.8s ease-in-out infinite',
-            }}
-          />
-        </div>
+          <span>Scroll to explore</span>
+          <span className="lp-cue-chev" aria-hidden="true">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 9l8 8 8-8" />
+            </svg>
+          </span>
+        </button>
       </section>
 
       {/* ══════════════ MARQUEE ══════════════ */}
@@ -588,6 +588,7 @@ export default function Landing() {
 
       {/* ══════════════ PHONES / PRACTICE MODES ══════════════ */}
       <section
+        id="lp-explore"
         style={{
           background: 'var(--bg)',
           color: 'var(--text)',
@@ -596,6 +597,8 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
+        {/* depth layers — back glow (always on) + front glow / dot grid /
+            drifting emojis (lp-depth-lg: hidden < 700px for mobile perf) */}
         <div
           data-para="0.6"
           style={{
@@ -605,10 +608,61 @@ export default function Landing() {
             width: 480,
             height: 480,
             borderRadius: '50%',
+            pointerEvents: 'none',
             background: 'radial-gradient(circle, rgba(14,158,142,.10), transparent 70%)',
           }}
         />
-        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
+        <div
+          className="lp-depth-lg"
+          data-para="-0.45"
+          style={{
+            position: 'absolute',
+            bottom: -120,
+            left: -140,
+            width: 520,
+            height: 520,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(242,119,78,.08), transparent 70%)',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="0.3"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            opacity: 0.5,
+            backgroundImage: 'radial-gradient(rgba(16,40,36,.09) 1.5px, transparent 1.5px)',
+            backgroundSize: '30px 30px',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="-0.6"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '14%', left: '4%', fontSize: 58, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty2 7s ease-in-out infinite' }}>💊</div>
+        </div>
+        <div
+          className="lp-depth-lg"
+          data-para="0.45"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '38%', right: '3%', fontSize: 74, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty 6.2s ease-in-out .5s infinite' }}>🩺</div>
+        </div>
+        <div
+          className="lp-depth-lg"
+          data-para="-0.3"
+          aria-hidden="true"
+          style={{ position: 'absolute', bottom: '10%', left: '7%', fontSize: 46, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-bobble 5.4s ease-in-out 1s infinite' }}>🧠</div>
+        </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <div
             data-reveal="blur"
             style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--teal)' }}
@@ -1073,6 +1127,8 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
+        {/* depth layers — coral glow (always on) + teal glow / dot grid /
+            drifting emojis (hidden < 700px) */}
         <div
           data-para="0.8"
           style={{
@@ -1082,10 +1138,61 @@ export default function Landing() {
             width: 560,
             height: 560,
             borderRadius: '50%',
+            pointerEvents: 'none',
             background: 'radial-gradient(circle, rgba(242,119,78,.10), transparent 70%)',
           }}
         />
-        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+        <div
+          className="lp-depth-lg"
+          data-para="-0.5"
+          style={{
+            position: 'absolute',
+            top: -100,
+            right: -140,
+            width: 460,
+            height: 460,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(14,158,142,.09), transparent 70%)',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="0.35"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            opacity: 0.4,
+            backgroundImage: 'radial-gradient(rgba(16,40,36,.09) 1.5px, transparent 1.5px)',
+            backgroundSize: '26px 26px',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="-0.55"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '10%', left: '3%', fontSize: 60, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty 6.6s ease-in-out infinite' }}>🔥</div>
+        </div>
+        <div
+          className="lp-depth-lg"
+          data-para="0.4"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '48%', right: '2.5%', fontSize: 48, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-bobble 5.8s ease-in-out .7s infinite' }}>⚡</div>
+        </div>
+        <div
+          className="lp-depth-lg"
+          data-para="-0.35"
+          aria-hidden="true"
+          style={{ position: 'absolute', bottom: '6%', right: '8%', fontSize: 66, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty2 7.4s ease-in-out 1.2s infinite' }}>🏆</div>
+        </div>
+        <div style={{ maxWidth: 1160, margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto 70px' }}>
             <div
               data-reveal="blur"
@@ -1135,7 +1242,10 @@ export default function Landing() {
               perspective: 1200,
             }}
           >
-            {/* Streaks — cards alternate up / zoom / rise-rotate */}
+            {/* Streaks — cards alternate up / zoom / rise-rotate. Each card sits
+                in a parallax shim (odd +0.08 / even -0.08, ≥700px only) so the
+                grid subtly scissors as you scroll. */}
+            <div data-para="0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: 'var(--coral-deep)' }}>Streaks &amp; freezes</div>
@@ -1158,8 +1268,10 @@ export default function Landing() {
                 can&apos;t make it.
               </p>
             </div>
+            </div>
 
             {/* Leagues */}
+            <div data-para="-0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Weekly leagues</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1261,8 +1373,10 @@ export default function Landing() {
               <h3 style={cardTitle}>Climb the ladder</h3>
               <p style={cardBody}>Earn XP, race your cohort each week, and rise from Fresher all the way to Professor.</p>
             </div>
+            </div>
 
             {/* Daily challenge */}
+            <div data-para="0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--amber)' }}>Daily challenge</div>
               <div
@@ -1318,8 +1432,10 @@ export default function Landing() {
                 A fresh bite-sized challenge every day keeps concepts warm between big study sessions.
               </p>
             </div>
+            </div>
 
             {/* Rapid fire */}
+            <div data-para="-0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="up" style={gridCard}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ ...cardEyebrow, color: PERI_DEEP }}>Rapid fire</div>
@@ -1366,8 +1482,10 @@ export default function Landing() {
                 A depleting timer, stacking combos, and surprise 2× barrage windows. Pure adrenaline revision.
               </p>
             </div>
+            </div>
 
             {/* Time capsule */}
+            <div data-para="0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="zoom" data-reveal-delay="80" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Time capsule</div>
               <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1423,8 +1541,10 @@ export default function Landing() {
                 rematch.
               </p>
             </div>
+            </div>
 
             {/* Search & bookmarks */}
+            <div data-para="-0.08" data-para-min="700">
             <div data-tilt="1" data-reveal="rise-rotate" data-reveal-delay="160" style={gridCard}>
               <div style={{ ...cardEyebrow, color: 'var(--teal-deep)' }}>Search &amp; bookmarks</div>
               <div
@@ -1464,6 +1584,7 @@ export default function Landing() {
                 Look up any concept instantly, bookmark the tricky ones, and practice your saved set on demand.
               </p>
             </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1478,6 +1599,8 @@ export default function Landing() {
           overflow: 'hidden',
         }}
       >
+        {/* depth layers — teal glow (always on) + coral glow / drifting
+            emojis (hidden < 700px) */}
         <div
           data-para="-0.6"
           style={{
@@ -1487,11 +1610,44 @@ export default function Landing() {
             width: 460,
             height: 460,
             borderRadius: '50%',
+            pointerEvents: 'none',
             background: 'radial-gradient(circle, rgba(14,158,142,.12), transparent 70%)',
           }}
         />
         <div
+          className="lp-depth-lg"
+          data-para="0.5"
           style={{
+            position: 'absolute',
+            bottom: -120,
+            left: -120,
+            width: 440,
+            height: 440,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(242,119,78,.09), transparent 70%)',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="-0.4"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: '12%', left: '3%', fontSize: 52, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty 6.8s ease-in-out .3s infinite' }}>📈</div>
+        </div>
+        <div
+          className="lp-depth-lg"
+          data-para="0.35"
+          aria-hidden="true"
+          style={{ position: 'absolute', bottom: '8%', right: '4%', fontSize: 62, opacity: 0.12, pointerEvents: 'none' }}
+        >
+          <div style={{ animation: 'lp-floaty2 7.6s ease-in-out infinite' }}>💉</div>
+        </div>
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
             maxWidth: 1100,
             margin: '0 auto',
             display: 'grid',
@@ -1707,27 +1863,43 @@ export default function Landing() {
           }}
         >
           <div
-            data-para="-0.5"
+            data-para="-0.8"
             style={{
               position: 'absolute',
               top: -60,
               right: -60,
-              width: 300,
-              height: 300,
+              width: 340,
+              height: 340,
               borderRadius: '50%',
-              background: 'rgba(255,255,255,.05)',
+              pointerEvents: 'none',
+              background: 'rgba(255,255,255,.07)',
             }}
           />
           <div
-            data-para="0.5"
+            data-para="0.7"
             style={{
               position: 'absolute',
               bottom: -80,
               left: -40,
-              width: 260,
-              height: 260,
+              width: 300,
+              height: 300,
               borderRadius: '50%',
-              background: 'rgba(255,255,255,.04)',
+              pointerEvents: 'none',
+              background: 'rgba(255,255,255,.06)',
+            }}
+          />
+          <div
+            className="lp-depth-lg"
+            data-para="-0.4"
+            style={{
+              position: 'absolute',
+              top: '32%',
+              left: '6%',
+              width: 150,
+              height: 150,
+              borderRadius: '50%',
+              pointerEvents: 'none',
+              border: '2px solid rgba(255,255,255,.10)',
             }}
           />
           <div style={{ position: 'relative', textAlign: 'center', color: '#fff' }}>
@@ -1845,7 +2017,48 @@ export default function Landing() {
             background: 'radial-gradient(ellipse 50% 40% at 50% 45%, rgba(14,158,142,.22), transparent 70%)',
           }}
         />
-        <div style={{ position: 'relative', maxWidth: 800, margin: '0 auto' }}>
+        {/* depth layers — teal glow (always on, the mobile mover) + coral
+            glow / dot grid (hidden < 700px) */}
+        <div
+          data-para="-0.3"
+          style={{
+            position: 'absolute',
+            top: '4%',
+            left: -140,
+            width: 480,
+            height: 480,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(36,187,168,.10), transparent 70%)',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="0.5"
+          style={{
+            position: 'absolute',
+            bottom: '10%',
+            right: -160,
+            width: 520,
+            height: 520,
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            background: 'radial-gradient(circle, rgba(242,119,78,.09), transparent 70%)',
+          }}
+        />
+        <div
+          className="lp-depth-lg"
+          data-para="0.25"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            opacity: 0.3,
+            backgroundImage: 'radial-gradient(rgba(233,240,238,.14) 1.5px, transparent 1.5px)',
+            backgroundSize: '34px 34px',
+          }}
+        />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 800, margin: '0 auto' }}>
           <div
             data-reveal="pop"
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 4, marginBottom: 34 }}

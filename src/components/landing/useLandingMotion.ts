@@ -46,16 +46,50 @@ export function useLandingMotion(rootRef: RefObject<HTMLElement | null>) {
     const tiltOn = !reduce && window.matchMedia('(hover: hover) and (pointer: fine)').matches
     const cleanups: Array<() => void> = []
 
-    /* ── Hero decor chips fade once the page scrolls (never touch the nav) ── */
-    const decor = Array.from(root.querySelectorAll<HTMLElement>('.lp-hero-decor'))
-    if (decor.length) {
-      const onDecorScroll = () => {
-        const hide = window.scrollY > 60
-        for (const el of decor) el.classList.toggle('lp-decor-hide', hide)
+    /* ── Hero decor chips + scroll cue fade once the page scrolls (never
+          touch the nav). The same handler cancels the peek nudge below —
+          no extra scroll listeners. ── */
+    const decor = Array.from(root.querySelectorAll<HTMLElement>('.lp-hero-decor, .lp-scroll-cue'))
+    let peekTimer = 0
+    let peekEndTimer = 0
+    const stopPeek = () => {
+      window.clearTimeout(peekTimer)
+      window.clearTimeout(peekEndTimer)
+      root.classList.remove('lp-peek')
+    }
+    const onDecorScroll = () => {
+      const hide = window.scrollY > 60
+      for (const el of decor) el.classList.toggle('lp-decor-hide', hide)
+      if (window.scrollY > 4) stopPeek()
+    }
+    onDecorScroll()
+    window.addEventListener('scroll', onDecorScroll, { passive: true })
+    cleanups.push(() => window.removeEventListener('scroll', onDecorScroll))
+
+    /* ── One-time "peek" nudge: 2.5s after mount, if the user still hasn't
+          scrolled, the whole page nudges 24px up and settles (CSS keyframe
+          on .lp-peek) — a "there's more below" hint. Fires at most once per
+          session (sessionStorage) and never under reduced motion. ── */
+    if (!reduce) {
+      let peeked = true
+      try {
+        peeked = sessionStorage.getItem('lp-peeked') === '1'
+      } catch {
+        /* storage unavailable → treat as already peeked (skip) */
       }
-      onDecorScroll()
-      window.addEventListener('scroll', onDecorScroll, { passive: true })
-      cleanups.push(() => window.removeEventListener('scroll', onDecorScroll))
+      if (!peeked) {
+        peekTimer = window.setTimeout(() => {
+          if (window.scrollY > 4) return
+          try {
+            sessionStorage.setItem('lp-peeked', '1')
+          } catch {
+            /* best-effort only */
+          }
+          root.classList.add('lp-peek')
+          peekEndTimer = window.setTimeout(() => root.classList.remove('lp-peek'), 1300)
+        }, 2500)
+      }
+      cleanups.push(stopPeek)
     }
 
     /* ── Scroll parallax + mouse drift ─────────────────────────── */

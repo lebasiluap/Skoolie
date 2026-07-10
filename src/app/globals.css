@@ -295,10 +295,88 @@ button { font-family: inherit; }
   .lp-phone  { transform: none !important; width: min(272px, 78vw) !important; }
 }
 
+/* ── Scroll cue: big teal pill + bouncing chevron (unmissable) ──
+   Fades out via .lp-decor-hide (same mechanism as the hero chips). */
+.lp-scroll-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 24px 0 30px;
+  background: var(--teal);
+  border: 1px solid rgba(126, 217, 204, .55);
+  border-radius: 999px;
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 12px 44px -6px rgba(36, 187, 168, .65), 0 4px 18px rgba(0, 0, 0, .35);
+  transition: opacity .3s ease, transform .25s ease, background .2s ease;
+}
+/* soft pulsing halo — transform/opacity only */
+.lp-scroll-cue::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  border: 2px solid rgba(36, 187, 168, .8);
+  animation: lp-cue-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes lp-cue-ring {
+  0%        { transform: scale(1);    opacity: .8; }
+  70%, 100% { transform: scale(1.22); opacity: 0; }
+}
+/* chevron bounces 13px inside a fixed slot (no layout shift) */
+.lp-cue-chev {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 24px;
+  height: 36px;
+  padding-top: 1px;
+}
+.lp-cue-chev svg { animation: lp-cue-bounce 1.2s cubic-bezier(.45, 0, .5, 1) infinite; }
+@keyframes lp-cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(13px); }
+}
+@media (hover: hover) {
+  .lp-scroll-cue:hover { background: var(--teal-deep); transform: translateX(-50%) translateY(-3px); }
+}
+.lp-scroll-cue:active { background: var(--teal-deep); transform: translateX(-50%) scale(.96); }
+.lp-scroll-cue.lp-decor-hide { opacity: 0; pointer-events: none; }
+
+/* ── One-time peek nudge: whole page lifts 24px and settles (class added
+      by useLandingMotion 2.5s after mount if the user hasn't scrolled) ── */
+.lp-root.lp-peek { animation: lp-peek-nudge 1.15s cubic-bezier(.3, .7, .3, 1) both; }
+@keyframes lp-peek-nudge {
+  0%   { transform: translateY(0); }
+  38%  { transform: translateY(-24px); }
+  100% { transform: translateY(0); }
+}
+
+/* ── Heavier decorative depth layers (extra glows, dot grids, drifting
+      emojis, tailored ring) sit out below 700px — each section keeps at
+      least one always-on parallax layer so mobile still feels alive ── */
+@media (max-width: 699.98px) {
+  .lp-depth-lg { display: none !important; }
+}
+
 /* Nav + hero tighten on small screens */
 @media (max-width: 640px) {
   .lp-nav { padding: 10px 16px !important; }
   .lp-nav-btn { padding: 9px 16px !important; font-size: 14px !important; }
+  .lp-scroll-cue { height: 50px; font-size: 14.5px; gap: 10px; padding: 0 20px 0 24px; bottom: 22px; }
   .lp-hero { padding: 118px 20px 110px !important; }
   .lp-eyebrow {
     font-size: 11px !important;

@@ -288,6 +288,12 @@ button { font-family: inherit; }
   .lp-hero-decor { display: none !important; }
 }
 
+/* Cappy's hero speech bubble needs sideways room — it extends left of the
+   mascot, so it joins the decor chips in sitting out below 1150px */
+@media (max-width: 1149.98px) {
+  .lp-hero-bubble { display: none !important; }
+}
+
 /* Phones section: flat, generously spaced vertical stack on small screens
    (kills base rotateY/scale + perspective; parallax already stops < 1050px) */
 @media (max-width: 1049.98px) {

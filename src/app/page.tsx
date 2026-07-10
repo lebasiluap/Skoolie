@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import Landing from '@/components/landing/Landing'
 
 export const metadata: Metadata = {
-  title: 'Skoolie — Study smarter. Pass with confidence.',
+  title: 'Skoolie — Know exactly what to study next.',
   description:
-    'MCQs, flashcards, and clinical cases for pharmacy, medicine, nursing, dentistry and midwifery students — with streaks, leagues, and a daily challenge. Exam prep that feels like a game.',
+    'Built by a pharmacist: personalized MCQs, flashcards and clinical cases for pharmacy, medicine, nursing, dentistry and midwifery students — with streaks, leagues and a readiness score that keep you consistent until exam day.',
   alternates: { canonical: 'https://skoolieapp.com' },
   keywords: [
     'medical exam prep app', 'pharmacy past questions', 'nursing exam questions',
@@ -39,7 +39,7 @@ const jsonLd = {
       operatingSystem: 'iOS, Android',
       applicationCategory: 'EducationalApplication',
       description:
-        'MCQs, flashcards, and clinical cases for pharmacy, medicine, nursing, dentistry and midwifery students — with streaks, leagues, and a daily challenge.',
+        'Personalized MCQs, flashcards and clinical cases for healthcare students, built by a pharmacist — with streaks, leagues and a readiness score that keep you consistent until exam day.',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       publisher: { '@id': 'https://skoolieapp.com/#org' },
     },

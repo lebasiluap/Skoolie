@@ -288,7 +288,29 @@ export default function Landing() {
 
         {/* floating mascots */}
         <div data-para="-0.9" data-mouse="28" style={{ position: 'absolute', top: '13%', right: '3%', zIndex: 2 }}>
-          <div style={{ animation: 'lp-floaty 5.2s ease-in-out infinite' }}>
+          <div style={{ animation: 'lp-floaty 5.2s ease-in-out infinite', position: 'relative' }}>
+            {/* Cappy speech bubble — same chat-bubble language as the cases
+                mockup, dark-chip palette; ≥1150px only (lp-hero-bubble) so it
+                never crowds the headline column */}
+            <div
+              className="lp-hero-bubble"
+              style={{
+                position: 'absolute',
+                top: 4,
+                right: '86%',
+                whiteSpace: 'nowrap',
+                background: 'rgba(20,29,27,.92)',
+                border: '1px solid rgba(36,187,168,.4)',
+                color: INK,
+                fontSize: 13.5,
+                fontWeight: 800,
+                padding: '9px 14px',
+                borderRadius: '16px 16px 4px 16px',
+                boxShadow: '0 14px 30px -10px rgba(0,0,0,.5)',
+              }}
+            >
+              I&apos;ll tell you what&apos;s next 👇
+            </div>
             <CappyIdle
               size={180}
               style={{ width: 'clamp(76px, 12vw, 180px)', height: 'auto', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,.45))' }}
@@ -423,11 +445,11 @@ export default function Landing() {
               color: INK,
             }}
           >
-            Study smarter.
+            Know exactly what
             <br />
             {/* gradient scoped to one unwrappable word group so a line wrap
                 never smears the teal→coral ramp into muddy midtones */}
-            <span style={{ color: TEAL_BRIGHT }}>Pass with</span>{' '}
+            <span style={{ color: TEAL_BRIGHT }}>to study</span>{' '}
             <span
               style={{
                 whiteSpace: 'nowrap',
@@ -437,21 +459,21 @@ export default function Landing() {
                 color: 'transparent',
               }}
             >
-              confidence.
+              next.
             </span>
           </h1>
           <p
             style={{
               margin: '26px auto 0',
-              maxWidth: 620,
+              maxWidth: 680,
               fontSize: 'clamp(17px, 2vw, 21px)',
               fontWeight: 600,
               lineHeight: 1.55,
               color: INK_SOFT,
             }}
           >
-            MCQs, flashcards, and clinical cases with streaks, leagues, and a daily challenge — exam prep that feels
-            like a game you actually want to win.
+            Personalized MCQs, flashcards and clinical cases that adapt to your profession, your year, and your
+            weakest topics — with streaks, leagues and a readiness score that keep you consistent until exam day.
           </p>
           <div
             style={{
@@ -517,7 +539,19 @@ export default function Landing() {
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginTop: 38 }}>
+          <p
+            style={{
+              margin: '36px 0 0',
+              fontSize: 14,
+              fontWeight: 900,
+              letterSpacing: 2,
+              textTransform: 'uppercase',
+              color: CORAL_BRIGHT,
+            }}
+          >
+            Stop wondering what to revise.
+          </p>
+          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginTop: 16 }}>
             <StoreBadgePair />
           </div>
         </div>
@@ -586,6 +620,119 @@ export default function Landing() {
           </div>
         </div>
       </div>
+
+      {/* ══════════════ CREDIBILITY STRIP ══════════════ */}
+      <section
+        aria-label="Why you can trust Skoolie"
+        style={{ background: DARK_BG, color: INK, padding: 'clamp(56px, 7vw, 88px) 24px', position: 'relative' }}
+      >
+        <div
+          style={{
+            maxWidth: 1160,
+            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(230px, 100%), 1fr))',
+            gap: 14,
+          }}
+        >
+          {(
+            [
+              { icon: '⚕️', text: 'Built by a pharmacist (PharmD)' },
+              { icon: '📚', text: 'Drawn from trusted clinical textbooks' },
+              { icon: '💡', text: 'An explanation with every answer' },
+              { icon: '📊', text: 'Difficulty calibrated by real student performance' },
+            ] as const
+          ).map((c, i) => (
+            <div key={c.text} data-reveal="up" data-reveal-delay={i * 80}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  height: '100%',
+                  background: DARK_CHIP,
+                  border: '1px solid rgba(233,240,238,.12)',
+                  borderRadius: 18,
+                  padding: '16px 18px',
+                  boxShadow: '0 14px 34px -16px rgba(0,0,0,.5)',
+                }}
+              >
+                <span style={{ fontSize: 22, flexShrink: 0 }} aria-hidden="true">
+                  {c.icon}
+                </span>
+                <span style={{ fontSize: 14.5, fontWeight: 800, lineHeight: 1.4, color: INK }}>{c.text}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ══════════════ TRANSFORMATION BEAT ══════════════ */}
+      <section
+        style={{
+          background: 'var(--bg)',
+          color: 'var(--text)',
+          padding: 'clamp(72px, 9vw, 120px) 24px 0',
+          position: 'relative',
+        }}
+      >
+        <div style={{ maxWidth: 620, margin: '0 auto' }}>
+          <div
+            data-reveal="blur"
+            style={{
+              textAlign: 'center',
+              fontSize: 13,
+              fontWeight: 900,
+              letterSpacing: 3,
+              textTransform: 'uppercase',
+              color: 'var(--coral-deep)',
+            }}
+          >
+            From lost to locked in
+          </div>
+          <div style={{ marginTop: 30, display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div data-reveal="left" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <BuddyIdle size={52} style={{ flexShrink: 0 }} />
+              <div
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px 18px 18px 18px',
+                  padding: '13px 18px',
+                  boxShadow: '0 10px 24px -12px rgba(16,40,36,.18)',
+                  fontSize: 'clamp(15px, 2vw, 17px)',
+                  fontWeight: 800,
+                  lineHeight: 1.45,
+                  color: 'var(--text-soft)',
+                }}
+              >
+                I have no idea what to revise.
+              </div>
+            </div>
+            <div
+              data-reveal="right"
+              data-reveal-delay="200"
+              style={{ display: 'flex', gap: 12, alignItems: 'flex-start', justifyContent: 'flex-end' }}
+            >
+              <div
+                style={{
+                  background: 'var(--teal)',
+                  color: '#fff',
+                  borderRadius: '18px 4px 18px 18px',
+                  padding: '13px 18px',
+                  boxShadow: '0 14px 30px -12px rgba(14,158,142,.5)',
+                  fontSize: 'clamp(15px, 2vw, 17px)',
+                  fontWeight: 800,
+                  lineHeight: 1.45,
+                }}
+              >
+                I know exactly what to practice today.
+              </div>
+              <CappyHappy size={52} style={{ flexShrink: 0 }} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════ PHONES / PRACTICE MODES ══════════════ */}
       <section
@@ -665,7 +812,7 @@ export default function Landing() {
             data-reveal="blur"
             style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--teal)' }}
           >
-            Three ways to master it
+            Practice that teaches
           </div>
           <h2
             data-reveal="flip"
@@ -679,9 +826,9 @@ export default function Landing() {
               lineHeight: 1.06,
             }}
           >
-            Question by question,
+            Every question makes you
             <br className="lp-h2-br" />
-            you become the clinician.
+            a safer clinician.
           </h2>
           <p
             data-reveal="160"
@@ -1115,6 +1262,67 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ══════════════ WHY IT WORKS (LEARNING SCIENCE) ══════════════ */}
+      <section
+        style={{ background: 'var(--bg)', color: 'var(--text)', padding: '0 24px clamp(70px, 8vw, 110px)', position: 'relative' }}
+      >
+        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+          <div
+            data-reveal="blur"
+            style={{
+              textAlign: 'center',
+              fontSize: 13,
+              fontWeight: 900,
+              letterSpacing: 3,
+              textTransform: 'uppercase',
+              color: 'var(--teal)',
+              marginBottom: 34,
+            }}
+          >
+            Built on learning science
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
+              gap: 16,
+            }}
+          >
+            {(
+              [
+                {
+                  title: 'Active recall',
+                  color: 'var(--teal-deep)',
+                  body: 'Answering questions forces your brain to retrieve — which builds memory far faster than re-reading notes.',
+                },
+                {
+                  title: 'Spaced repetition',
+                  color: 'var(--coral-deep)',
+                  body: 'Flashcards and the Time Capsule resurface material right before you would forget it.',
+                },
+                {
+                  title: 'Immediate feedback',
+                  color: 'var(--amber)',
+                  body: 'Every answer is explained on the spot, so a mistake becomes understanding within seconds.',
+                },
+                {
+                  title: 'Habit streaks',
+                  color: PERI_DEEP,
+                  body: 'Short daily sessions beat cramming — streaks and leagues keep you showing up until exam day.',
+                },
+              ] as const
+            ).map((c, i) => (
+              <div key={c.title} data-reveal="up" data-reveal-delay={i * 80}>
+                <div style={{ ...gridCard, padding: '20px 22px', borderRadius: 20, height: '100%' }}>
+                  <div style={{ ...cardEyebrow, color: c.color }}>{c.title}</div>
+                  <p style={cardBody}>{c.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ══════════════ GAMIFICATION GRID ══════════════ */}
       <section
         style={{
@@ -1198,7 +1406,7 @@ export default function Landing() {
                 color: 'var(--coral-deep)',
               }}
             >
-              Addictive, on purpose
+              Consistency, engineered
             </div>
             <h2
               data-reveal="80"
@@ -1223,7 +1431,8 @@ export default function Landing() {
                 color: 'var(--text-soft)',
               }}
             >
-              Streaks, leagues, barrages, and combos turn revision into a game you don&apos;t want to put down.
+              Streaks, leagues, barrages, and combos make showing up every day the easy part — consistency without
+              the willpower.
             </p>
           </div>
 
@@ -1652,7 +1861,7 @@ export default function Landing() {
               data-reveal="left"
               style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--teal)' }}
             >
-              Unique learning insights
+              Know where you stand
             </div>
             <h2
               data-reveal="left"
@@ -1665,15 +1874,15 @@ export default function Landing() {
                 lineHeight: 1.08,
               }}
             >
-              Walk into exam day knowing exactly where you stand.
+              Walk into exam day with nothing left to guess.
             </h2>
             <p
               data-reveal="left"
               data-reveal-delay="160"
               style={{ margin: '20px 0 0', fontSize: 18, fontWeight: 600, lineHeight: 1.6, color: 'var(--text-soft)' }}
             >
-              A readiness score with a transparent formula, a prioritized daily plan, and weak-topic drill-downs —
-              analytics that measure real clinical preparedness, not raw grind.
+              Your Readiness Score updates continuously from recent accuracy, consistency, weak topics, question
+              difficulty and long-term retention — then turns it all into a prioritized daily plan.
             </p>
             <div
               data-reveal="left"
@@ -1681,9 +1890,9 @@ export default function Landing() {
               style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 12 }}
             >
               {[
-                'Readiness score you can actually trust',
-                'A daily plan that targets your weakest topics first',
-                'Progress over time, per subject and subtopic',
+                'Recent accuracy, weighted by question difficulty',
+                'Consistency and long-term retention, tracked over time',
+                'Weak topics turned into your next study session',
               ].map((line) => (
                 <div key={line} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span
@@ -1898,7 +2107,7 @@ export default function Landing() {
               data-reveal="blur"
               style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', color: '#7ED9CC' }}
             >
-              Indexed to your world
+              Made for your program
             </div>
             <h2
               data-reveal="80"
@@ -2054,7 +2263,28 @@ export default function Landing() {
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 4, marginBottom: 34 }}
           >
             <div data-para="-0.2" style={{ zIndex: 1 }}>
-              <div style={{ animation: 'lp-bobble 5s ease-in-out .3s infinite' }}>
+              <div style={{ animation: 'lp-bobble 5s ease-in-out .3s infinite', position: 'relative' }}>
+                {/* Noggin speech bubble — same chat-bubble language as the
+                    cases mockup; bobbles with him */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '98%',
+                    left: -10,
+                    marginBottom: 8,
+                    whiteSpace: 'nowrap',
+                    background: DARK_CHIP,
+                    border: '1px solid rgba(242,119,78,.45)',
+                    color: INK,
+                    fontSize: 13,
+                    fontWeight: 800,
+                    padding: '8px 13px',
+                    borderRadius: '16px 16px 16px 4px',
+                    boxShadow: '0 12px 26px -10px rgba(0,0,0,.5)',
+                  }}
+                >
+                  Your streak starts today 🔥
+                </div>
                 <NogginHappy size={92} style={{ width: 'clamp(64px, 20vw, 92px)', height: 'auto' }} />
               </div>
             </div>
@@ -2079,13 +2309,14 @@ export default function Landing() {
           >
             Your exam is coming.
             <br />
-            <span style={{ color: TEAL_BRIGHT }}>Cappy&apos;s ready.</span>
+            <span style={{ color: TEAL_BRIGHT }}>You&apos;ll know you&apos;re ready.</span>
           </h2>
           <p
             data-reveal="160"
             style={{ margin: '22px auto 0', maxWidth: 480, fontSize: 18, fontWeight: 600, lineHeight: 1.55, color: INK_SOFT }}
           >
-            Join thousands of health students turning revision into a daily habit they actually keep.
+            Pick your profession, your year, your country — and let Skoolie tell you exactly what to study next,
+            every day until the exam.
           </p>
           <div
             data-reveal="240"

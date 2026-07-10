@@ -23,13 +23,13 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://skoolieapp.com"),
-  title: "Skoolie — Study smarter. Pass with confidence.",
+  title: "Skoolie — Know exactly what to study next.",
   description:
-    "MCQs, flashcards, and clinical cases for pharmacy, medicine, and nursing students — with streaks, leagues, and a daily challenge that make exam prep feel like a game.",
+    "Built by a pharmacist: personalized MCQs, flashcards and clinical cases that adapt to your profession, year and weakest topics — with streaks, leagues and a readiness score that keep you consistent until exam day.",
   openGraph: {
-    title: "Skoolie — Study smarter. Pass with confidence.",
+    title: "Skoolie — Know exactly what to study next.",
     description:
-      "50,000+ MCQs, flashcards, and clinical cases with streaks, leagues, and a daily challenge. Exam prep that feels like a game you actually want to win.",
+      "Skoolie tells healthcare students exactly what to study next — and keeps them consistent until they're exam-ready. Built by a pharmacist, drawn from trusted clinical textbooks, with an explanation for every answer.",
     url: "https://skoolieapp.com",
     siteName: "Skoolie",
     images: [{ url: "/icon.png", width: 512, height: 512, alt: "Skoolie — Cappy the mascot" }],
@@ -37,9 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Skoolie — Study smarter. Pass with confidence.",
+    title: "Skoolie — Know exactly what to study next.",
     description:
-      "Exam prep for health students that feels like a game you actually want to win.",
+      "Built by a pharmacist: personalized exam prep that tells health students exactly what to study next.",
     images: ["/icon.png"],
   },
   robots: { index: true, follow: true },

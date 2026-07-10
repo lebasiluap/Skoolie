@@ -415,8 +415,11 @@ button { font-family: inherit; }
     font-size: clamp(36px, 10.6vw, 42px) !important;
     text-wrap: balance;
   }
-  /* three floating mascots crowd a 360px hero — Buddy sits this one out */
+  /* floating mascots crowd a 360px hero — Buddy sits out, and Cappy too:
+     the full-width H1 leaves no top corner for him (he sat ON the headline).
+     Noggin (bottom-left) keeps the hero alive on phones. */
   .lp-hero-buddy { display: none; }
+  .lp-hero-cappy { display: none; }
   /* float keyframes intentionally NOT reduced here: full-amplitude floats
      are cheap transform loops and mobile needs the extra life */
 }

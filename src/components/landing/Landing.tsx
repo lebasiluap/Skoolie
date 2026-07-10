@@ -287,7 +287,7 @@ export default function Landing() {
         />
 
         {/* floating mascots */}
-        <div data-para="-0.9" data-mouse="28" style={{ position: 'absolute', top: '13%', right: '3%', zIndex: 2 }}>
+        <div className="lp-hero-cappy" data-para="-0.9" data-mouse="28" style={{ position: 'absolute', top: '13%', right: '3%', zIndex: 2 }}>
           <div style={{ animation: 'lp-floaty 5.2s ease-in-out infinite', position: 'relative' }}>
             {/* Cappy speech bubble — same chat-bubble language as the cases
                 mockup, dark-chip palette; ≥1150px only (lp-hero-bubble) so it

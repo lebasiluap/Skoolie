@@ -450,6 +450,9 @@ export default function Landing() {
                 the br joins .lp-h2-br in sitting out on small screens and the
                 H1 wraps naturally (font clamp tightened in globals.css) */}
             <br className="lp-h1-br" />
+            {/* the explicit space is REQUIRED: when the br is display:none on
+                phones it contributes no whitespace — text fused into "whatto" */}
+            {' '}
             {/* gradient scoped to one unwrappable word group so a line wrap
                 never smears the teal→coral ramp into muddy midtones */}
             <span style={{ color: TEAL_BRIGHT }}>to study</span>{' '}

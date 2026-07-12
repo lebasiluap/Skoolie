@@ -12,15 +12,19 @@ interface PageProps {
     difficulty?: string
     subtopic?: string
     q?: string
+    id?: string
     page?: string
   }>
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default async function AdminQuestionsPage({ searchParams }: PageProps) {
   const supabase = await createClient()
   const params = await searchParams
-  const { topic, type, course, difficulty, subtopic, q, page: pageStr } = params
-  const page = Math.max(1, parseInt(pageStr ?? '1', 10))
+  const { topic, type, course, difficulty, subtopic, q, id } = params
+  const parsedPage = parseInt(params.page ?? '1', 10)
+  const page = Number.isFinite(parsedPage) ? Math.max(1, parsedPage) : 1
   const perPage = 50
   const from = (page - 1) * perPage
   const to = from + perPage - 1
@@ -32,6 +36,7 @@ export default async function AdminQuestionsPage({ searchParams }: PageProps) {
     .order('topic', { ascending: true })
     .order('subtopic', { ascending: true })
 
+  if (id && UUID_RE.test(id)) query = query.eq('id', id)
   if (topic) query = query.eq('topic', topic)
   if (type) query = query.eq('question_type', type)
   if (course) query = query.eq('category', course)
@@ -42,20 +47,16 @@ export default async function AdminQuestionsPage({ searchParams }: PageProps) {
   // Apply pagination last
   query = query.range(from, to)
 
-  const { data: questions, count } = await query
+  const [{ data: questions, count }, { data: topicRows }, { data: catRows }] = await Promise.all([
+    query,
+    // Distinct values via RPCs — a plain select caps at 1000 rows and
+    // silently truncates the dropdowns (the "course filter doesn't work" bug).
+    supabase.rpc('get_distinct_topics'),
+    supabase.rpc('get_distinct_categories'),
+  ])
 
-  // Distinct topics via RPC (bypasses 1000-row Supabase limit)
-  const { data: topicRows } = await supabase.rpc('get_distinct_topics')
   const topics = (topicRows ?? []).map((r: { topic: string }) => r.topic).filter(Boolean)
-
-  // Distinct courses/categories
-  const { data: courseRows } = await supabase
-    .from('questions')
-    .select('category')
-    .not('category', 'is', null)
-    .order('category')
-
-  const courses = [...new Set((courseRows ?? []).map((r: any) => r.category).filter(Boolean))] as string[]
+  const courses = (catRows ?? []).map((r: { category: string }) => r.category).filter(Boolean)
 
   return (
     <QuestionsClient
@@ -65,7 +66,7 @@ export default async function AdminQuestionsPage({ searchParams }: PageProps) {
       perPage={perPage}
       topics={topics}
       courses={courses}
-      filters={{ topic, type, course, difficulty, subtopic, q }}
+      filters={{ topic, type, course, difficulty, subtopic, q, id }}
     />
   )
 }

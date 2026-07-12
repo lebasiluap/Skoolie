@@ -25,6 +25,7 @@ import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { FilterBanner } from '@/components/ui/FilterBanner'
+import ReportButton from '@/components/ui/ReportButton'
 import { topicColor } from '@/constants/topics'
 import type { Question, TopicRow } from '@/types'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
@@ -402,7 +403,11 @@ export default function MCQScreen() {
   function handleSubmit() {
     if (!selected) return
     const q = questions[qIndex]
-    const correct = selected === buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt).correctLetter
+    const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    const correct = selected === shuf.correctLetter
+    // Map the tapped display letter back to the ORIGINAL stored option letter so
+    // the picked answer is comparable across users despite per-session shuffling.
+    const origLetter = shuf.displayToOriginalLetter[selected] ?? null
     playSound(correct ? 'correct' : 'wrong')
     // Record the attempt server-side (increments times_seen/times_correct;
     // powers "Allow repeat questions", topic progress, and the seen tag).
@@ -411,6 +416,7 @@ export default function MCQScreen() {
         p_question_id: q.id, p_question_type: 'mcq',
         p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
         p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
+        p_user_answer: origLetter,
       }).then(() => {})
     }
     // Snapshot now — overlay renders from this, never from live state
@@ -1076,6 +1082,10 @@ export default function MCQScreen() {
                     )}
                   </View>
                 )}
+
+                <View style={{ alignItems: 'center', marginTop: 14 }}>
+                  <ReportButton questionId={reviewSnap.question.id} questionType="mcq" compact />
+                </View>
               </ScrollView>
 
               <TouchableOpacity onPress={handleNext} style={[s.nextBtn, { backgroundColor: C.teal, maxWidth: undefined, marginTop: 12 }]}>

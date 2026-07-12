@@ -264,12 +264,13 @@ export default function RapidFireScreen() {
     return () => { anim.stop(); clearTimeout(tickAt) }
   }, [screen, qIndex, answered, questions.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function recordHistory(q: Question, correct: boolean) {
+  function recordHistory(q: Question, correct: boolean, userAnswer: string | null = null) {
     if (!user) return
     supabase.rpc('record_answer', {
       p_question_id: q.id, p_question_type: 'mcq',
       p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
       p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
+      p_user_answer: userAnswer,
     }).then(() => {})
   }
 
@@ -302,10 +303,11 @@ export default function RapidFireScreen() {
     if (answered !== null) return
     if (Date.now() - questionShownAt.current < TAP_GRACE_MS) return   // aimed at the previous question
     const q = questions[qIndex]
-    const correct = letter === buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt).correctLetter
+    const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    const correct = letter === shuf.correctLetter
     setAnswered(letter)
     setWasCorrect(correct)
-    recordHistory(q, correct)
+    recordHistory(q, correct, shuf.displayToOriginalLetter[letter] ?? null)
     if (correct) {
       playCombo(streak + 1)   // pitch rises as the combo builds
       // combo (based on streak BEFORE this answer) + speed (bar remaining at tap)

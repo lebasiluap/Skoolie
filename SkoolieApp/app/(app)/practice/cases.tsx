@@ -14,6 +14,7 @@ import { TopicIcon } from '@/components/ui/TopicIcon'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { FilterBanner } from '@/components/ui/FilterBanner'
+import ReportButton from '@/components/ui/ReportButton'
 import { BuddyHead } from '@/components/mascots/BuddyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { topicColor } from '@/constants/topics'
@@ -1016,6 +1017,10 @@ export default function CasesScreen() {
                     </Text>
                   </View>
                 )}
+
+                <View style={{ alignItems: 'center', marginTop: 14 }}>
+                  <ReportButton caseId={cs.id} questionType="case_study" compact />
+                </View>
               </ScrollView>
 
               <TouchableOpacity onPress={next} style={[s.nextBtn, { backgroundColor: C.teal, maxWidth: undefined, marginTop: 12 }]}>

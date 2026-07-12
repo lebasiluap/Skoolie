@@ -14,6 +14,7 @@ import { TopicIcon } from '@/components/ui/TopicIcon'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { FilterBanner } from '@/components/ui/FilterBanner'
+import ReportButton from '@/components/ui/ReportButton'
 import { NogginHead } from '@/components/mascots/NogginHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { topicColor } from '@/constants/topics'
@@ -820,6 +821,12 @@ export default function FlashcardsScreen() {
               </View>
             </Entrance>
           ) : null}
+
+          {revealed && (
+            <View style={{ alignItems: 'center', marginTop: 14 }}>
+              <ReportButton questionId={card.id} questionType="flashcard" compact />
+            </View>
+          )}
 
           {/* Bottom spacer — flex so it absorbs remaining space without affecting card position */}
           <View style={{ flex: 1 }} />

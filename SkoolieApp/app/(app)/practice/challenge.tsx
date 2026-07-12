@@ -110,22 +110,24 @@ export default function ChallengeScreen() {
   // Option order is seeded by day+id — identical for the whole cohort.
   const shuffleSalt = day
 
-  function recordAnswer(q: ChallengeQ, correct: boolean) {
+  function recordAnswer(q: ChallengeQ, correct: boolean, userAnswer: string | null) {
     if (!user) return
     supabase.rpc('record_answer', {
       p_question_id: q.id, p_question_type: 'mcq',
       p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
       p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
+      p_user_answer: userAnswer,
     }).then(() => {})
   }
 
   function handleSubmit() {
     if (!selected || inReview) return
     const q = questions[qIndex]
-    const correct = selected === buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt).correctLetter
+    const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    const correct = selected === shuf.correctLetter
     playSound(correct ? 'correct' : 'wrong')
     if (correct) setScore(s => s + 1)
-    recordAnswer(q, correct)
+    recordAnswer(q, correct, shuf.displayToOriginalLetter[selected] ?? null)
     setInReview(true)
   }
 

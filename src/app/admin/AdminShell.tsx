@@ -17,9 +17,17 @@ const NAV = [
     href: '/admin/questions', label: 'Questions',
     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
   },
+  {
+    href: '/admin/reports', label: 'Reports',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
+  },
+  {
+    href: '/admin/audit', label: 'Miskey audit',
+    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="12"/><line x1="11" y1="15" x2="11.01" y2="15"/></svg>,
+  },
 ]
 
-function NavLink({ href, label, icon, active, onClick }: { href: string; label: string; icon: React.ReactNode; active: boolean; onClick?: () => void }) {
+function NavLink({ href, label, icon, active, onClick, badge }: { href: string; label: string; icon: React.ReactNode; active: boolean; onClick?: () => void; badge?: number }) {
   return (
     <Link href={href} onClick={onClick}
       style={{
@@ -32,11 +40,16 @@ function NavLink({ href, label, icon, active, onClick }: { href: string; label: 
     >
       <span style={{ flexShrink: 0, opacity: active ? 1 : 0.7 }}>{icon}</span>
       {label}
+      {badge != null && badge > 0 && (
+        <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 800, minWidth: 20, textAlign: 'center', padding: '2px 7px', borderRadius: 999, background: 'var(--red)', color: '#fff' }}>
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </Link>
   )
 }
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({ children, openReports }: { children: React.ReactNode; openReports?: number }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
 
@@ -61,7 +74,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         {NAV.map(({ href, label, icon }) => (
-          <NavLink key={href} href={href} label={label} icon={icon} active={isActive(href)} onClick={() => setMobileOpen(false)} />
+          <NavLink key={href} href={href} label={label} icon={icon} active={isActive(href)} onClick={() => setMobileOpen(false)}
+            badge={href === '/admin/reports' ? openReports : undefined} />
         ))}
       </nav>
 
@@ -138,6 +152,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         }
         .admin-nav-link:hover { background: var(--surface-3) !important; color: var(--text) !important; }
         .admin-back-link:hover { color: var(--teal) !important; }
+        /* Shared admin interaction styles (used by every page) */
+        .admin-table-row:hover { background: var(--surface-2); }
+        .admin-cell-btn:hover { color: var(--teal) !important; }
+        .admin-delete-btn:hover { opacity: 0.7; }
+        .admin-page-btn:hover { background: var(--surface-3) !important; }
+        .admin-input-focus:focus { border-color: var(--teal) !important; box-shadow: 0 0 0 3px var(--teal-tint); }
+        .admin-main select:focus, .admin-main input:focus, .admin-main textarea:focus { border-color: var(--teal); }
       `}</style>
     </div>
   )

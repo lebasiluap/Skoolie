@@ -33,6 +33,9 @@
 
   --gold:        #DBA431;
 
+  --purple:      #8B5CF6;
+  --purple-tint: #EFE9FD;
+
   --shadow:      0 1px 2px rgba(16,40,36,.05), 0 12px 28px -16px rgba(16,40,36,.20);
   --shadow-lg:   0 2px 8px rgba(16,40,36,.07), 0 28px 56px -22px rgba(16,40,36,.32);
 
@@ -71,6 +74,9 @@ html[data-theme="dark"] {
   --red-tint:    #341D1B;
 
   --gold:        #E6B650;
+
+  --purple:      #A78BFA;
+  --purple-tint: #251B3E;
 
   --shadow:      0 1px 2px rgba(0,0,0,.4), 0 16px 34px -18px rgba(0,0,0,.7);
   --shadow-lg:   0 2px 10px rgba(0,0,0,.5), 0 30px 60px -22px rgba(0,0,0,.8);

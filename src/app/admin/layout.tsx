@@ -6,9 +6,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user || user.email !== 'lebasiluap@gmail.com') {
+  if (!user) {
+    redirect('/admin-login')
+  }
+  if (user.email !== 'lebasiluap@gmail.com') {
     redirect('/dashboard')
   }
 
-  return <AdminShell>{children}</AdminShell>
+  const { count: openReports } = await supabase
+    .from('question_reports')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'open')
+
+  return <AdminShell openReports={openReports ?? 0}>{children}</AdminShell>
 }

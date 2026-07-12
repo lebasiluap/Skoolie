@@ -18,6 +18,7 @@
  */
 import { Platform } from 'react-native'
 import { supabase } from '@/lib/supabase'
+import { withTimeout, TimeoutError, AUTH_TIMEOUT_MESSAGE } from '@/lib/withTimeout'
 
 type AppleModule = typeof import('expo-apple-authentication')
 let _apple: AppleModule | null | undefined
@@ -79,11 +80,17 @@ export async function signInWithApple(): Promise<AppleSignInResult> {
       return { ok: false, error: 'Apple sign-in didn’t complete. Please try again.' }
     }
 
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: 'apple',
-      token: cred.identityToken,
-      nonce: rawNonce,
-    })
+    // Bounded await: if the auth lock is wedged by a hung background refresh,
+    // this would otherwise never resolve and the button stays on "Signing in…"
+    // until the app is killed.
+    const { error } = await withTimeout(
+      supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: cred.identityToken,
+        nonce: rawNonce,
+      }),
+      20_000,
+    )
     if (error) {
       return { ok: false, error: 'Something went wrong signing you in with Apple. Please try again.' }
     }
@@ -100,6 +107,7 @@ export async function signInWithApple(): Promise<AppleSignInResult> {
     return { ok: true }
   } catch (e: any) {
     if (e?.code === 'ERR_REQUEST_CANCELED') return { ok: false }   // user backed out — not an error
+    if (e instanceof TimeoutError) return { ok: false, error: AUTH_TIMEOUT_MESSAGE }
     return { ok: false, error: 'Apple sign-in didn’t complete. Please try again.' }
   }
 }

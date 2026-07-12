@@ -9,6 +9,7 @@ import * as WebBrowser from 'expo-web-browser'
 import * as Linking from 'expo-linking'
 import Svg, { Path, G, Circle } from 'react-native-svg'
 import { supabase } from '@/lib/supabase'
+import { withTimeout, TimeoutError, AUTH_TIMEOUT_MESSAGE } from '@/lib/withTimeout'
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
@@ -68,11 +69,21 @@ export default function LoginScreen() {
     setUnconfirmedEmail(null)
     setResendNotice(null)
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
-    setLoading(false)
-    if (error) {
-      setFormError(friendlyAuthError(error.message))
-      if (/email not confirmed/i.test(error.message)) setUnconfirmedEmail(email.trim())
+    try {
+      // Bounded: a wedged auth lock (hung cold-start token refresh) would
+      // otherwise leave this await — and the button spinner — hanging forever.
+      const { error } = await withTimeout(
+        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+        20_000,
+      )
+      if (error) {
+        setFormError(friendlyAuthError(error.message))
+        if (/email not confirmed/i.test(error.message)) setUnconfirmedEmail(email.trim())
+      }
+    } catch (e) {
+      setFormError(e instanceof TimeoutError ? AUTH_TIMEOUT_MESSAGE : friendlyAuthError(String(e)))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -124,10 +135,15 @@ export default function LoginScreen() {
             const fragment = url.split('#')[1] || ''
             const p = Object.fromEntries(new URLSearchParams(fragment))
             if (p.access_token && p.refresh_token) {
-              const { error: sessionError } = await supabase.auth.setSession({
-                access_token: p.access_token,
-                refresh_token: p.refresh_token,
-              })
+              // Bounded: a wedged auth lock (hung cold-start token refresh)
+              // otherwise leaves this hanging forever ("stuck signing in").
+              const { error: sessionError } = await withTimeout(
+                supabase.auth.setSession({
+                  access_token: p.access_token,
+                  refresh_token: p.refresh_token,
+                }),
+                20_000,
+              )
               if (sessionError) setFormError(friendlyAuthError(sessionError.message))
             } else {
               // Never mint a session that can't refresh (missing refresh token
@@ -136,14 +152,17 @@ export default function LoginScreen() {
             }
           } else if (url.split('#')[0].includes('code=')) {
             // PKCE flow (future-proof)
-            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(url)
+            const { error: sessionError } = await withTimeout(
+              supabase.auth.exchangeCodeForSession(url),
+              20_000,
+            )
             if (sessionError) setFormError(friendlyAuthError(sessionError.message))
           }
         }
         // cancel / dismiss: user backed out — no error, no message
       }
     } catch (e: any) {
-      setFormError(friendlyAuthError(String(e?.message ?? e)))
+      setFormError(e instanceof TimeoutError ? AUTH_TIMEOUT_MESSAGE : friendlyAuthError(String(e?.message ?? e)))
     } finally {
       setGoogleLoading(false)
     }

@@ -7,6 +7,7 @@ import * as Linking from 'expo-linking'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Path } from 'react-native-svg'
 import { supabase } from '@/lib/supabase'
+import { withTimeout, TimeoutError, AUTH_TIMEOUT_MESSAGE } from '@/lib/withTimeout'
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
@@ -145,22 +146,30 @@ export default function SignupScreen() {
             const fragment = url.split('#')[1] || ''
             const p = Object.fromEntries(new URLSearchParams(fragment))
             if (p.access_token && p.refresh_token) {
-              const { error: sessionError } = await supabase.auth.setSession({
-                access_token: p.access_token,
-                refresh_token: p.refresh_token,
-              })
+              // Bounded: a wedged auth lock (hung cold-start token refresh)
+              // otherwise leaves this hanging forever ("stuck signing in").
+              const { error: sessionError } = await withTimeout(
+                supabase.auth.setSession({
+                  access_token: p.access_token,
+                  refresh_token: p.refresh_token,
+                }),
+                20_000,
+              )
               if (sessionError) setFormError(friendlyAuthError(sessionError.message))
             } else {
               setFormError('Google sign-in didn’t complete. Please try again.')
             }
           } else if (url.split('#')[0].includes('code=')) {
-            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(url)
+            const { error: sessionError } = await withTimeout(
+              supabase.auth.exchangeCodeForSession(url),
+              20_000,
+            )
             if (sessionError) setFormError(friendlyAuthError(sessionError.message))
           }
         }
       }
     } catch (e: any) {
-      setFormError(friendlyAuthError(String(e?.message ?? e)))
+      setFormError(e instanceof TimeoutError ? AUTH_TIMEOUT_MESSAGE : friendlyAuthError(String(e?.message ?? e)))
     } finally {
       setGoogleLoading(false)
     }

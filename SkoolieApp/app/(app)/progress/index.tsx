@@ -45,14 +45,15 @@ const LEAGUE_CONFIG = {
 
 const LEAGUE_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const
 
-/** Time until the weekly league resets (Monday 00:00, matching the server's
- *  date_trunc('week')). */
+/** Time until the weekly league resets — Monday 00:00 UTC, matching the
+ *  server's date_trunc('week', now()) exactly (device-local Monday drifted
+ *  by the timezone offset for non-UTC users). */
 function weekEndsIn(): string {
   const now = new Date()
   const next = new Date(now)
-  const dow = (now.getDay() + 6) % 7   // 0 = Monday
-  next.setDate(now.getDate() + (7 - dow))
-  next.setHours(0, 0, 0, 0)
+  const dow = (now.getUTCDay() + 6) % 7   // 0 = Monday (UTC)
+  next.setUTCDate(now.getUTCDate() + (7 - dow))
+  next.setUTCHours(0, 0, 0, 0)
   const ms = next.getTime() - now.getTime()
   const days = Math.floor(ms / 86400000)
   const hrs = Math.floor((ms % 86400000) / 3600000)
@@ -203,16 +204,14 @@ export default function ProgressScreen() {
   const displayedN = activeList.length
   const promoteN = effectivePromote(myWeekLeagueId, displayedN)
   const demoStart = Math.max(promoteN + 1, displayedN - 2)
-  // Bronze is the floor — nobody relegates OUT of it, so never show the zone there
-  const demoLive = displayedN >= 10 && myWeekLeagueId !== 'bronze'
+  // Relegation is a HUMANS-ONLY server mechanic (cohort >= 10 real users) —
+  // gating on the displayed count let bot-filled boards show a red zone that
+  // could never fire. Bronze is the floor — nobody relegates OUT of it.
+  const humanN = activeList.filter(u => !u.is_bot).length
+  const demoLive = humanN >= 10 && myWeekLeagueId !== 'bronze'
   const showZones = displayedN > 0
   const promoBoundaryIdx = showZones && displayedN > promoteN ? promoteN : -1
   const relegBoundaryIdx = showZones && demoLive ? demoStart - 1 : -1
-
-  /** Returns 0 if user hasn't practiced today or yesterday — prevents stale streak display */
-  function liveStreak(u: LeaderboardUser): number {
-    return computeEffectiveStreak(u.current_streak, u.last_active_date)
-  }
 
   const RANK_STYLES: Record<number, { bg: string; color: string; label: string }> = {
     // Alpha tints render correctly over both light and dark surfaces

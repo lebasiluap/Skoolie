@@ -9,6 +9,9 @@ export async function POST(req: NextRequest) {
     }
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    // Anonymous inserts are intentionally disallowed by RLS. Do not report
+    // them as server failures or widen permissions merely for analytics.
+    if (!user) return NextResponse.json({ ok: true, tracked: false })
 
     const replies = await Promise.all([
       // Record page view

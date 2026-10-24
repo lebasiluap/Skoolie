@@ -45,5 +45,8 @@
     "web": "expo start --web",
     "postinstall": "echo \"export { useFonts } from 'expo-font';\" > node_modules/@expo-google-fonts/nunito/useFonts.js"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "postcss": "8.5.31"
+  }
 }

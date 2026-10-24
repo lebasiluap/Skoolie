@@ -5,6 +5,8 @@ import { UserProfile } from '@/types'
 import { diffProfiles, emitCelebrations } from '@/lib/celebrations'
 import { setSoundEnabled } from '@/lib/sounds'
 import { setHapticsEnabled } from '@/lib/haptics'
+import { readWithDeadline } from '@/lib/readWithDeadline'
+import { useAppPresence } from './useAppPresence'
 
 interface AuthContextType {
   session: Session | null
@@ -39,21 +41,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Bumped on sign-out: an in-flight profile fetch from the previous session
   // must not resurrect a profile (which would flash onboarding/dashboard).
   const authGenRef = useRef(0)
+  const identityRef = useRef<string | null>(null)
+  const pendingProfile = useRef<{ uid: string; gen: number; promise: Promise<void> } | null>(null)
+  useAppPresence(session?.user.id)
 
-  async function loadProfile(userId: string, isRetry = false): Promise<void> {
+  function loadProfile(userId: string): Promise<void> {
     const gen = authGenRef.current
+    if (identityRef.current !== userId) return Promise.resolve()
+    const pending = pendingProfile.current
+    if (pending?.uid === userId && pending.gen === gen) return pending.promise
+    const promise = fetchProfile(userId, gen).finally(() => {
+      if (pendingProfile.current?.promise === promise) pendingProfile.current = null
+    })
+    pendingProfile.current = { uid: userId, gen, promise }
+    return promise
+  }
+
+  async function fetchProfile(userId: string, gen: number, isRetry = false): Promise<void> {
     // maybeSingle: "no row" is a clean null, while network/server failures are
     // errors — the distinction protects existing users from being routed into
     // onboarding (and having their row overwritten) by a flaky connection.
-    const { data, error } = await supabase
+    let reply
+    try { reply = await readWithDeadline(signal => supabase
       .from('user_profiles')
       .select('*')
       .eq('id', userId)
-      .maybeSingle()
+      .abortSignal(signal).maybeSingle(), 8000)
+    } catch { reply = { data: null, error: { message: 'Profile request timed out or disconnected' } } }
+    if (gen !== authGenRef.current || identityRef.current !== userId) return
+    const { data, error } = reply
     if (error) {
       if (!isRetry) {
         await new Promise(r => setTimeout(r, 1500))
-        return loadProfile(userId, true)
+        if (gen !== authGenRef.current || identityRef.current !== userId) return
+        return fetchProfile(userId, gen, true)
       }
       console.warn('profile load failed — keeping last known profile', error.message)
       return   // keep previous profile (or null + profileChecked=false on first load)
@@ -80,11 +101,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) await loadProfile(session.user.id)
-      setLoading(false)
-    })
+    let disposed = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const acceptSession = (next: Session | null, forceProfile = false) => {
+      if (disposed) return
+      const uid = next?.user.id ?? null
+      const changed = uid !== identityRef.current
+      setSession(next)
+      if (changed) {
+        authGenRef.current++
+        identityRef.current = uid
+        prevProfileRef.current = null
+        setProfile(null)
+        setProfileChecked(false)
+      }
+      if (!uid) { setLoading(false); return }
+      // Token refresh / duplicate SIGNED_IN events must not reload the whole
+      // app. Only a new identity or an actual USER_UPDATED needs this read.
+      if (!changed && !forceProfile) return
+      if (timer) clearTimeout(timer)
+      const gen = authGenRef.current
+      if (changed) setLoading(true)
+      timer = setTimeout(() => {
+        if (disposed || gen !== authGenRef.current) return
+        void loadProfile(uid).finally(() => {
+          if (!disposed && gen === authGenRef.current) setLoading(false)
+        })
+      }, 0)
+    }
 
     // On sign-in the profile is fetched asynchronously after the session arrives.
     // Hold `loading` true until it resolves, so the router doesn't momentarily treat
@@ -95,24 +139,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // issued under it can deadlock. Symptom: Apple/Google sign-in succeeded
     // but the UI hung on "Signing in…" until an app restart. setTimeout(0)
     // defers the profile fetch until after the lock is released.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session?.user) {
-        setLoading(true)
-        const uid = session.user.id
-        setTimeout(async () => {
-          await loadProfile(uid)
-          setLoading(false)
-        }, 0)
-      } else {
-        authGenRef.current++
-        prevProfileRef.current = null
-        setProfile(null)
-        setProfileChecked(false)
-      }
+    let receivedEvent = false
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
+      receivedEvent = true
+      acceptSession(next, event === 'USER_UPDATED')
     })
+    // Fallback only: INITIAL_SESSION normally supplies this. A late fallback
+    // must never overwrite a newer sign-in/sign-out event.
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!receivedEvent) acceptSession(data.session)
+    }).catch(() => { if (!disposed && !receivedEvent) setLoading(false) })
 
-    return () => subscription.unsubscribe()
+    return () => { disposed = true; if (timer) clearTimeout(timer); authGenRef.current++; identityRef.current = null; subscription.unsubscribe() }
   }, [])
 
   return (

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { AppState } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { metricOperation, recordClientMetric } from './clientMetrics'
 
 const SUPABASE_URL = 'https://bqhiwlpmrejvjdljxspy.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxaGl3bHBtcmVqdmpkbGp4c3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzODEzMjIsImV4cCI6MjA5Njk1NzMyMn0.DvuXJ3yGAvGqBA9ZzZLuZktKkTPFpBYrTgOMhlEUBuA'
@@ -16,16 +17,27 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const NETWORK_TIMEOUT_MS = 30_000
 
 const timedFetch: typeof fetch = (input: any, init: any = {}) => {
+  const start = Date.now()
+  let operation: ReturnType<typeof metricOperation>
+  try { operation = metricOperation(new URL(typeof input === 'string' ? input : input.url).pathname) } catch { /* no URL/body logging */ }
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS)
   // Chain a caller-supplied signal so explicit aborts still work.
   const upstream: AbortSignal | undefined = init?.signal
+  const cancel = () => controller.abort()
   if (upstream) {
     if (upstream.aborted) controller.abort()
-    else upstream.addEventListener('abort', () => controller.abort(), { once: true })
+    else upstream.addEventListener('abort', cancel, { once: true })
   }
   return fetch(input, { ...init, signal: controller.signal })
-    .finally(() => clearTimeout(timer))
+    .then(response => {
+      if (operation) recordClientMetric(operation, Date.now() - start, !response.ok)
+      return response
+    }, error => {
+      if (operation) recordClientMetric(operation, Date.now() - start, true)
+      throw error
+    })
+    .finally(() => { clearTimeout(timer); upstream?.removeEventListener('abort', cancel) })
 }
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

@@ -1,4 +1,11 @@
 export type Counts = Record<string, number>
+export interface AppActivity {
+  measured_at: string
+  people: { id: string; full_name: string | null; last_sign_in_at: string | null; last_seen_at: string | null; app_last_seen_at: string | null }[]
+  builds: { platform: string; version: string; build: string; users: number; last_seen_at: string; recently_active: number }[]
+  performance: { operation: string; platform: string; version: string; build: string; calls: number; failures: number; mean_ms: number; max_ms: number }[]
+  bots: { total: number; active: number; usernames: number; full_names: number }
+}
 export interface BetaMetrics {
   schema_version: number; measured_at: string; window_start: string; days: number
   summary: Counts

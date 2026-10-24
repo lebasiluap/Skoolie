@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { PAGE_PAD, inputStyle, PageHeader, Chip, EmptyState, thStyle } from '../ui'
 
 interface Profile {
@@ -15,6 +16,7 @@ interface Profile {
   longest_streak: number | null
   last_active_date: string | null
   last_seen_at: string | null
+  last_sign_in_at: string | null
   created_at: string
   access_key: string | null
 }
@@ -26,6 +28,7 @@ type SortKey = 'joined' | 'attempts' | 'accuracy' | 'xp' | 'streak' | 'lastSeen'
 const pct = (c: number, a: number) => a > 0 ? Math.round((c / a) * 100) : 0
 
 export default function UsersClient({ profiles, statsById }: { profiles: Profile[]; statsById: Record<string, StatRow> }) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('joined')
 
@@ -80,6 +83,7 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
     <div style={{ padding: PAGE_PAD, maxWidth: 1400, margin: '0 auto' }}>
 
       <PageHeader title="Users" sub={`${totalUsers} total accounts`} />
+      <button onClick={()=>router.refresh()} style={{minHeight:44,marginBottom:16}} aria-label="Refresh user activity">Refresh activity</button>
 
       {/* Summary chips */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
@@ -120,7 +124,7 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Name', 'Email', 'Profession', 'Year', 'Level / XP', 'Streak', 'Attempts', 'Accuracy', 'MCQ / Cards / Cases', 'Last Active', 'Joined', 'Key'].map((h, i) => (
+                {['Name', 'Email', 'Profession', 'Year', 'Level / XP', 'Streak', 'Attempts', 'Accuracy', 'MCQ / Cards / Cases', 'Last Seen (UTC)', 'Last Sign-in (UTC)', 'Joined', 'Key'].map((h, i) => (
                   <th key={h} style={{ ...thStyle, textAlign: i >= 6 && i <= 8 ? 'right' : 'left' }}>{h}</th>
                 ))}
               </tr>
@@ -137,7 +141,10 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
                   : hoursAgo < 24 ? `${hoursAgo}h ago`
                   : `${Math.round(hoursAgo / 24)}d ago`
                 const streak = effectiveStreak(u)
-                const isOnline = hoursAgo !== null && hoursAgo < 1
+                // A heartbeat is not a persistent connection. Never label a
+                // half-hour-old rounded timestamp as someone being online.
+                // eslint-disable-next-line react-hooks/purity
+                const isOnline = !!u.last_seen_at && Date.now()-Date.parse(u.last_seen_at)<300000 && Date.now()>=Date.parse(u.last_seen_at)
                 const acc = s ? pct(s.correct, s.attempts) : null
                 const accColor = acc == null ? 'var(--text-faint)' : acc >= 70 ? 'var(--green)' : acc >= 50 ? 'var(--amber)' : 'var(--red)'
                 const isLast = rowIdx === rows.length - 1
@@ -171,7 +178,8 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 12.5, fontWeight: 600, color: 'var(--text-soft)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                       {s ? `${s.mcq} / ${s.flashcard} / ${s.cases}` : '0 / 0 / 0'}
                     </td>
-                    <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, whiteSpace: 'nowrap' }}>{lastSeen}</td>
+                    <td title={lastSeen} style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.last_seen_at?new Date(u.last_seen_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>
+                    <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', whiteSpace:'nowrap' }}>{u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>
                     <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, whiteSpace: 'nowrap' }}>{new Date(u.created_at).toLocaleDateString('en-GB')}</td>
                     <td style={{ padding: '11px 14px', whiteSpace: 'nowrap' }}>
                       {u.access_key

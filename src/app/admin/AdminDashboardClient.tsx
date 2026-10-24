@@ -4,14 +4,15 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { changeLabel, formatRate, toCSV, type BetaMetrics, type ContentMetrics } from './metrics'
+import { changeLabel, formatRate, toCSV, type BetaMetrics, type ContentMetrics, type AppActivity } from './metrics'
 import './dashboard.css'
 
-const VIEWS = ['Overview', 'Learning', 'Content & quality', 'People', 'Measurement'] as const
+const VIEWS = ['Overview', 'Learning', 'Content & quality', 'People', 'App health', 'Measurement'] as const
 type View = typeof VIEWS[number]
 const number = (n: number) => new Intl.NumberFormat('en-GB').format(n)
 const friendly = (s: string) => s.replaceAll('_', ' ')
 const date = (s: string) => new Date(s).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })
+const timestamp = (s: string | null) => s ? new Date(s).toLocaleString('en-GB', { timeZone: 'UTC' }) : 'Not recorded'
 
 function Metric({label,value,note,accent=false}:{label:string;value:string|number;note:string;accent?:boolean}) {
  return <article className={'am-metric'+(accent?' am-accent':'')}><p>{label}</p><strong>{typeof value==='number'?number(value):value}</strong><small>{note}</small></article>
@@ -43,6 +44,29 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  const [contentError,setContentError]=useState<string|null>(null)
  const [contentLoading,setContentLoading]=useState(false)
  const active=useRef<AbortController|null>(null)
+ const [activity,setActivity]=useState<AppActivity|null>(null)
+ const [activityError,setActivityError]=useState<string|null>(null)
+ const [activityLoading,setActivityLoading]=useState(false)
+ const activityRequest=useRef<AbortController|null>(null)
+ const loadActivity=useCallback(async()=>{
+  if(activityRequest.current)return
+  const controller=new AbortController();activityRequest.current=controller;setActivityLoading(true)
+  const timeout=setTimeout(()=>controller.abort(),7000)
+  try{
+   const {data,error}=await createClient().rpc('admin_app_activity').abortSignal(controller.signal)
+   if(error||!data)throw new Error('unavailable')
+   if(activityRequest.current===controller){setActivity(data as AppActivity);setActivityError(null)}
+  }catch{if(!controller.signal.aborted||activityRequest.current===controller)setActivityError('App activity could not be refreshed. Any previous snapshot is retained.')}
+  finally{clearTimeout(timeout);if(activityRequest.current===controller){activityRequest.current=null;setActivityLoading(false)}}
+ },[])
+ // Lightweight activity only, visible-tab polling; no content-bank scans.
+ useEffect(()=>{
+  if(view!=='People'&&view!=='App health')return
+  const refreshVisible=()=>{if(document.visibilityState==='visible')void loadActivity()}
+  const initial=setTimeout(refreshVisible,0),timer=setInterval(refreshVisible,30000)
+  document.addEventListener('visibilitychange',refreshVisible)
+  return()=>{clearTimeout(initial);clearInterval(timer);document.removeEventListener('visibilitychange',refreshVisible)}
+ },[view,loadActivity])
  const loadContent=useCallback(async()=>{
   if(active.current) return
   const controller=new AbortController();active.current=controller;setContentLoading(true);setContentError(null)
@@ -54,9 +78,9 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
   }catch{if(active.current===controller)setContentError('Content metrics could not be loaded. Your existing snapshot is unchanged; retry when connected.')}
   finally{clearTimeout(timeout);if(active.current===controller){active.current=null;setContentLoading(false)}}
  },[])
- useEffect(()=>()=>{active.current?.abort();active.current=null},[])
+ useEffect(()=>()=>{active.current?.abort();active.current=null;activityRequest.current?.abort();activityRequest.current=null},[])
  const changeView=(next:View)=>{setView(next);if(next==='Content & quality'&&!content&&!contentLoading)void loadContent()}
- const refresh=()=>{if(pending)return;startTransition(()=>router.refresh());if(view==='Content & quality')void loadContent()}
+ const refresh=()=>{if(pending)return;startTransition(()=>router.refresh());if(view==='Content & quality')void loadContent();if(view==='People'||view==='App health')void loadActivity()}
  const download=()=>{
   if(!initialData)return
   const s=initialData.summary
@@ -69,7 +93,7 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  return <div className="am-dashboard" aria-busy={pending}>
  <header className="am-header"><div><div className="am-eyebrow">SKOOLIE / OPERATIONS</div><h1>Your beta, at a glance.</h1><p>People, practice and content quality. One place to see what needs attention.</p></div><div className="am-actions"><button onClick={()=>{const win=window as Window&{__toggleTheme?:()=>void};win.__toggleTheme?.()}} aria-label="Switch light or dark theme">◐ <span>Theme</span></button><button disabled={!data||pending} onClick={download}>Export CSV</button><button className="am-primary" disabled={pending} onClick={refresh}>{pending?'Refreshing…':'↻ Refresh'}</button></div></header>
  <div className="am-toolbar"><nav aria-label="Dashboard views">{VIEWS.map(v=><button key={v} aria-pressed={view===v} onClick={()=>changeView(v)}>{v}</button>)}</nav><label className="am-range">Period <select aria-label="Analytics period" disabled={pending} value={days} onChange={e=>{startTransition(()=>router.replace('/admin?days='+e.target.value,{scroll:false}))}}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></label></div>
- <div className="am-freshness" role="status">{pending?'Loading a fresh snapshot…':data?'Updated '+new Date(data.measured_at).toLocaleString('en-GB',{timeZone:'UTC'})+' UTC · selected period includes today (partial)':'Snapshot unavailable'}<span>Read-only analytics · no automatic polling</span></div>
+ <div className="am-freshness" role="status">{pending?'Loading a fresh snapshot…':data?'Updated '+new Date(data.measured_at).toLocaleString('en-GB',{timeZone:'UTC'})+' UTC · selected period includes today (partial)':'Snapshot unavailable'}<span>Read-only · People/App health update every 30 s while visible</span></div>
  {!data||!s?<div role="alert" className="am-alert"><h2>We couldn’t load analytics</h2><p>{initialError??'No metrics were returned. No values have been substituted with zeros.'}</p><button onClick={refresh} disabled={pending}>Retry loading metrics</button></div>:<>
  {view==='Overview'&&<>
  <div className="am-hero"><div><span className="am-eyebrow">THE LEARNING PULSE</span><h2>{number(s.learners)} people practiced</h2><p>{number(s.sessions)} saved sessions across {days} days. {changeLabel(s.sessions,s.previous_sessions)}.</p><Link href="/admin/reports">Review tester feedback →</Link></div><div className="am-hero-stat"><strong>{formatRate(s.objective_correct,s.objective_responses)}</strong><span>Scored-response accuracy</span><small>Excludes self-graded flashcards</small></div></div>
@@ -98,13 +122,27 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  </>}
  </>}
  {view==='People'&&<>
+ <Panel title="Sign-ins & app activity" sub="Latest server-confirmed sign-in per person, not token refreshes. App activity is a foreground heartbeat, not proof someone is online. Times are UTC; newest 500 profiles by sign-in.">
+ {activityLoading&&<p role="status">Refreshing activity…</p>}{activityError&&<p role="alert">{activityError} <button onClick={()=>void loadActivity()}>Retry activity</button></p>}
+ {activity?<><p className="am-note">Activity snapshot: {timestamp(activity.measured_at)} UTC</p><SearchTable title="Live app activity" headers={['Name','Last sign-in (UTC)','Last app activity (UTC)','Last web/app activity (UTC)']} rows={activity.people.map(p=>[p.full_name??'Unnamed',timestamp(p.last_sign_in_at),timestamp(p.app_last_seen_at),timestamp(p.last_seen_at)])}/></>:!activityLoading&&<Empty>No activity snapshot loaded.</Empty>}
+ </Panel>
  <div className="am-grid am-two"><Panel title="Who you’re reaching" sub="All profiles; active learners are scoped to the selected period."><SearchTable title="Professions" headers={['Profession','Profiles','Ever activated','Active learners']} rows={data.professions.map(p=>[friendly(p.profession),p.users,p.activated,p.learners])}/></Panel><Panel title="Where learners are" sub="Top 15 countries by profiles; self-reported, not geolocation."><SearchTable title="Countries" headers={['Country','Profiles']} rows={data.countries.map(c=>[c.country,c.users])}/></Panel></div>
  <Panel title="Newest profiles" sub="Latest 25 profiles, all time. Names stay inside the authenticated admin area and are not included in the CSV export."><SearchTable title="Recent profiles" headers={['Name','Profession','Country','Joined (UTC)','First saved session']} rows={data.people.map(p=>[p.full_name??'Unnamed',friendly(p.profession??'Not set'),p.country??'Not set',date(p.created_at),p.activated?'Recorded':'Not yet'])}/><Link className="am-link" href="/admin/users">Manage users →</Link></Panel>
  <div className="am-grid am-four"><Metric label="Seen in last 5 minutes" value={s.recently_seen} note="Profile heartbeat; not a reliable live-online count"/><Metric label="Reports received" value={data.reports.new} note="Selected period"/><Metric label="Reports resolved" value={data.reports.resolved} note="Resolution timestamp in selected period"/><Metric label="Mean resolution time" value={data.reports.mean_resolution_hours===null?'—':data.reports.mean_resolution_hours+' h'} note="Resolved reports only; excludes open backlog"/></div>
  </>}
+ {view==='App health'&&<>
+ <Panel title="Observed app builds" sub="Last build seen per person and platform, within 30 days. Future builds appear automatically when opened. This is not a store installation or approval count.">
+ {activityLoading&&<p role="status">Refreshing app health…</p>}{activityError&&<p role="alert">{activityError} <button onClick={()=>void loadActivity()}>Retry app health</button></p>}
+ {activity?<><p className="am-note">Updated {timestamp(activity.measured_at)} UTC. Older builds do not report these signals; users must install the instrumented update.</p><SearchTable title="App builds" headers={['Platform','Version','Build','Users seen','Seen within 5 min','Last activity (UTC)']} rows={activity.builds.map(b=>[b.platform,b.version,b.build,b.users,b.recently_active,timestamp(b.last_seen_at)])}/></>:<Empty>No build telemetry loaded yet.</Empty>}
+ </Panel>
+ <Panel title="Request performance" sub="Last 7 UTC days, client-reported network requests. Mean and maximum include failed requests; these are not p95 or full screen-load timings. No tokens, question content or answers are collected.">
+ {activity&&<SearchTable title="Request timings" headers={['Operation','Platform','Version/build','Requests','Failed','Mean ms','Maximum ms']} rows={activity.performance.map(m=>[friendly(m.operation),m.platform,m.version+' / '+m.build,m.calls,m.failures,m.mean_ms,m.max_ms])}/>}<p className="am-note">Offline or interrupted telemetry can be missing. Auth requests include token refreshes and are not a sign-in success-rate metric.</p>
+ </Panel>
+ {activity&&<Panel title="Synthetic league pacers" sub="Stored separately from real user accounts; excluded from registered-user and learning metrics."><div className="am-grid am-four"><Metric label="Pacer bots" value={activity.bots.total} note="Synthetic accounts"/><Metric label="Active pacers" value={activity.bots.active} note="Display-only league participants"/><Metric label="Punctuated handles" value={activity.bots.usernames} note="Names containing digits, dots or underscores"/><Metric label="Full-name style" value={activity.bots.full_names} note="Fictional display names"/></div></Panel>}
+ </>}
  {view==='Measurement'&&<>
  <Panel title="Trust the definitions, not just the numbers"><dl className="am-definitions"><dt>Time window</dt><dd>{date(data.window_start)} through the snapshot time, UTC. Today is incomplete; the previous-period comparison uses the preceding {days} full days.</dd><dt>Active learner</dt><dd>A distinct user with a saved result session. DAU uses today UTC; WAU/MAU are rolling 7/30-day windows.</dd><dt>Activation</dt><dd>A profile created in the selected period with any saved session after profile creation.</dd><dt>D7 return</dt><dd>New profiles in the selected period whose complete seventh calendar day has elapsed; returned means a saved session on exactly that UTC day. No eligible users displays “—”.</dd><dt>Accuracy</dt><dd>Sum of valid scores divided by session question counts, excluding self-graded flashcards. Malformed score records are omitted from the denominator and counted separately.</dd><dt>Traffic</dt><dd>Web page-view records only, including admin and anonymous traffic. Not mobile app sessions, unique visitors or installations.</dd><dt>Quarantine</dt><dd>Current released content is read from the app-facing serving views. Withheld includes more than clinical flags. Audit findings remain a triage queue, not an error-rate estimate.</dd></dl></Panel>
- <div className="am-grid am-two"><Panel title="Recorded web traffic" sub={number(data.traffic.views)+' page views in the selected period; top 10 paths.'}><SearchTable title="Web paths" headers={['Path','Views']} rows={data.traffic.paths.map(p=>[p.path,p.views])}/></Panel><Panel title="Not instrumented yet"><ul className="am-checklist"><li>Mobile crash-free sessions and build/platform breakdown.</li><li>Question-load latency, failed requests and retry success.</li><li>Sign-in success rate and onboarding funnel steps.</li><li>Session starts, abandonment and genuine time spent.</li><li>Revenue, payment conversion and API/cloud spend.</li><li>TestFlight/Play invitations, installs and version adoption.</li></ul><p className="am-note">These require dedicated telemetry or provider integrations. They are not shown as zero or invented from unrelated tables. No extra tracking SDK was added.</p></Panel></div>
+ <div className="am-grid am-two"><Panel title="Recorded web traffic" sub={number(data.traffic.views)+' page views in the selected period; top 10 paths.'}><SearchTable title="Web paths" headers={['Path','Views']} rows={data.traffic.paths.map(p=>[p.path,p.views])}/></Panel><Panel title="Measurement coverage"><ul className="am-checklist"><li>App health: foreground activity, observed builds and mean/maximum network request timings after the instrumented update.</li><li>People: latest real sign-in from the Auth service, separate from foreground heartbeats.</li><li>Still missing: crash-free sessions, screen-ready latency and retry success.</li><li>Still missing: sign-in success rate, onboarding and abandonment funnels.</li><li>Not connected: payment/API spend and store invitation/install counts.</li></ul><p className="am-note">Missing data is not shown as zero. Client telemetry is best-effort diagnostic data, not a security or billing ledger.</p></Panel></div>
  </>}
  </>}
  </div>

@@ -11,13 +11,12 @@ import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useFonts } from 'expo-font'
-import {
-  Nunito_400Regular,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-  Nunito_800ExtraBold,
-  Nunito_900Black,
-} from '@expo-google-fonts/nunito'
+// Direct imports avoid bundling every unused italic/weight from the barrel.
+import { Nunito_400Regular } from '@expo-google-fonts/nunito/400Regular'
+import { Nunito_600SemiBold } from '@expo-google-fonts/nunito/600SemiBold'
+import { Nunito_700Bold } from '@expo-google-fonts/nunito/700Bold'
+import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito/800ExtraBold'
+import { Nunito_900Black } from '@expo-google-fonts/nunito/900Black'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { ThemeProvider, useThemeMode } from '@/contexts/ThemeContext'
 import { ToastHost } from '@/components/ui/ToastHost'

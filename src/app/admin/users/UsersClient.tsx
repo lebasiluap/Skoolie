@@ -176,7 +176,7 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{s?.attempts ?? 0}</td>
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: accColor, fontVariantNumeric: 'tabular-nums' }}>{acc == null ? '—' : `${acc}%`}</td>
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 12.5, fontWeight: 600, color: 'var(--text-soft)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                      {s ? `${s.mcq} / ${s.flashcard} / ${s.cases}` : '0 / 0 / 0'}
+                      {s ? `${s.mcq ?? 0} / ${s.flashcard ?? 0} / ${s.cases ?? 0}` : '0 / 0 / 0'}
                     </td>
                     <td title={lastSeen} style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.last_seen_at?new Date(u.last_seen_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>
                     <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', whiteSpace:'nowrap' }}>{u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>

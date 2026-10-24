@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createVerifiedSession } from './verifiedSession.ts'
+import { buildShuffledMcq } from './answers.ts'
 const request = '11111111-1111-4111-8111-111111111111'
 const sid = '22222222-2222-4222-8222-222222222222'
 const qid = '33333333-3333-4333-8333-333333333333'
@@ -36,6 +37,7 @@ test('lost completion response retries exact session and answer envelope, never 
   }, config())
   await s.begin(); s.answer(qid, 'B')
   await assert.rejects(s.finish(), /Connection lost/)
+  assert.equal(s.answer(qid, 'B'), false) // retrying a last-card button preserves the frozen envelope
   assert.throws(() => s.answer(qid, 'A'), /cannot be changed/)
   assert.equal((await s.finish()).xp, 50)
   assert.deepEqual(submissions[0], submissions[1])
@@ -82,4 +84,37 @@ test('caller mutations cannot alter the captured configuration, issued binding o
   const r = await s.finish(); r.xp = 99999
   assert.equal((await s.finish()).xp, 50)
   assert.equal(seen[1].p_session_id, sid)
+})
+
+test('displayed shuffled letters are submitted as canonical letters, with double-tap deduplication', async () => {
+  const shuf = buildShuffledMcq(['Alpha', 'Beta', 'Gamma', 'Delta'], 'B', 'session-seed')
+  let envelope
+  const s = createVerifiedSession(async (name, args) => {
+    if (name.startsWith('begin')) return { data: issued(), error: null }
+    envelope = args.p_answers
+    return { data: receipt(), error: null }
+  }, config())
+  await s.begin()
+  const canonical = shuf.displayToOriginalLetter[shuf.correctLetter]
+  assert.equal(canonical, 'B')
+  assert.equal(s.answer(qid, canonical), true)
+  assert.equal(s.answer(qid, canonical), false)
+  await s.finish()
+  assert.deepEqual(envelope, { [qid]: 'B' })
+})
+
+test('flashcard false rating survives an uncertain completion and retries without changing it', async () => {
+  const submissions = []; let fail = true
+  const s = createVerifiedSession(async (name, args) => {
+    if (name.startsWith('begin')) return { data: { ...issued(), mode: 'flashcard' }, error: null }
+    submissions.push(args)
+    if (fail) { fail = false; throw new Error('Lost response') }
+    return { data: { ...receipt(), mode: 'flashcard', score: 0, xp: 0 }, error: null }
+  }, { ...config(), mode: 'flashcard' })
+  await s.begin(); s.answer(qid, false)
+  await assert.rejects(s.finish())
+  assert.equal(s.answer(qid, false), false)
+  assert.throws(() => s.answer(qid, true), /cannot be changed/)
+  assert.equal((await s.finish()).xp, 0)
+  assert.deepEqual(submissions[0], submissions[1])
 })

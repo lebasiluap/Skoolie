@@ -30,6 +30,9 @@ import { orderByInterestAndUnseen } from '@/lib/interests'
 import { playSound } from '@/lib/sounds'
 import { trySave } from '@/lib/reliably'
 import { showToast } from '@/lib/toast'
+import { usePracticeData } from '@/contexts/PracticeDataContext'
+import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
 
@@ -111,6 +114,9 @@ export default function CasesScreen() {
   const C = useTheme()
   const insets = useSafeAreaInsets()
   const { profile, user, refreshProfile } = useAuth()
+  const verified = useVerifiedPractice(user?.id)
+  const answered = useRef(new Set<string>())
+  const advancing = useRef(false)
   const { smartStart, startCaseId, startTopic, caseIds, from, fromBookmarks } = useLocalSearchParams<{ smartStart?: string; startCaseId?: string; startTopic?: string; caseIds?: string; from?: string; fromBookmarks?: string }>()
   const navigation = useNavigation<any>()
   // Back returns to the origin; dashboard launches also reset the Practice tab to its hub.
@@ -199,6 +205,9 @@ export default function CasesScreen() {
   const [score, setScore] = useState(0)
   const [totalQ, setTotalQ] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [topicsError, setTopicsError] = useState(false)
+  const topicRequest = useRef(0)
+  const practiceData = usePracticeData()
   const [loadingCases, setLoadingCases] = useState(false)
   const { caseFilter, setCaseFilter } = useFilters()
   const difficulty = caseFilter.difficulty
@@ -210,7 +219,8 @@ export default function CasesScreen() {
   // ── Timed mode ────────────────────────────────────────────────────────────
   // Preference lives on the profile — set from the TopBar clock button,
   // the Practice-hub banner, or Profile settings (TimedModeSheet).
-  const timedOn = profile?.timed_mode ?? false
+  const [sessionTimed, setSessionTimed] = useState(profile?.timed_mode ?? false)
+  const timedOn = screen === 'topics' ? profile?.timed_mode ?? false : sessionTimed
   const timedSecs = profile?.timed_seconds ?? CASE_QUESTION_SEC
 
   // Per-question countdown — runs only while a timed, unanswered case question is
@@ -244,7 +254,7 @@ export default function CasesScreen() {
   const [lastCategory, setLastCategory] = useState<string | undefined>(undefined)
   const [lastWasSurprise, setLastWasSurprise] = useState(false)
 
-  useEffect(() => { loadTopics() }, [difficulty, profile])
+  useEffect(() => { loadTopics(); return () => { topicRequest.current++ } }, [difficulty, practiceData, profile?.profession, profile?.access_key])
 
   // Load the user's bookmarked case ids (for the in-runner bookmark toggle).
   useEffect(() => {
@@ -287,10 +297,13 @@ export default function CasesScreen() {
     const { data } = await supabase.rpc('get_case_by_id', { p_id: id })
     const row = Array.isArray(data) ? data[0] : null
     if (!row) { setLoadingCases(false); Alert.alert('Not found', 'Could not load that case.'); setScreen('topics'); return }
-    const cs = row as CaseStudy
+    let cs = row as CaseStudy
     if (!Array.isArray(cs.questions) || cs.questions.length === 0) {
       setLoadingCases(false); Alert.alert('Not available', 'This case has no questions yet.'); setScreen('topics'); return
     }
+    const bound = await bindCases([cs])
+    if (!bound) { setLoadingCases(false); return }
+    cs = bound[0]
     sessionSavedRef.current = false
     isPracticeOnlyRef.current = true
     isRetakeRef.current = false
@@ -308,8 +321,11 @@ export default function CasesScreen() {
   async function loadCasesByIds(ids: string[]) {
     setLoadingCases(true)
     const rows = await Promise.all(ids.map(id => supabase.rpc('get_case_by_id', { p_id: id }).then(({ data }) => (Array.isArray(data) ? data[0] : null))))
-    const loaded = (rows.filter(Boolean) as CaseStudy[]).filter(cs => Array.isArray(cs.questions) && cs.questions.length > 0)
+    let loaded = (rows.filter(Boolean) as CaseStudy[]).filter(cs => Array.isArray(cs.questions) && cs.questions.length > 0)
     if (loaded.length === 0) { setLoadingCases(false); Alert.alert('Not found', 'Could not load those cases.'); setScreen('topics'); return }
+    const bound = await bindCases(loaded)
+    if (!bound) { setLoadingCases(false); return }
+    loaded = bound
     sessionSavedRef.current = false
     isPracticeOnlyRef.current = true
     isRetakeRef.current = false
@@ -329,7 +345,7 @@ export default function CasesScreen() {
   // Credits XP/level/streak to the profile (previously case XP was recorded on the
   // session but never added to the user's total, so cases gave no XP toward leveling).
   useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !user || !profile || cases.length === 0) return
+    if (screen !== 'results' || sessionSavedRef.current || !sessionTimed || !user || !profile || cases.length === 0) return
     // "Review wrong" re-drills and Search-opened single cases are practice only — no session, XP, or streak.
     if (isReviewWrongRef.current || isPracticeOnlyRef.current) return
     sessionSavedRef.current = true
@@ -368,22 +384,19 @@ export default function CasesScreen() {
 
   async function loadTopics() {
     if (!profile) return
-    setLoading(true)
-    const [{ data: richRows }, { data: mcqRows }] = await Promise.all([
-      supabase.rpc('get_case_study_counts', {
-        p_profession: profile.profession,
-        p_access_key: profile.access_key ?? null,
-        p_difficulty: difficulty !== 'all' ? difficulty : null,
-      }),
-      supabase.rpc('get_question_counts', {
-        p_profession: profile.profession,
-        p_question_type: 'case_study',
-        p_access_key: profile.access_key ?? null,
-      }),
-    ])
-    const allRows = [...(richRows ?? []), ...(mcqRows ?? [])]
-    setTopicRows(allRows.map((r: any) => ({ topic: r.topic, category: r.category, subtopic: r.subtopic, count: Number(r.cnt) })))
-    setLoading(false)
+    const request = ++topicRequest.current
+    const cached = practiceData.peekTopics('case_study', { difficulty })
+    setLoading(!cached)
+    setTopicsError(false)
+    setTopicRows(cached ?? [])
+    try {
+      const rows = await practiceData.getTopics('case_study', { difficulty })
+      if (request === topicRequest.current) setTopicRows(rows)
+    } catch {
+      if (request === topicRequest.current && !cached) setTopicsError(true)
+    } finally {
+      if (request === topicRequest.current) setLoading(false)
+    }
   }
 
   /** Seen case ids for this user (from saved sessions) — empty when repeats are allowed. */
@@ -412,7 +425,8 @@ export default function CasesScreen() {
     const valid = ((data as CaseStudy[] | null) ?? []).filter(c => Array.isArray(c.questions) && c.questions.length > 0)
     if (valid.length === 0) { setLoadingCases(false); Alert.alert('No cases', 'No case studies found.'); return }
 
-    const shuffled = orderCasesByUnseen(valid, await fetchSeenCaseIds()).slice(0, sessionSize)
+    const shuffled = await bindCases(orderCasesByUnseen(valid, await fetchSeenCaseIds()).slice(0, sessionSize))
+    if (!shuffled) { setLoadingCases(false); return }
     setCases(shuffled); setOriginalCases(shuffled)
     isRetakeRef.current = false; isReviewWrongRef.current = false; isPracticeOnlyRef.current = false
     setCaseIdx(0); setQIdx(0); setSelected(null); setRevealed(false); setOverlayVisible(false); setScore(0); setWrongCaseIds(new Set())
@@ -436,7 +450,8 @@ export default function CasesScreen() {
     const valid = ((data as CaseStudy[] | null) ?? []).filter(c => Array.isArray(c.questions) && c.questions.length > 0)
     if (valid.length === 0) { setLoadingCases(false); Alert.alert('No cases', 'No case studies found.'); return }
     // Areas of interest bias the surprise pool (unseen-interest first); empty = decide for me
-    const shuffled = orderByInterestAndUnseen(valid, profile.interests, await fetchSeenCaseIds()).slice(0, sessionSize)
+    const shuffled = await bindCases(orderByInterestAndUnseen(valid, profile.interests, await fetchSeenCaseIds()).slice(0, sessionSize))
+    if (!shuffled) { setLoadingCases(false); return }
     setCases(shuffled); setOriginalCases(shuffled)
     isRetakeRef.current = false; isReviewWrongRef.current = false; isPracticeOnlyRef.current = false
     setCaseIdx(0); setQIdx(0); setSelected(null); setRevealed(false); setOverlayVisible(false); setScore(0); setWrongCaseIds(new Set())
@@ -446,7 +461,13 @@ export default function CasesScreen() {
   }
 
   function submitAnswer() {
-    if (!selected || revealed) return
+    if (!selected || revealed || verified.saving) return
+    const id = `${cases[caseIdx].id}:${qIdx}`
+    if (answered.current.has(id)) return
+    const shuffled = buildShuffledMcq(cases[caseIdx].questions[qIdx].options,
+      cases[caseIdx].questions[qIdx].correct_answer, `${cases[caseIdx].id}:${qIdx}:${shuffleSalt}`)
+    if (!timedOn && !verified.answer(id, shuffled.displayToOriginalLetter[selected] ?? null)) return
+    answered.current.add(id)
     setDetailsVisible(false)   // never stack the review sheet on the details sheet
     setRevealed(true)
     setOverlayVisible(true)
@@ -463,6 +484,10 @@ export default function CasesScreen() {
     if (revealed) return
     const cs = cases[caseIdx]
     if (!cs) return
+    const id = `${cs.id}:${qIdx}`
+    if (answered.current.has(id)) return
+    if (!timedOn && !verified.answer(id, null)) return
+    answered.current.add(id)
     playSound('wrong')
     setTimedOut(true)
     setDetailsVisible(false)   // never stack the review sheet on the details sheet
@@ -472,9 +497,10 @@ export default function CasesScreen() {
   }
 
   // Replay the full set — saves a session + XP but does NOT advance the streak.
-  function retakeCases() {
+  async function retakeCases() {
+    const deck = await bindCases(shuffleArr(originalCases.length ? originalCases : cases))
+    if (!deck) return
     sessionSavedRef.current = false; isRetakeRef.current = true; isReviewWrongRef.current = false
-    const deck = shuffleArr(originalCases.length ? originalCases : cases)
     setCases(deck)
     setCaseIdx(0); setQIdx(0); setSelected(null); setRevealed(false); setOverlayVisible(false); setScore(0); setWrongCaseIds(new Set())
     setTotalQ(deck.reduce((s, c) => s + c.questions.length, 0))
@@ -482,11 +508,12 @@ export default function CasesScreen() {
   }
 
   // Re-drill only the cases where a question was missed — pure practice (no session, XP, or streak).
-  function reviewWrongCases() {
+  async function reviewWrongCases() {
     const wrong = (originalCases.length ? originalCases : cases).filter(c => wrongCaseIds.has(c.id))
     if (wrong.length === 0) return
+    const deck = await bindCases(shuffleArr(wrong))
+    if (!deck) return
     sessionSavedRef.current = false; isReviewWrongRef.current = true; isRetakeRef.current = false
-    const deck = shuffleArr(wrong)
     setCases(deck)
     setCaseIdx(0); setQIdx(0); setSelected(null); setRevealed(false); setOverlayVisible(false); setScore(0); setWrongCaseIds(new Set())
     setTotalQ(deck.reduce((s, c) => s + c.questions.length, 0))
@@ -507,7 +534,17 @@ export default function CasesScreen() {
     )
   }
 
-  function next() {
+  async function next() {
+    if (advancing.current || !revealed) return
+    advancing.current = true
+    const last = caseIdx + 1 >= cases.length && qIdx + 1 >= cases[caseIdx].questions.length
+    if (last && !sessionTimed && !isPracticeOnlyRef.current && !isReviewWrongRef.current) {
+      const result = await verified.complete(() => { void next() })
+      if (!result) { advancing.current = false; return }
+      setScore(result.score)
+      sessionSavedRef.current = true
+      void refreshProfile()
+    }
     setOverlayVisible(false)
     setDetailsVisible(false)
     setTimedOut(false)
@@ -523,9 +560,37 @@ export default function CasesScreen() {
       // XP, level and streak are all credited in the results-save useEffect.
       setScreen('results')
     }
+    setTimeout(() => { advancing.current = false }, 300)
+  }
+
+  async function bindCases(deck: CaseStudy[]) {
+    const ids = deck.flatMap(c => c.questions.map((_, i) => `${c.id}:${i}`))
+    if (ids.length > 60) {
+      Alert.alert('Choose fewer cases', 'Verified sessions support up to 60 inner questions. Choose a smaller case session.')
+      return null
+    }
+    const timed = profile?.timed_mode ?? false
+    const items = await verified.prepare('case_study', ids, !timed)
+    if (!items) return null
+    setSessionTimed(timed)
+    answered.current.clear()
+    advancing.current = false
+    if (timed) return deck
+    // Rebuild both vignette and questions from the issued payload, never the prefetch.
+    if (deck.some(c => items.filter(item => item.case_id === c.id).length !== c.questions.length)
+        || items.some(item => !item.case_context || typeof item.case_context !== 'object')) {
+      Alert.alert('Case unavailable', 'The verified case payload is incomplete. Please start a new session.')
+      return null
+    }
+    return deck.map(c => {
+      const family = items.filter(item => item.case_id === c.id)
+      return { ...(family[0].case_context as Omit<CaseStudy, 'questions'>),
+        questions: family as unknown as CaseQuestion[] }
+    })
   }
 
   // ── Topics screen ──────────────────────────────────────────────────────────
+  if (verified.starting || verified.saving) return <VerifiedSessionBusy saving={verified.saving} />
   if (screen === 'topics') {
     const grouped = topicRows.reduce((acc: Record<string, TopicRow[]>, r) => {
       if (!r.topic) return acc
@@ -614,7 +679,12 @@ export default function CasesScreen() {
           <Text style={[s.surpriseRight, { color: C.onTeal }]}>Random cases →</Text>
         </TouchableOpacity>
 
-        {loading ? <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 16 }} /> : (
+        {loading ? <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 16 }} /> : topicsError ? (
+          <TouchableOpacity onPress={loadTopics} accessibilityRole="button" accessibilityLabel="Retry case topics"
+            style={{ margin: 16, padding: 20, minHeight: 44, borderRadius: 20, backgroundColor: C.surface }}>
+            <Text style={{ color: C.textSoft, fontFamily: 'Nunito_600SemiBold' }}>Cases couldn’t load. Tap to try again.</Text>
+          </TouchableOpacity>
+        ) : (
           <>
             {Object.entries(grouped).map(([topic, rows]) => {
               const total = rows.reduce((s, r) => s + r.count, 0)
@@ -1038,7 +1108,8 @@ export default function CasesScreen() {
   // ── Results screen ─────────────────────────────────────────────────────────
   const pct = totalQ > 0 ? Math.round((score / totalQ) * 100) : 0
   const xpBase = Math.round((score / Math.max(totalQ, 1)) * 50)
-  const xpEarned = timedOn ? Math.round(xpBase * 1.1) : xpBase
+  const xpEarned = isPracticeOnlyRef.current || isReviewWrongRef.current ? 0
+    : verified.receipt?.xp ?? (timedOn ? Math.round(xpBase * 1.1) : 0)
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar title="Practice" />

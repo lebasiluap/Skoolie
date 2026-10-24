@@ -1,8 +1,9 @@
 # Verified session protocol: staged rollout
 
 Status (24 October 2026): additive backend deployed; shared client and tests implemented.
-No app screen has been migrated to the protocol yet. Legacy reward/session writes remain enabled
-for compatibility with released builds. This is not a completed anti-cheat rollout.
+The shared iOS/Android MCQ, case and flashcard screens now use the protocol for untimed sessions
+in source. These screen changes are not yet distributed in a new phone build. Legacy reward/session
+writes remain enabled for released builds and unmigrated modes. This is not a completed anti-cheat rollout.
 
 ## Contract
 
@@ -31,15 +32,18 @@ Streak accounting uses server UTC days. Agree on a timezone policy before global
 - Changed content and newly quarantined items cannot complete or start a session.
 - Server streak freezes consumed once, same-day replay does not advance, insufficient freezes reset.
 - Existing profile/onboarding/progress/reward/quarantine regression matrix passes.
-- Six shared client tests cover concurrent-call deduplication, lost responses and immutable bindings.
-- Root TypeScript check passes.
+- Eight shared client tests cover concurrent-call deduplication, lost responses, canonical shuffled
+  answers, flashcard false-rating retries and immutable bindings.
+- Root and mobile TypeScript checks pass. Both native platform bundle exports pass.
+- Issuance includes authoritative case context; flashcard history is committed once with its receipt.
 
 All database fixtures were rolled back. These are not independent multi-connection concurrency
 benchmarks, physical-device sign-in tests or medical accuracy evaluations.
 
 ## Remaining rollout work
 
-- Wire web and native screens to issuance-before-render and receipt-based completion.
+- Wire web screens and remaining native modes to issuance-before-render and receipt-based completion.
+- Physically test the connected phone screens and distribute new iOS/Android builds.
 - Design server timing and bonus contracts for timed modes, Rapid Fire, barrage, challenges and courses.
 - Test old and new builds, actual sign-in, retries/offline recovery, account deletion and performance.
 - Plan private-session retention and observe issuance limits under real usage.

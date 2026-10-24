@@ -6,7 +6,7 @@ do $test$
 declare
  uid uuid; other_uid uuid; prof text; qid uuid; fc uuid; case_id uuid;
  issued jsonb; receipt jsonb; replay jsonb; answers jsonb; sid uuid;
- request uuid; key text; wrong text; before_xp int; after_xp int; n int; blocked boolean;
+ request uuid; key text; wrong text; before_xp int; after_xp int; n int; blocked boolean; before_seen int;
 begin
  for uid in select id from public.user_profiles loop
    perform set_config('request.jwt.claim.sub',uid::text,true);
@@ -88,10 +88,19 @@ begin
  issued:=public.begin_verified_session(gen_random_uuid(),'mcq',array[qid::text]);
  replay:=public.finish_verified_session((issued->>'session_id')::uuid,jsonb_build_object(qid::text,wrong));
  if (replay->>'score')::int<>0 or (replay->>'xp')::int<>0 then raise exception 'Wrong answer paid correct-answer XP'; end if;
+ reset role;
+ select coalesce(max(times_seen),0) into before_seen from public.user_question_history where user_id=uid and question_id=fc;
+ set local role authenticated;
  issued:=public.begin_verified_session(gen_random_uuid(),'flashcard',array[fc::text]);
  replay:=public.finish_verified_session((issued->>'session_id')::uuid,jsonb_build_object(fc::text,true));
  if (replay->>'score')::int<>1 or (replay->>'xp')::int<>0 then raise exception 'Flashcard reward policy failed'; end if;
+ perform public.finish_verified_session((issued->>'session_id')::uuid,jsonb_build_object(fc::text,true));
+ reset role;
+ select times_seen into n from public.user_question_history where user_id=uid and question_id=fc;
+ if n is distinct from before_seen+1 then raise exception 'Flashcard history not recorded exactly once'; end if;
+ set local role authenticated;
  issued:=public.begin_verified_session(gen_random_uuid(),'case_study',array[case_id::text||':0']);
+ if issued->'items'->0->'case_context'->>'id' is distinct from case_id::text then raise exception 'Authoritative case context missing'; end if;
  sid:=(issued->>'session_id')::uuid;
  reset role;
  select snapshot->(case_id::text||':0')->>'key' into key from app_private.verified_sessions where id=sid;

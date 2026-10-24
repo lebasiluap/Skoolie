@@ -73,13 +73,20 @@ export function createVerifiedSession(rpc: SessionRpc, config: {
   }
   function answer(itemId: string, value: CanonicalAnswer) {
     if (!issued) throw new Error('Wait for the issued payload before answering')
-    if (frozenAnswers) throw new Error('Submitted answers cannot be changed')
+    if (frozenAnswers) {
+      if (own(frozenAnswers, itemId) && frozenAnswers[itemId] === value) return false
+      throw new Error('Submitted answers cannot be changed')
+    }
     if (!itemIds.includes(itemId) || (mode === 'flashcard'
       ? typeof value !== 'boolean' : value !== null && (typeof value !== 'string' || !/^[A-F]$/.test(value)))) {
       throw new Error('Invalid canonical answer')
     }
-    if (own(answers, itemId) && answers[itemId] !== value) throw new Error('Answer already recorded')
+    if (own(answers, itemId)) {
+      if (answers[itemId] !== value) throw new Error('Answer already recorded')
+      return false
+    }
     answers[itemId] = value
+    return true
   }
   function finish(): Promise<RewardReceipt> {
     if (finishPromise) return finishPromise.then(copy)

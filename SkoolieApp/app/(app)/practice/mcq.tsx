@@ -39,6 +39,10 @@ import { haptic } from '@/lib/haptics'
 import { trySave } from '@/lib/reliably'
 import { IntroGate } from '@/components/ui/IntroGate'
 import { showToast } from '@/lib/toast'
+import { readWithDeadline } from '@/lib/readWithDeadline'
+import { usePracticeData } from '@/contexts/PracticeDataContext'
+import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 type Screen = 'topics' | 'quiz' | 'results'
 type Phase = 'question' | 'review'
@@ -61,7 +65,11 @@ export default function MCQScreen() {
   useCollapsePracticeStack()
   const C = useTheme()
   const insets = useSafeAreaInsets()
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
+  const verified = useVerifiedPractice(user?.id)
+  const answered = useRef(new Set<string>())
+  const advancing = useRef(false)
+  const practiceData = usePracticeData()
   const { questionIds, smartStart, sessionKey, from, startTopic } = useLocalSearchParams<{ questionIds?: string; smartStart?: string; sessionKey?: string; from?: string; startTopic?: string }>()
   const navigation = useNavigation<any>()
   // Back returns to wherever the mode was launched from. When launched from the
@@ -106,6 +114,9 @@ export default function MCQScreen() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [originalQuestions, setOriginalQuestions] = useState<Question[]>([])
   const [loadingTopics, setLoadingTopics] = useState(true)
+  const [topicsError, setTopicsError] = useState<string | null>(null)
+  const topicRequest = useRef(0)
+  const topicAbort = useRef<AbortController | null>(null)
   const [loadingQ, setLoadingQ] = useState(!!questionIds)
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
@@ -145,7 +156,8 @@ export default function MCQScreen() {
   // ── Timed mode ────────────────────────────────────────────────────────────
   // Preference lives on the profile — set from the TopBar clock button,
   // the Practice-hub banner, or Profile settings (TimedModeSheet).
-  const timedOn = profile?.timed_mode ?? false
+  const [sessionTimed, setSessionTimed] = useState(profile?.timed_mode ?? false)
+  const timedOn = screen === 'topics' ? profile?.timed_mode ?? false : sessionTimed
   const timedSecs = profile?.timed_seconds ?? MCQ_QUESTION_SEC
 
   // Per-question countdown — runs only while a timed question is on screen.
@@ -276,7 +288,8 @@ export default function MCQScreen() {
       }
     }
     loadTopics()
-  }, [filter, profile, sessionKey])
+    return () => { topicRequest.current++; topicAbort.current?.abort() }
+  }, [filter.cognitiveType, filter.highYield, filter.difficulty, practiceData, profile?.profession, profile?.access_key, user?.id, sessionKey])
 
   // The "you finished" fanfare — same sound at every results screen, win or lose.
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
@@ -287,7 +300,7 @@ export default function MCQScreen() {
   useEffect(() => {
     if (screen !== 'results' || sessionSavedRef.current || !user || !profile || questions.length === 0) return
     // Bookmark-review sessions are practice only — they must not count toward streak/XP/sessions.
-    if (quizSource?.type === 'ids') return
+    if (quizSource?.type === 'ids' || !sessionTimed) return
     // "Review wrong answers" re-drills are practice only — no session, XP, or streak.
     if (isReviewWrongRef.current) return
     sessionSavedRef.current = true
@@ -327,35 +340,59 @@ export default function MCQScreen() {
 
   async function loadTopics() {
     if (!profile) return
-    setLoadingTopics(true)
-    const { data } = await supabase.rpc('get_question_counts', {
-      p_profession: profile.profession,
-      p_question_type: 'mcq',
-      p_access_key: profile.access_key ?? null,
-      p_cognitive_type: filter.cognitiveType !== 'all' ? filter.cognitiveType : null,
-      p_high_yield: filter.highYield ? true : null,
-      p_difficulty: filter.difficulty !== 'all' ? filter.difficulty : null,
-    })
-    setTopicRows((data ?? []).map((r: any) => ({ topic: r.topic, category: r.category, subtopic: r.subtopic, count: Number(r.cnt) })))
-    setLoadingTopics(false)
+    const request = ++topicRequest.current
+    topicAbort.current?.abort()
+    const controller = new AbortController()
+    topicAbort.current = controller
+    const cached = practiceData.peekTopics('mcq', filter)
+    setLoadingTopics(!cached)
+    setTopicsError(null)
+    setTopicRows(cached ?? [])
+    try {
+      const rows = await practiceData.getTopics('mcq', filter)
+      if (request !== topicRequest.current) return
+      setTopicRows(rows)
+    } catch {
+      if (request === topicRequest.current && !controller.signal.aborted && !cached) {
+        setTopicsError('Questions couldn’t load. Check your connection and try again.')
+      }
+      return
+    } finally {
+      if (request === topicRequest.current) setLoadingTopics(false)
+    }
     // Coverage per topic — history holds one row per distinct question answered
     if (user) {
-      const { data: hist } = await supabase.from('user_question_history')
-        .select('topic').eq('user_id', user.id).eq('question_type', 'mcq').limit(10000)
+      const { data: hist } = await readWithDeadline(signal => supabase.from('user_question_history')
+        .select('topic').eq('user_id', user.id).eq('question_type', 'mcq').limit(10000).abortSignal(signal), 8_000, controller.signal)
+        .catch(() => ({ data: null }))
+      if (request !== topicRequest.current) return
       const byTopic: Record<string, number> = {}
       for (const r of (hist ?? []) as any[]) if (r.topic) byTopic[r.topic] = (byTopic[r.topic] ?? 0) + 1
       setAnsweredByTopic(byTopic)
     }
   }
 
+  async function readQuestionPool(read: (signal: AbortSignal) => PromiseLike<{ data: Question[] | null; error: unknown }>) {
+    try {
+      const { data, error } = await readWithDeadline(read)
+      if (error) throw error
+      return data ?? []
+    } catch {
+      setLoadingQ(false)
+      setScreen('topics')
+      Alert.alert('Unable to load questions', 'Please check your connection and try again. Your progress has not changed.')
+      return null
+    }
+  }
+
   /** All seen MCQ ids for this user (also powers the in-quiz "answered before" tag). */
   async function fetchSeenMcqIds(): Promise<Set<string>> {
     if (!user) return new Set()
-    const { data } = await supabase
+    const { data } = await readWithDeadline(signal => supabase
       .from('user_question_history')
       .select('question_id')
       .eq('user_id', user.id)
-      .eq('question_type', 'mcq')
+      .eq('question_type', 'mcq').abortSignal(signal), 8_000).catch(() => ({ data: null }))
     const all = new Set((data ?? []).map((r: any) => r.question_id as string))
     setSeenIds(all)
     // Ordering still respects "Repeat questions": when repeats are allowed the
@@ -370,7 +407,8 @@ export default function MCQScreen() {
     setLoadingQ(true)
     // Fetch a large pool (10× session size, min 100) so random sampling gives genuine variety
     const fetchLimit = Math.max(filter.sessionSize * 10, 100)
-    const { data } = await supabase.rpc('get_questions_by_topic', {
+    const seenRequest = fetchSeenMcqIds()
+    const data = await readQuestionPool(signal => supabase.rpc('get_questions_by_topic', {
       p_profession: profile.profession,
       p_question_type: 'mcq',
       p_topic: topic,
@@ -381,14 +419,16 @@ export default function MCQScreen() {
       p_high_yield: filter.highYield ? true : null,
       p_access_key: profile.access_key ?? null,
       p_limit: fetchLimit,
-    })
+    }).abortSignal(signal))
+    if (data === null) return
     if (!data || data.length === 0) {
       setLoadingQ(false)
       Alert.alert('No questions', 'No questions found for these filters.')
       return
     }
-    const seen = await fetchSeenMcqIds()
-    const shuffled = orderByUnseen(data, seen).slice(0, filter.sessionSize)
+    const seen = await seenRequest
+    const shuffled = await bindQuestions(orderByUnseen(data, seen).slice(0, filter.sessionSize))
+    if (!shuffled) { setLoadingQ(false); return }
     setLoadingQ(false)
     animateToScreen('quiz', () => {
       setQuestions(shuffled); setOriginalQuestions(shuffled)
@@ -401,17 +441,20 @@ export default function MCQScreen() {
   }
 
   function handleSubmit() {
-    if (!selected) return
+    if (!selected || phase !== 'question' || verified.saving) return
     const q = questions[qIndex]
+    if (!q || answered.current.has(q.id)) return
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
     const correct = selected === shuf.correctLetter
     // Map the tapped display letter back to the ORIGINAL stored option letter so
     // the picked answer is comparable across users despite per-session shuffling.
     const origLetter = shuf.displayToOriginalLetter[selected] ?? null
+    if (!timedOn && !verified.answer(q.id, origLetter)) return
+    answered.current.add(q.id)
     playSound(correct ? 'correct' : 'wrong')
     // Record the attempt server-side (increments times_seen/times_correct;
     // powers "Allow repeat questions", topic progress, and the seen tag).
-    if (user) {
+    if (user && timedOn) {
       supabase.rpc('record_answer', {
         p_question_id: q.id, p_question_type: 'mcq',
         p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
@@ -433,8 +476,10 @@ export default function MCQScreen() {
   /** Timed-mode timeout: counts as wrong, opens the same review overlay. */
   handleTimeoutRef.current = () => {
     const q = questions[qIndex]
-    if (!q || phase !== 'question') return
-    if (user) {
+    if (!q || phase !== 'question' || answered.current.has(q.id)) return
+    if (!timedOn && !verified.answer(q.id, null)) return
+    answered.current.add(q.id)
+    if (user && timedOn) {
       supabase.rpc('record_answer', {
         p_question_id: q.id, p_question_type: 'mcq',
         p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
@@ -463,7 +508,16 @@ export default function MCQScreen() {
     )
   }
 
-  function handleNext() {
+  async function handleNext() {
+    if (advancing.current || phase !== 'review') return
+    advancing.current = true
+    if (qIndex + 1 >= questions.length && !sessionTimed && quizSource?.type !== 'ids' && !isReviewWrongRef.current) {
+      const result = await verified.complete(() => { void handleNext() })
+      if (!result) { advancing.current = false; return }
+      setScore(result.score)
+      sessionSavedRef.current = true
+      void refreshProfile()
+    }
     // Clear ALL overlay state immediately — prevents any flash between questions
     setPhase('question')
     setSelected(null)
@@ -474,6 +528,19 @@ export default function MCQScreen() {
     } else {
       setQIndex(i => i + 1)
     }
+    // Keep rapid double taps from skipping an unanswered question.
+    setTimeout(() => { advancing.current = false }, 300)
+  }
+
+  async function bindQuestions(pool: Question[]) {
+    const chosen = pool.slice(0, 60)
+    const timed = profile?.timed_mode ?? false
+    const items = await verified.prepare('mcq', chosen.map(q => q.id), !timed)
+    if (!items) return null
+    setSessionTimed(timed)
+    answered.current.clear()
+    advancing.current = false
+    return timed ? chosen : items as unknown as Question[]
   }
 
   async function toggleBookmark(qId: string) {
@@ -492,7 +559,8 @@ export default function MCQScreen() {
     setQuizSource({ type: 'surprise' })
     sessionSavedRef.current = false; isRetakeRef.current = false; isReviewWrongRef.current = false
     setLoadingQ(true)
-    const { data } = await supabase.rpc('get_random_mcqs', {
+    const seenRequest = fetchSeenMcqIds()
+    const data = await readQuestionPool(signal => supabase.rpc('get_random_mcqs', {
       p_profession: profile.profession,
       p_limit: Math.max(filter.sessionSize * 4, 40),
       p_difficulty: filter.difficulty !== 'all' ? filter.difficulty : null,
@@ -500,11 +568,13 @@ export default function MCQScreen() {
       // Surprise me respects the set filters (random across topics); no filters = fully random.
       p_cognitive_type: filter.cognitiveType !== 'all' ? filter.cognitiveType : null,
       p_high_yield: filter.highYield ? true : null,
-    })
+    }).abortSignal(signal))
+    if (data === null) return
     if (!data || data.length === 0) { setLoadingQ(false); Alert.alert('No questions', 'No questions found for these filters.'); return }
-    const seen = await fetchSeenMcqIds()
+    const seen = await seenRequest
     // Areas of interest bias the surprise pool (unseen-interest first); empty = decide for me
-    const shuffled = orderByInterestAndUnseen(data as any[], profile.interests, seen).slice(0, filter.sessionSize)
+    const shuffled = await bindQuestions(orderByInterestAndUnseen(data as Question[], profile.interests, seen).slice(0, filter.sessionSize))
+    if (!shuffled) { setLoadingQ(false); return }
     setLoadingQ(false)
     animateToScreen('quiz', () => {
       setQuestions(shuffled); setOriginalQuestions(shuffled)
@@ -519,9 +589,11 @@ export default function MCQScreen() {
     setQuizSource({ type: 'ids', ids })
     sessionSavedRef.current = false; isRetakeRef.current = false; isReviewWrongRef.current = false
     setLoadingQ(true)
-    const { data } = await supabase.rpc('get_questions_by_ids', { p_ids: ids, p_limit: 200 })
-    if (!data || data.length === 0) { setLoadingQ(false); Alert.alert('No questions', 'Could not load bookmarked questions.'); return }
-    const shuffled = [...data].sort(() => Math.random() - 0.5)
+    const data = await readQuestionPool(signal => supabase.rpc('get_questions_by_ids', { p_ids: ids, p_limit: 200 }).abortSignal(signal))
+    if (data === null) return
+    if (data.length === 0) { setLoadingQ(false); setScreen('topics'); Alert.alert('No questions', 'These questions are not currently available.'); return }
+    const shuffled = await bindQuestions([...data].sort(() => Math.random() - 0.5))
+    if (!shuffled) { setLoadingQ(false); setScreen('topics'); return }
     setLoadingQ(false)
     animateToScreen('quiz', () => {
       setQuestions(shuffled); setOriginalQuestions(shuffled)
@@ -531,18 +603,24 @@ export default function MCQScreen() {
     setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
   }
 
-  function handleRetake() {
+  async function handleRetake() {
+    setLoadingQ(true)
+    const reshuffled = await bindQuestions([...(originalQuestions.length ? originalQuestions : questions)].sort(() => Math.random() - 0.5))
+    setLoadingQ(false)
+    if (!reshuffled) return
     sessionSavedRef.current = false; isRetakeRef.current = true; isReviewWrongRef.current = false
-    const reshuffled = [...(originalQuestions.length ? originalQuestions : questions)].sort(() => Math.random() - 0.5)
     animateToScreen('quiz', () => {
       setQuestions(reshuffled)
       setQIndex(0); setSelected(null); setPhase('question'); setOverlayVisible(false); setScore(0); setWrongQuestions([])
     })
   }
 
-  function handleReviewWrong() {
+  async function handleReviewWrong() {
+    setLoadingQ(true)
+    const toReview = await bindQuestions([...wrongQuestions].sort(() => Math.random() - 0.5))
+    setLoadingQ(false)
+    if (!toReview) return
     sessionSavedRef.current = false; isReviewWrongRef.current = true; isRetakeRef.current = false
-    const toReview = [...wrongQuestions].sort(() => Math.random() - 0.5)
     animateToScreen('quiz', () => {
       setQuestions(toReview)
       setQIndex(0); setSelected(null); setPhase('question'); setOverlayVisible(false); setScore(0); setWrongQuestions([])
@@ -562,6 +640,7 @@ export default function MCQScreen() {
   }
 
   // ── Topic selector ──────────────────────────────────────────────────────
+  if (verified.starting || verified.saving) return <VerifiedSessionBusy saving={verified.saving} />
   if (screen === 'topics') {
     const grouped = topicRows.reduce((acc: Record<string, TopicRow[]>, r) => {
       if (!r.topic) return acc  // skip blank topic rows
@@ -598,7 +677,7 @@ export default function MCQScreen() {
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={[s.headerTitle, { color: C.text }]}>MCQ Practice</Text>
-            <Text style={[s.headerSub, { color: C.textFaint }]}>{totalQuestions.toLocaleString()} questions available</Text>
+            <Text style={[s.headerSub, { color: C.textFaint }]}>{loadingTopics ? 'Loading questions…' : topicsError ? 'Questions unavailable' : `${totalQuestions.toLocaleString()} questions available`}</Text>
           </View>
         </View>
 
@@ -703,6 +782,16 @@ export default function MCQScreen() {
 
           {loadingTopics ? (
             <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 4 }} />
+          ) : topicsError ? (
+            <View style={{ margin: 16, padding: 20, borderRadius: 20, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border }}>
+              <Text accessibilityRole="alert" style={{ color: C.textSoft, fontFamily: 'Nunito_600SemiBold', fontSize: 15 }}>{topicsError}</Text>
+              <TouchableOpacity onPress={loadTopics} accessibilityRole="button" accessibilityLabel="Retry loading questions"
+                style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 18, marginTop: 12, borderRadius: 22, backgroundColor: C.teal }}>
+                <Text style={{ color: C.onTeal, fontFamily: 'Nunito_800ExtraBold' }}>Try again</Text>
+              </TouchableOpacity>
+            </View>
+          ) : topicRows.length === 0 ? (
+            <Text style={{ margin: 20, color: C.textSoft, fontFamily: 'Nunito_600SemiBold', fontSize: 15 }}>No approved questions match these filters. Try changing your filters.</Text>
           ) : (
             Object.entries(grouped).map(([topic, rows]) => {
               const topicTotal = rows.reduce((sum, r) => sum + r.count, 0)
@@ -1103,7 +1192,8 @@ export default function MCQScreen() {
   // ── Results screen ──────────────────────────────────────────────────────
   const pct = questions.length ? Math.round((score / questions.length) * 100) : 0
   const xpBase = Math.round((score / (questions.length || 1)) * 50)
-  const xpEarned = timedOn ? Math.round(xpBase * 1.1) : xpBase
+  const xpEarned = quizSource?.type === 'ids' || isReviewWrongRef.current ? 0
+    : verified.receipt?.xp ?? (timedOn ? Math.round(xpBase * 1.1) : 0)
   const missedCount = wrongQuestions.length
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>

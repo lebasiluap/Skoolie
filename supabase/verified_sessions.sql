@@ -116,7 +116,11 @@ begin
        'difficulty',q.difficulty,'image_url',q.image_url) into payload from public.questions q where id=item::uuid;
    else
      select (c.questions->split_part(item,':',2)::int)||jsonb_build_object('id',item,'case_id',c.id,
-       'clinical_vignette',c.clinical_vignette,'topic',c.topic) into payload
+       'clinical_vignette',c.clinical_vignette,'topic',c.topic,
+       'case_context',jsonb_build_object('id',c.id,'title',c.title,'topic',c.topic,'subtopic',c.subtopic,
+         'difficulty',c.difficulty,'style',c.style,'high_yield',c.high_yield,
+         'clinical_vignette',c.clinical_vignette,'patient_history',c.patient_history,
+         'examination_findings',c.examination_findings,'investigations',c.investigations)) into payload
      from public.case_studies c where id=split_part(item,':',1)::uuid;
    end if;
    if payload is null then raise exception 'Item no longer available' using errcode='42501'; end if;
@@ -233,6 +237,9 @@ begin
    if entry->>'type'='mcq' then
      perform public.record_answer(item::uuid,'mcq',entry->>'topic',entry->>'category',entry->>'subtopic',
        entry->>'difficulty',coalesce((p_answers->>item)=entry->>'key',false),p_answers->>item);
+   elsif s.mode='flashcard' then
+     perform public.record_answer(item::uuid,'flashcard',entry->>'topic',entry->>'category',entry->>'subtopic',
+       entry->>'difficulty',(p_answers->>item)::boolean,null);
    end if;
  end loop;
  result:=jsonb_build_object('protocol_version',1,'session_id',s.id,'quiz_session_id',quiz_id,'mode',s.mode,

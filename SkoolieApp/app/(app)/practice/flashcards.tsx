@@ -21,12 +21,13 @@ import { topicColor } from '@/constants/topics'
 import type { TopicRow } from '@/types'
 import { useFilters } from '@/contexts/FiltersContext'
 import { useCollapsePracticeStack } from '@/hooks/usePracticeStack'
-import { computeStreakUpdate } from '@/lib/streak'
 import { withFilterAnim, withAccordionAnim } from '@/lib/anim'
 import { orderByInterestAndUnseen } from '@/lib/interests'
 import { playSound } from '@/lib/sounds'
-import { trySave } from '@/lib/reliably'
-import { showToast } from '@/lib/toast'
+import { usePracticeData } from '@/contexts/PracticeDataContext'
+import { readWithDeadline } from '@/lib/readWithDeadline'
+import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
 
@@ -52,7 +53,10 @@ export default function FlashcardsScreen() {
   const C = useTheme()
   const insets = useSafeAreaInsets()
   const { height: screenH } = useWindowDimensions()
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
+  const verified = useVerifiedPractice(user?.id)
+  const graded = useRef(new Set<string>())
+  const practiceData = usePracticeData()
   const { cardIds, smartStart, sessionKey, from, startTopic } = useLocalSearchParams<{ cardIds?: string; smartStart?: string; sessionKey?: string; from?: string; startTopic?: string }>()
   const navigation = useNavigation<any>()
   // Back returns to the origin; dashboard launches also reset the Practice tab to its hub.
@@ -108,6 +112,8 @@ export default function FlashcardsScreen() {
   const [missedCards, setMissedCards] = useState<Flashcard[]>([])      // cards marked "still learning", for "Review missed"
   const [cardIndex, setCardIndex] = useState(0)
   const [loadingTopics, setLoadingTopics] = useState(true)
+  const [topicsError, setTopicsError] = useState(false)
+  const topicRequest = useRef(0)
   const [loadingCards, setLoadingCards] = useState(false)
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
@@ -197,59 +203,39 @@ export default function FlashcardsScreen() {
         surpriseMe()
       }
     }
-    setLoadingTopics(true)
     loadTopics()
-  }, [profile, difficulty, sessionKey])
+    return () => { topicRequest.current++ }
+  }, [practiceData, profile?.profession, profile?.access_key, difficulty, sessionKey])
 
   // The "you finished" fanfare — same sound at every results screen, win or lose.
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
 
-  // Save session once results screen renders — only for completed (all cards seen) sessions
-  useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !user || !profile || cards.length === 0) return
-    // Bookmark-review decks are practice only — they must not count toward streak/XP/sessions.
-    if (fromBookmarksRef.current) return
-    // "Review missed" re-drills are practice only — no session, XP, or streak.
-    if (isReviewMissedRef.current) return
-    sessionSavedRef.current = true
-    // Flashcards are SELF-GRADED ("Got it"/"Didn't know"), so they earn NO XP — otherwise the
-    // leaderboard could be farmed by tapping "Got it" without reading. They still count toward
-    // the streak (you studied today) and study stats. Retakes don't re-advance the streak.
-    const isRetake = isRetakeRef.current
-    const streak = isRetake ? {} : computeStreakUpdate(profile)
-    ;(async () => {
-      const sessionOk = await trySave(() => supabase.from('quiz_sessions').insert({
-        user_id: user.id,
-        score: gotIt,
-        question_ids: cards.map(c => c.id),
-        xp_earned: 0,
-        mode: 'flashcard',
-        topic: lastTopic ?? null, // null = Surprise me / random
-      }))
-      let streakOk = true
-      if (Object.keys(streak).length > 0) {
-        streakOk = await trySave(() => supabase.from('user_profiles').update({ ...streak }).eq('id', user.id))
-      }
-      if (!sessionOk || !streakOk) {
-        showToast("Couldn't save this deck — check your connection. Your streak may not have counted.", 'error')
-      }
-    })()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Completion is confirmed by finish_verified_session BEFORE entering results.
+  // Self-ratings remain zero-XP. There is intentionally no legacy save fallback.
 
   async function loadTopics() {
     if (!profile) return
-    const { data } = await supabase.rpc('get_question_counts', {
-      p_profession: profile.profession,
-      p_question_type: 'flashcard',
-      p_access_key: profile.access_key ?? null,
-      p_difficulty: difficulty !== 'all' ? difficulty : null,
-    })
-    setTopicRows((data ?? []).map((r: any) => ({ topic: r.topic, category: r.category, subtopic: r.subtopic, count: Number(r.cnt) })))
-    setLoadingTopics(false)
+    const request = ++topicRequest.current
+    const cached = practiceData.peekTopics('flashcard', { difficulty })
+    setLoadingTopics(!cached)
+    setTopicsError(false)
+    setTopicRows(cached ?? [])
+    try {
+      const rows = await practiceData.getTopics('flashcard', { difficulty })
+      if (request !== topicRequest.current) return
+      setTopicRows(rows)
+    } catch {
+      if (request === topicRequest.current && !cached) setTopicsError(true)
+      return
+    } finally {
+      if (request === topicRequest.current) setLoadingTopics(false)
+    }
     // Coverage per topic — history holds one row per distinct card reviewed
     if (user) {
-      const { data: hist } = await supabase.from('user_question_history')
-        .select('topic').eq('user_id', user.id).eq('question_type', 'flashcard').limit(10000)
+      const { data: hist } = await readWithDeadline(signal => supabase.from('user_question_history')
+        .select('topic').eq('user_id', user.id).eq('question_type', 'flashcard').limit(10000).abortSignal(signal), 8_000)
+        .catch(() => ({ data: null }))
+      if (request !== topicRequest.current) return
       const byTopic: Record<string, number> = {}
       for (const r of (hist ?? []) as any[]) if (r.topic) byTopic[r.topic] = (byTopic[r.topic] ?? 0) + 1
       setAnsweredByTopic(byTopic)
@@ -292,7 +278,8 @@ export default function FlashcardsScreen() {
     if (!data || data.length === 0) { setLoadingCards(false); setScreen('topics'); return }
 
     const seen = await fetchSeenFcIds()
-    const shuffled = orderByUnseen(data, seen).slice(0, sessionSize)
+    const shuffled = await bindCards(orderByUnseen(data, seen).slice(0, sessionSize))
+    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
     const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     if (user) {
@@ -325,7 +312,8 @@ export default function FlashcardsScreen() {
 
     const seen = await fetchSeenFcIds()
     // Areas of interest bias the surprise pool (unseen-interest first); empty = decide for me
-    const shuffled = orderByInterestAndUnseen(data as any[], profile.interests, seen).slice(0, sessionSize)
+    const shuffled = await bindCards(orderByInterestAndUnseen(data as any[], profile.interests, seen).slice(0, sessionSize))
+    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
     const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     if (user) {
@@ -343,7 +331,8 @@ export default function FlashcardsScreen() {
     setLoadingCards(true)
     const { data } = await supabase.rpc('get_questions_by_ids', { p_ids: ids, p_limit: 200 })
     if (!data || data.length === 0) { setLoadingCards(false); return }
-    const shuffled = [...data].sort(() => Math.random() - 0.5)
+    const shuffled = await bindCards([...data].sort(() => Math.random() - 0.5))
+    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
     const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
     setCards(mapped); setOriginalCards(mapped)
     setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([]); flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
@@ -384,15 +373,18 @@ export default function FlashcardsScreen() {
     setTimeout(() => setFlipped(f => !f), 260)
   }
 
-  function next(didKnow: boolean) {
+  async function next(didKnow: boolean) {
     // Record that this card has been reviewed (powers "Allow repeat questions").
     const card = cards[cardIndex]
-    if (user && card) {
-      supabase.rpc('record_answer', {
-        p_question_id: card.id, p_question_type: 'flashcard',
-        p_topic: card.topic, p_category: card.category, p_subtopic: card.subtopic,
-        p_difficulty: card.difficulty ?? 'medium', p_correct: didKnow,
-      }).then(() => {})
+    if (!card || !revealed || verified.saving || graded.current.has(card.id)) return
+    if (!verified.answer(card.id, didKnow)) return
+    // A synchronous guard covers a swipe and button arriving before a render.
+    graded.current.add(card.id)
+    if (cardIndex + 1 >= cards.length && !fromBookmarksRef.current && !isReviewMissedRef.current) {
+      const result = await verified.complete(() => { graded.current.delete(card.id); void next(didKnow) })
+      if (!result) { graded.current.delete(card.id); return }
+      sessionSavedRef.current = true
+      void refreshProfile()
     }
     if (didKnow) setGotIt(k => k + 1)
     else { setMissed(m => m + 1); if (card) setMissedCards(prev => [...prev, card]) }
@@ -407,22 +399,41 @@ export default function FlashcardsScreen() {
   nextRef.current = next
 
   // Replay the full deck — saves a session + XP but does NOT advance the streak.
-  function studyAgain() {
+  async function studyAgain() {
+    const deck = await reloadCards(originalCards.length ? originalCards : cards)
+    if (!deck) return
     sessionSavedRef.current = false; isRetakeRef.current = true; isReviewMissedRef.current = false
-    setCards(shuffle(originalCards.length ? originalCards : cards))
+    setCards(deck)
     setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([])
     flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
     setScreen('quiz')
   }
 
   // Re-drill only the cards marked "still learning" — pure practice (no session, XP, or streak).
-  function reviewMissed() {
+  async function reviewMissed() {
     if (missedCards.length === 0) return
+    const deck = await reloadCards(missedCards)
+    if (!deck) return
     sessionSavedRef.current = false; isReviewMissedRef.current = true; isRetakeRef.current = false
-    setCards(shuffle(missedCards))
+    setCards(deck)
     setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([])
     flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
     setScreen('quiz')
+  }
+
+  async function bindCards(pool: { id: string }[]) {
+    const items = await verified.prepare('flashcard', pool.slice(0, 60).map(c => c.id))
+    if (items) graded.current.clear()
+    return items
+  }
+
+  async function reloadCards(deck: Flashcard[]) {
+    const rows = await bindCards(shuffle(deck))
+    return rows?.map(r => ({ id: r.id as string, front: r.question_text as string,
+      back: String(r.correct_answer || r.explanation || ''),
+      note: r.correct_answer ? r.explanation as string | null : null,
+      topic: r.topic as string, category: r.category as string | null,
+      subtopic: r.subtopic as string | null, difficulty: r.difficulty as string | null })) ?? null
   }
 
   // Single-card fold: rotateY 0° → 90° → 0° with content swap at midpoint
@@ -449,6 +460,7 @@ export default function FlashcardsScreen() {
   const cardTopOffset = Math.max(12, (availableH - cardH - 88) * 0.30)
 
   // ── Topics screen ──────────────────────────────────────────────────────────
+  if (verified.starting || verified.saving) return <VerifiedSessionBusy saving={verified.saving} />
   if (screen === 'topics') {
     const grouped = topicRows.reduce((acc: Record<string, TopicRow[]>, r) => {
       if (!r.topic) return acc
@@ -550,7 +562,12 @@ export default function FlashcardsScreen() {
           <Text style={[s.surpriseRight, { color: C.onTeal }]}>Random {sessionSize} cards →</Text>
         </TouchableOpacity>
 
-        {loadingTopics ? <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 16 }} /> : (
+        {loadingTopics ? <SkeletonList rows={7} style={{ marginHorizontal: 16, marginTop: 16 }} /> : topicsError ? (
+          <TouchableOpacity onPress={loadTopics} accessibilityRole="button" accessibilityLabel="Retry flashcard topics"
+            style={{ margin: 16, padding: 20, minHeight: 44, borderRadius: 20, backgroundColor: C.surface }}>
+            <Text style={{ color: C.textSoft, fontFamily: 'Nunito_600SemiBold' }}>Cards couldn’t load. Tap to try again.</Text>
+          </TouchableOpacity>
+        ) : (
           <>
             {Object.entries(grouped).map(([topic, rows]) => {
               const total = rows.reduce((s, r) => s + r.count, 0)

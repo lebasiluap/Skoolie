@@ -4,6 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+    "types": ["node", "react", "react-dom"],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -30,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "SkoolieApp"]
+  "exclude": ["node_modules", "SkoolieApp", "supabase/functions", "audit_reports", "cloud_pilot"]
 }

@@ -84,11 +84,11 @@ export default function AdminShell({ children, openReports = 0 }: { children: Re
           {GROUPS.flatMap(g => g.items).map(item => {
             const active = isActive(item.href)
             return (
-              <Link key={item.href} href={item.href}
+              <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                   padding: '8px 14px', borderRadius: 999, textDecoration: 'none',
-                  fontSize: 13, fontWeight: 800, minHeight: 36,
+                  fontSize: 13, fontWeight: 800, minHeight: 44,
                   background: active ? 'var(--teal)' : 'var(--surface-2)',
                   color: active ? 'var(--on-teal)' : 'var(--text-soft)',
                   border: '1px solid ' + (active ? 'var(--teal)' : 'var(--border)'),
@@ -127,10 +127,10 @@ export default function AdminShell({ children, openReports = 0 }: { children: Re
                 {group.items.map(item => {
                   const active = isActive(item.href)
                   return (
-                    <Link key={item.href} href={item.href} className="adm-nav-link"
+                    <Link key={item.href} href={item.href} className="adm-nav-link" aria-current={active ? 'page' : undefined}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 12,
-                        textDecoration: 'none', fontSize: 13.5, fontWeight: active ? 800 : 600, minHeight: 38,
+                        textDecoration: 'none', fontSize: 13.5, fontWeight: active ? 800 : 600, minHeight: 44,
                         background: active ? 'var(--teal-tint)' : 'transparent',
                         color: active ? 'var(--teal)' : 'var(--text-soft)',
                         boxShadow: active ? 'inset 3px 0 0 var(--teal)' : 'none',

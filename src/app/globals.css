@@ -191,6 +191,13 @@ button { font-family: inherit; }
   --gold:          #DBA431;
 }
 
+/* Reserve the final counter width before the count-up starts so neighbouring
+   labels never shuffle as "0" becomes "50,000+". */
+.lp-root [data-count] { display: inline-block; text-align: center; font-variant-numeric: tabular-nums; }
+.lp-root [data-count="50000"] { min-width: 7ch; }
+.lp-root [data-count="100"] { min-width: 4ch; }
+.lp-root [data-count="5"] { min-width: 1ch; }
+
 @keyframes lp-floaty  { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
 @keyframes lp-floaty2 { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-24px) rotate(3deg); } }
 @keyframes lp-bobble  { 0%, 100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-10px) rotate(-2deg); } }
@@ -368,14 +375,8 @@ button { font-family: inherit; }
 .lp-scroll-cue:active { background: var(--teal-deep); transform: translateX(-50%) scale(.96); }
 .lp-scroll-cue.lp-decor-hide { opacity: 0; pointer-events: none; }
 
-/* ── One-time peek nudge: whole page lifts 24px and settles (class added
-      by useLandingMotion 2.5s after mount if the user hasn't scrolled) ── */
-.lp-root.lp-peek { animation: lp-peek-nudge 1.15s cubic-bezier(.3, .7, .3, 1) both; }
-@keyframes lp-peek-nudge {
-  0%   { transform: translateY(0); }
-  38%  { transform: translateY(-24px); }
-  100% { transform: translateY(0); }
-}
+/* Never transform .lp-root: doing so changes the containing block of the
+   fixed navigation and causes it to jump while scrolling. */
 
 /* ── Dot-grid depth layers (lp-depth-lg) are full-viewport repeating
       gradients — the one genuinely heavy decorative paint — so they sit
@@ -389,15 +390,8 @@ button { font-family: inherit; }
   .lp-cta-bubble { display: none !important; }
 }
 
-/* ── Touch devices have no hover tilt, so the gamification + analytics
-      cards get a slow breathing scale — never fully static. Animating the
-      standalone `scale` property composes with the inline `transform` the
-      JS runtime writes (reveals + touchstart pulse), so nothing is stomped.
-      Reduced motion is neutralized by the global .01ms override above. ── */
-@keyframes lp-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.015; } }
-@media (hover: none) {
-  .lp-breathe { animation: lp-breathe 4s ease-in-out infinite; }
-}
+/* Text-bearing cards stay still on touch devices. Ambient mascot animation
+   remains on its own decorative wrappers, separate from readable content. */
 
 /* Nav + hero tighten on small screens */
 @media (max-width: 640px) {

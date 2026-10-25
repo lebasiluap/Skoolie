@@ -1,5 +1,8 @@
-# Mobile app — not part of the web deployment
-SkoolieApp
+# Exclude the mobile app except the dependency-free protocol shared by web.
+SkoolieApp/*
+!SkoolieApp/lib
+SkoolieApp/lib/*
+!SkoolieApp/lib/verifiedSession.ts
 # Docs / assets that don't belong in web builds
 email-templates
 skoolie_context_handoff.docx

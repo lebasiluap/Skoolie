@@ -1,8 +1,9 @@
 /** Shared web/native protocol client. No legacy fallback and no score/XP input.
  * The caller must render begin().items, not an earlier prefetched question copy.
- * This is intentionally untimed v1; rapid/challenge/timed policy is not migrated.
+ * Timed/challenge issuance policy is selected by the transport wrapper; timed
+ * answers must be server-confirmed before being recorded in this envelope.
  */
-export type VerifiedMode = 'mcq' | 'case_study' | 'flashcard'
+export type VerifiedMode = 'mcq' | 'case_study' | 'flashcard' | 'rapid_fire'
 export type CanonicalAnswer = string | boolean | null
 export type SessionRpc = (name: string, args: Record<string, unknown>) => PromiseLike<{
   data: unknown; error: { message: string } | null
@@ -38,7 +39,7 @@ export function createVerifiedSession(rpc: SessionRpc, config: {
   const requestId = config.requestId
   const mode = config.mode
   const itemIds = [...config.itemIds]
-  if (!UUID.test(requestId) || !['mcq', 'case_study', 'flashcard'].includes(mode)
+  if (!UUID.test(requestId) || !['mcq', 'case_study', 'flashcard', 'rapid_fire'].includes(mode)
       || itemIds.length < 1 || itemIds.length > 60 || new Set(itemIds).size !== itemIds.length) {
     throw new Error('Invalid verified-session configuration')
   }

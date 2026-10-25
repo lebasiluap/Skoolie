@@ -29,19 +29,18 @@ import ReportButton from '@/components/ui/ReportButton'
 import { topicColor } from '@/constants/topics'
 import type { Question, TopicRow } from '@/types'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
-import { computeStreakUpdate } from '@/lib/streak'
 import { useFilters } from '@/contexts/FiltersContext'
 import { useCollapsePracticeStack } from '@/hooks/usePracticeStack'
 import { MCQ_QUESTION_SEC, URGENT_AT_SEC } from '@/lib/timing'
 import { orderByInterestAndUnseen } from '@/lib/interests'
 import { playSound } from '@/lib/sounds'
 import { haptic } from '@/lib/haptics'
-import { trySave } from '@/lib/reliably'
 import { IntroGate } from '@/components/ui/IntroGate'
 import { showToast } from '@/lib/toast'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 type Screen = 'topics' | 'quiz' | 'results'
@@ -162,29 +161,9 @@ export default function MCQScreen() {
 
   // Per-question countdown — runs only while a timed question is on screen.
   // Timeout fires through a ref so the interval never captures stale state.
-  const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const handleTimeoutRef = useRef<() => void>(() => {})
-  useEffect(() => {
-    if (screen !== 'quiz' || !timedOn || phase !== 'question' || questions.length === 0) {
-      setTimeLeft(null)
-      return
-    }
-    let fired = false
-    setTimeLeft(timedSecs)
-    const iv = setInterval(() => {
-      setTimeLeft(t => {
-        if (t == null) return t
-        if (t <= 1) {
-          clearInterval(iv)
-          if (!fired) { fired = true; handleTimeoutRef.current() }
-          return 0
-        }
-        if (t - 1 === URGENT_AT_SEC) haptic('tick')   // physical nudge as the pill turns red
-        return t - 1
-      })
-    }, 1000)
-    return () => clearInterval(iv)
-  }, [screen, timedOn, timedSecs, phase, qIndex, questions.length])
+  const timeLeft = useVerifiedCountdown(screen === 'quiz' && timedOn && phase === 'question',
+    questions[qIndex]?.id ?? null, verified.openTimed, () => handleTimeoutRef.current())
 
   // ── Animations ────────────────────────────────────────────────────────────
   const fadeAnim = useRef(new Animated.Value(1)).current
@@ -295,48 +274,7 @@ export default function MCQScreen() {
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
 
   // Save session exactly once when the results screen is first shown.
-  // Fired by screen state change — NOT by handleNext — so a session is only
-  // counted when the user has genuinely seen their results.
-  useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !user || !profile || questions.length === 0) return
-    // Bookmark-review sessions are practice only — they must not count toward streak/XP/sessions.
-    if (quizSource?.type === 'ids' || !sessionTimed) return
-    // "Review wrong answers" re-drills are practice only — no session, XP, or streak.
-    if (isReviewWrongRef.current) return
-    sessionSavedRef.current = true
-    // "Retake this quiz" saves the session + XP, but must NOT advance the streak (already credited on the first completion).
-    const isRetake  = isRetakeRef.current
-    // Mirror of the server formula (credit_xp): base = score/total x 50, +10% timed.
-    // Kept for the session record; the authoritative award happens server-side.
-    const base      = Math.round((score / questions.length) * 50)
-    const xp        = timedOn ? Math.round(base * 1.1) : base
-    const saveScore = score
-    const saveQIds  = questions.map(q => q.id)
-    const streak    = isRetake ? {} : computeStreakUpdate(profile)
-    // Retry-once on every critical write; surface failure instead of silently
-    // losing earned progress (audit: write-failure feedback).
-    ;(async () => {
-      const sessionOk = await trySave(() => supabase.from('quiz_sessions').insert({
-        user_id: user.id,
-        score: saveScore,
-        question_ids: saveQIds,
-        xp_earned: xp,
-        mode: 'mcq',
-        timed: timedOn,
-        topic: quizSource?.type === 'topic' ? quizSource.topic : null, // null = Surprise me / random
-      }))
-      // XP + level + weekly league standing are credited SERVER-SIDE (credit_xp);
-      // the profile update carries only the streak.
-      const xpOk = await trySave(() => supabase.rpc('credit_xp', { p_kind: 'mcq', p_score: saveScore, p_total: questions.length, p_timed: timedOn }))
-      let streakOk = true
-      if (Object.keys(streak).length > 0) {
-        streakOk = await trySave(() => supabase.from('user_profiles').update({ ...streak }).eq('id', user.id))
-      }
-      if (!sessionOk || !xpOk || !streakOk) {
-        showToast("Couldn't save your progress — check your connection. This session's XP may not have counted.", 'error')
-      }
-    })()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  // All rewarded sessions finish through the verified server receipt before results.
 
   async function loadTopics() {
     if (!profile) return
@@ -440,21 +378,26 @@ export default function MCQScreen() {
     setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
   }
 
-  function handleSubmit() {
-    if (!selected || phase !== 'question' || verified.saving) return
+  async function handleSubmit() {
+    if (!selected || phase !== 'question' || verified.saving || verified.submitting || (timedOn && timeLeft === null)) return
     const q = questions[qIndex]
     if (!q || answered.current.has(q.id)) return
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
-    const correct = selected === shuf.correctLetter
+    let correct = selected === shuf.correctLetter
     // Map the tapped display letter back to the ORIGINAL stored option letter so
     // the picked answer is comparable across users despite per-session shuffling.
     const origLetter = shuf.displayToOriginalLetter[selected] ?? null
-    if (!timedOn && !verified.answer(q.id, origLetter)) return
+    if (timedOn) {
+      const result = await verified.answerTimed(q.id, origLetter, () => void handleSubmit())
+      if (!result) return
+      if (result.answer === null) { answered.current.add(q.id);setReviewSnap({question:q,selected:'',isCorrect:false,timedOut:true});setWrongQuestions(wq=>[...wq,q]);setPhase('review');setOverlayVisible(true);playSound('wrong');return }
+      correct = shuf.correctLetter !== null && result.answer === shuf.displayToOriginalLetter[shuf.correctLetter]
+    } else if (!verified.answer(q.id, origLetter)) return
     answered.current.add(q.id)
     playSound(correct ? 'correct' : 'wrong')
     // Record the attempt server-side (increments times_seen/times_correct;
     // powers "Allow repeat questions", topic progress, and the seen tag).
-    if (user && timedOn) {
+    if (user && !verified.active()) {
       supabase.rpc('record_answer', {
         p_question_id: q.id, p_question_type: 'mcq',
         p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
@@ -474,12 +417,13 @@ export default function MCQScreen() {
   }
 
   /** Timed-mode timeout: counts as wrong, opens the same review overlay. */
-  handleTimeoutRef.current = () => {
+  handleTimeoutRef.current = async () => {
     const q = questions[qIndex]
     if (!q || phase !== 'question' || answered.current.has(q.id)) return
-    if (!timedOn && !verified.answer(q.id, null)) return
+    if (timedOn) { if (!await verified.answerTimed(q.id,null,()=>handleTimeoutRef.current())) return }
+    else if (!verified.answer(q.id, null)) return
     answered.current.add(q.id)
-    if (user && timedOn) {
+    if (user && !verified.active()) {
       supabase.rpc('record_answer', {
         p_question_id: q.id, p_question_type: 'mcq',
         p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
@@ -511,7 +455,7 @@ export default function MCQScreen() {
   async function handleNext() {
     if (advancing.current || phase !== 'review') return
     advancing.current = true
-    if (qIndex + 1 >= questions.length && !sessionTimed && quizSource?.type !== 'ids' && !isReviewWrongRef.current) {
+    if (qIndex + 1 >= questions.length && quizSource?.type !== 'ids' && !isReviewWrongRef.current) {
       const result = await verified.complete(() => { void handleNext() })
       if (!result) { advancing.current = false; return }
       setScore(result.score)
@@ -535,12 +479,12 @@ export default function MCQScreen() {
   async function bindQuestions(pool: Question[]) {
     const chosen = pool.slice(0, 60)
     const timed = profile?.timed_mode ?? false
-    const items = await verified.prepare('mcq', chosen.map(q => q.id), !timed)
+    const items = await verified.prepare('mcq', chosen.map(q => q.id), true, timed ? timedSecs : undefined)
     if (!items) return null
     setSessionTimed(timed)
     answered.current.clear()
     advancing.current = false
-    return timed ? chosen : items as unknown as Question[]
+    return items as unknown as Question[]
   }
 
   async function toggleBookmark(qId: string) {

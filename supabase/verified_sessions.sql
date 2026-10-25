@@ -11,9 +11,17 @@ create table app_private.verified_sessions (
  id uuid primary key default gen_random_uuid(),
  user_id uuid not null references public.user_profiles(id) on delete cascade,
  request_id uuid not null,
- mode text not null check(mode in('mcq','case_study','flashcard')),
+ mode text not null check(mode in('mcq','case_study','flashcard','rapid_fire')),
  item_ids text[] not null check(cardinality(item_ids) between 1 and 60),
  snapshot jsonb not null,
+ reward_kind text check(reward_kind is null or reward_kind in ('daily_challenge','barrage')),
+ reward_slot integer check(reward_slot in (0,1)),
+ rapid_bonus integer not null default 0 check(rapid_bonus between 0 and 25),
+ reward_day date,
+ timing_seconds integer check(timing_seconds in (5,10,12,15,30,45,60)),
+ timed_answers jsonb not null default '{}',
+ open_item text,
+ answer_deadline timestamptz,
  issued_at timestamptz not null default clock_timestamp(),
  expires_at timestamptz not null default clock_timestamp()+interval '12 hours',
  answers jsonb,
@@ -76,7 +84,8 @@ begin
      select * into q from public.questions where id=item::uuid
        and professions @> array[prof] and public.region_visible(region)
        and (access_key is null or access_key=access)
-       and question_type=case when p_mode='flashcard' then 'flashcard' else 'mcq' end;
+       and (question_type=case when p_mode='flashcard' then 'flashcard' else 'mcq' end
+         or (p_mode='rapid_fire' and question_type='rapid_fire'));
      if not found then raise exception 'Item not available for this session' using errcode='42501'; end if;
      entry:=case when p_mode='flashcard' then jsonb_build_object('self_graded',true)
        else app_private.option_contract(q.options,q.correct_answer) end;
@@ -159,7 +168,7 @@ language plpgsql security definer set search_path='' set statement_timeout='5s' 
 declare uid uuid:=auth.uid(); s app_private.verified_sessions%rowtype; snap jsonb;
 begin
  if uid is null then raise exception 'Authentication required' using errcode='42501'; end if;
- if p_request_id is null or p_mode is null or p_mode not in('mcq','case_study','flashcard')
+ if p_request_id is null or p_mode is null or p_mode not in('mcq','case_study','flashcard','rapid_fire')
     or p_item_ids is null or cardinality(p_item_ids) not between 1 and 60
     or array_ndims(p_item_ids)<>1 or pg_column_size(p_item_ids)>8192 or array_position(p_item_ids,null) is not null
     or (select count(distinct x) from unnest(p_item_ids) x)<>cardinality(p_item_ids) then
@@ -206,6 +215,16 @@ begin
    return result;
  end if;
  if clock_timestamp()>=s.expires_at then raise exception 'Session expired' using errcode='22023'; end if;
+ if s.timing_seconds is not null and (p_answers is distinct from s.timed_answers or s.open_item is not null) then
+   raise exception 'Timed answers not server confirmed' using errcode='22023';
+ end if;
+ if s.reward_kind='daily_challenge' then
+   if s.reward_day is distinct from current_date then raise exception 'Challenge day expired' using errcode='22023'; end if;
+   perform 1 from public.challenge_claims cc where cc.user_id=uid and cc.day=s.reward_day and not cc.completed for update;
+   if not found then raise exception 'Challenge already completed or unavailable' using errcode='22023'; end if;
+ end if;
+ if s.reward_kind='barrage' and s.reward_day is distinct from current_date then raise exception 'Barrage day expired' using errcode='22023'; end if;
+ if s.mode='rapid_fire' and s.timing_seconds is distinct from 12 then raise exception 'Rapid session not clock-bound' using errcode='22023'; end if;
  if (select count(*) from jsonb_object_keys(p_answers))<>cardinality(s.item_ids)
     or not (p_answers ?& s.item_ids) then raise exception 'Incomplete or extra answers' using errcode='22023'; end if;
  if app_private.session_snapshot(s.mode,s.item_ids) is distinct from s.snapshot then
@@ -227,14 +246,14 @@ begin
  -- One transaction: grade, reward, saved result, private receipt and completion.
  -- All per-user rewards serialize here; same-session calls already hold its row.
  perform pg_advisory_xact_lock(hashtextextended(uid::text||':verified-reward',0));
- if s.mode<>'flashcard' then xp:=public.credit_xp(s.mode,score,cardinality(s.item_ids),false,0,0); end if;
+ if s.mode<>'flashcard' then xp:=public.credit_xp(coalesce(s.reward_kind,s.mode),score,cardinality(s.item_ids),s.timing_seconds is not null and s.mode<>'rapid_fire',s.rapid_bonus,coalesce(s.reward_slot,0)); end if;
  insert into public.quiz_sessions(user_id,question_ids,answers,score,xp_earned,started_at,completed_at,mode,timed)
-   values(uid,s.item_ids,p_answers,score,xp,s.issued_at,completed,s.mode,false) returning id into quiz_id;
+   values(uid,s.item_ids,p_answers,score,xp,s.issued_at,completed,coalesce(s.reward_kind,s.mode),s.timing_seconds is not null) returning id into quiz_id;
  -- V1 uses the server UTC day; future timezone policy must be explicit.
  perform app_private.advance_study_streak(uid);
  foreach item in array s.item_ids loop
    entry:=s.snapshot->item;
-   if entry->>'type'='mcq' then
+   if entry->>'type' in ('mcq','rapid_fire') then
      perform public.record_answer(item::uuid,'mcq',entry->>'topic',entry->>'category',entry->>'subtopic',
        entry->>'difficulty',coalesce((p_answers->>item)=entry->>'key',false),p_answers->>item);
    elsif s.mode='flashcard' then

@@ -20,7 +20,6 @@ import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { topicColor } from '@/constants/topics'
 import type { TopicRow } from '@/types'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
-import { computeStreakUpdate } from '@/lib/streak'
 import type { ThemeColors } from '@/constants/Colors'
 import { useFilters } from '@/contexts/FiltersContext'
 import { useCollapsePracticeStack } from '@/hooks/usePracticeStack'
@@ -28,10 +27,10 @@ import { withFilterAnim, withAccordionAnim } from '@/lib/anim'
 import { CASE_QUESTION_SEC, URGENT_AT_SEC } from '@/lib/timing'
 import { orderByInterestAndUnseen } from '@/lib/interests'
 import { playSound } from '@/lib/sounds'
-import { trySave } from '@/lib/reliably'
 import { showToast } from '@/lib/toast'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
@@ -225,29 +224,10 @@ export default function CasesScreen() {
 
   // Per-question countdown — runs only while a timed, unanswered case question is
   // on screen. Timeout fires through a ref so the interval never captures stale state.
-  const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [timedOut, setTimedOut] = useState(false)
   const handleTimeoutRef = useRef<() => void>(() => {})
-  useEffect(() => {
-    if (screen !== 'case' || !timedOn || revealed || cases.length === 0) {
-      setTimeLeft(null)
-      return
-    }
-    let fired = false
-    setTimeLeft(timedSecs)
-    const iv = setInterval(() => {
-      setTimeLeft(t => {
-        if (t == null) return t
-        if (t <= 1) {
-          clearInterval(iv)
-          if (!fired) { fired = true; handleTimeoutRef.current() }
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
-    return () => clearInterval(iv)
-  }, [screen, timedOn, timedSecs, revealed, caseIdx, qIdx, cases.length])
+  const timeLeft = useVerifiedCountdown(screen === 'case' && timedOn && !revealed,
+    cases[caseIdx] ? `${cases[caseIdx].id}:${qIdx}` : null, verified.openTimed, () => handleTimeoutRef.current())
 
   // Remember last session params so "New cases" can replay without going back to picker
   const [lastTopic, setLastTopic] = useState<string | null>(null)
@@ -341,46 +321,7 @@ export default function CasesScreen() {
   // The "you finished" fanfare — same sound at every results screen, win or lose.
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
 
-  // Save session once results screen renders — only for fully completed case sessions.
-  // Credits XP/level/streak to the profile (previously case XP was recorded on the
-  // session but never added to the user's total, so cases gave no XP toward leveling).
-  useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !sessionTimed || !user || !profile || cases.length === 0) return
-    // "Review wrong" re-drills and Search-opened single cases are practice only — no session, XP, or streak.
-    if (isReviewWrongRef.current || isPracticeOnlyRef.current) return
-    sessionSavedRef.current = true
-    // "Retake" saves the session + XP, but must NOT advance the streak (already credited on the first completion).
-    const isRetake = isRetakeRef.current
-    // Mirror of the server formula (credit_xp): base = score/total x 50 (same scale
-    // as MCQ so the shared leaderboard is fair), +10% timed. Kept for the session
-    // record; the authoritative award happens server-side.
-    const base = Math.round((score / Math.max(totalQ, 1)) * 50)
-    const xp = timedOn ? Math.round(base * 1.1) : base
-    const streak = isRetake ? {} : computeStreakUpdate(profile)
-    ;(async () => {
-      const sessionOk = await trySave(() => supabase.from('quiz_sessions').insert({
-        user_id: user.id,
-        score,
-        // One id per QUESTION (composite caseId:idx) so counts/accuracy match MCQ & flashcards.
-        question_ids: cases.flatMap(c => c.questions.map((_, i) => `${c.id}:${i}`)),
-        xp_earned: xp,
-        mode: 'case_study',
-        timed: timedOn,
-        topic: lastTopic ?? null, // null = Surprise me / random
-      }))
-      // XP + level + weekly league standing are credited SERVER-SIDE (credit_xp);
-      // the profile update carries only the streak.
-      const xpOk = await trySave(() => supabase.rpc('credit_xp', { p_kind: 'case_study', p_score: score, p_total: totalQ, p_timed: timedOn }))
-      let streakOk = true
-      if (Object.keys(streak).length > 0) {
-        streakOk = await trySave(() => supabase.from('user_profiles').update({ ...streak }).eq('id', user.id))
-      }
-      if (!sessionOk || !xpOk || !streakOk) {
-        showToast("Couldn't save your progress — check your connection. This session's XP may not have counted.", 'error')
-      }
-      refreshProfile()
-    })()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  // All rewarded sessions finish through the verified server receipt before results.
 
   async function loadTopics() {
     if (!profile) return
@@ -460,13 +401,17 @@ export default function CasesScreen() {
     setScreen('vignette')
   }
 
-  function submitAnswer() {
-    if (!selected || revealed || verified.saving) return
+  async function submitAnswer() {
+    if (!selected || revealed || verified.saving || verified.submitting || (timedOn && timeLeft === null)) return
     const id = `${cases[caseIdx].id}:${qIdx}`
     if (answered.current.has(id)) return
     const shuffled = buildShuffledMcq(cases[caseIdx].questions[qIdx].options,
       cases[caseIdx].questions[qIdx].correct_answer, `${cases[caseIdx].id}:${qIdx}:${shuffleSalt}`)
-    if (!timedOn && !verified.answer(id, shuffled.displayToOriginalLetter[selected] ?? null)) return
+    if (timedOn) {
+      const result=await verified.answerTimed(id,shuffled.displayToOriginalLetter[selected] ?? null,()=>void submitAnswer())
+      if(!result)return
+      if(result.answer===null){answered.current.add(id);setTimedOut(true);setDetailsVisible(false);setRevealed(true);setOverlayVisible(true);setWrongCaseIds(prev=>new Set(prev).add(cases[caseIdx].id));playSound('wrong');return}
+    } else if (!verified.answer(id, shuffled.displayToOriginalLetter[selected] ?? null)) return
     answered.current.add(id)
     setDetailsVisible(false)   // never stack the review sheet on the details sheet
     setRevealed(true)
@@ -480,13 +425,14 @@ export default function CasesScreen() {
   }
 
   /** Timed-mode timeout: counts as wrong, opens the same review overlay. */
-  handleTimeoutRef.current = () => {
+  handleTimeoutRef.current = async () => {
     if (revealed) return
     const cs = cases[caseIdx]
     if (!cs) return
     const id = `${cs.id}:${qIdx}`
     if (answered.current.has(id)) return
-    if (!timedOn && !verified.answer(id, null)) return
+    if (timedOn) { if(!await verified.answerTimed(id,null,()=>handleTimeoutRef.current()))return }
+    else if (!verified.answer(id, null)) return
     answered.current.add(id)
     playSound('wrong')
     setTimedOut(true)
@@ -538,7 +484,7 @@ export default function CasesScreen() {
     if (advancing.current || !revealed) return
     advancing.current = true
     const last = caseIdx + 1 >= cases.length && qIdx + 1 >= cases[caseIdx].questions.length
-    if (last && !sessionTimed && !isPracticeOnlyRef.current && !isReviewWrongRef.current) {
+    if (last && !isPracticeOnlyRef.current && !isReviewWrongRef.current) {
       const result = await verified.complete(() => { void next() })
       if (!result) { advancing.current = false; return }
       setScore(result.score)
@@ -570,12 +516,11 @@ export default function CasesScreen() {
       return null
     }
     const timed = profile?.timed_mode ?? false
-    const items = await verified.prepare('case_study', ids, !timed)
+    const items = await verified.prepare('case_study', ids, true, timed ? timedSecs : undefined)
     if (!items) return null
     setSessionTimed(timed)
     answered.current.clear()
     advancing.current = false
-    if (timed) return deck
     // Rebuild both vignette and questions from the issued payload, never the prefetch.
     if (deck.some(c => items.filter(item => item.case_id === c.id).length !== c.questions.length)
         || items.some(item => !item.case_context || typeof item.case_context !== 'object')) {
@@ -847,7 +792,7 @@ export default function CasesScreen() {
     const correctLetter = shuffled.correctLetter
     const answeredCount = cases.slice(0, caseIdx).reduce((s, c) => s + c.questions.length, 0) + qIdx + (revealed ? 1 : 0)
     const progress = answeredCount / totalQ
-    const isCorrect = revealed && selected === correctLetter
+    const isCorrect = revealed && !timedOut && selected === correctLetter
     const isLast = caseIdx === cases.length - 1 && qIdx + 1 >= cs.questions.length
 
     return (

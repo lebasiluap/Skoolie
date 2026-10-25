@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
-/** Paste the real store URLs here once the app is live. */
+/** Private-beta install guidance; store access is still enforced by invitation. */
 export const STORE_LINKS = {
-  appstore: '#',
-  playstore: '#',
+  appstore: '/download#ios',
+  playstore: '/download#android',
 }
 
 type Platform = 'ios' | 'android' | 'unknown'
@@ -86,8 +86,8 @@ export default function StoreBadges() {
         store="appstore"
         emphasized={platform === 'ios'}
         dimmed={platform === 'android'}
-        small="Download on the"
-        big="App Store"
+        small="iOS beta via"
+        big="TestFlight"
         logo={<AppleLogo />}
       />
       <Badge

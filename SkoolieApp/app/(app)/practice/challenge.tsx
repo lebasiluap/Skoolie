@@ -3,11 +3,7 @@
  *
  * Five questions, same set for everyone in your cohort (profession × year
  * bucket, materialized server-side in get_daily_challenge), ONE attempt per
- * day. The claim is enforced server-side: credit_xp('daily_challenge')
- * inserts into challenge_claims and returns 0 if today was already claimed.
- *
- * Leaving mid-run does NOT burn the attempt (the claim only lands at
- * results) — the Alert says so explicitly.
+ * day. Issuance, grading, history and one reward are bound server-side.
  */
 import { useEffect, useRef, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native'
@@ -25,9 +21,9 @@ import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
 import { useCollapsePracticeStack } from '@/hooks/usePracticeStack'
-import { computeStreakUpdate } from '@/lib/streak'
 import { playSound } from '@/lib/sounds'
-import { trySave } from '@/lib/reliably'
+import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { showToast } from '@/lib/toast'
 
 interface ChallengeQ {
@@ -44,6 +40,7 @@ export default function ChallengeScreen() {
   const C = useTheme()
   const insets = useSafeAreaInsets()
   const { user, profile, refreshProfile } = useAuth()
+  const verified = useVerifiedPractice(user?.id)
 
   const [screen, setScreen] = useState<Screen>('loading')
   useFocusSessionWhile(screen === 'quiz')
@@ -56,11 +53,9 @@ export default function ChallengeScreen() {
   const [inReview, setInReview] = useState(false)
   const [score, setScore] = useState(0)
   const [xpEarned, setXpEarned] = useState<number | null>(null)
-  const [saveFailed, setSaveFailed] = useState(false)
-  const [saveNonce, setSaveNonce] = useState(0)   // bump to retry a failed save
   const [resuming, setResuming] = useState(false) // attempt committed earlier, not finished
   const [starting, setStarting] = useState(false)
-  const sessionSavedRef = useRef(false)
+  const submitted = useRef(new Set<string>())
   const navigation = useNavigation<any>()
 
   // Exit returns to the dashboard AND collapses the practice stack back to its
@@ -97,42 +92,38 @@ export default function ChallengeScreen() {
   async function beginChallenge() {
     if (starting) return
     setStarting(true)
-    const { data, error } = await supabase.rpc('start_daily_challenge')
+    const items = await verified.prepare('mcq', questions.map(q=>q.id), true, 'daily_challenge')
     setStarting(false)
-    if (error) {
-      showToast("Couldn't start the challenge — check your connection.", 'error')
-      return
-    }
-    if (data === false) { load(); return }   // completed on another device meanwhile
+    if (!items) return
+    setQuestions(items as unknown as ChallengeQ[])
+    submitted.current.clear()
     setScreen('quiz')
   }
 
   // Option order is seeded by day+id — identical for the whole cohort.
   const shuffleSalt = day
 
-  function recordAnswer(q: ChallengeQ, correct: boolean, userAnswer: string | null) {
-    if (!user) return
-    supabase.rpc('record_answer', {
-      p_question_id: q.id, p_question_type: 'mcq',
-      p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
-      p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
-      p_user_answer: userAnswer,
-    }).then(() => {})
-  }
-
   function handleSubmit() {
     if (!selected || inReview) return
     const q = questions[qIndex]
+    if (submitted.current.has(q.id)) return
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    if (!verified.answer(q.id, shuf.displayToOriginalLetter[selected] ?? null)) return
+    submitted.current.add(q.id)
     const correct = selected === shuf.correctLetter
     playSound(correct ? 'correct' : 'wrong')
     if (correct) setScore(s => s + 1)
-    recordAnswer(q, correct, shuf.displayToOriginalLetter[selected] ?? null)
     setInReview(true)
   }
 
-  function handleNext() {
-    if (qIndex + 1 >= questions.length) { setScreen('results'); return }
+  async function handleNext() {
+    if (verified.saving) return
+    if (qIndex + 1 >= questions.length) {
+      const result = await verified.complete(() => void handleNext())
+      if (!result) return
+      setScore(result.score); setXpEarned(result.xp)
+      setScreen('results');playSound('complete');void refreshProfile();return
+    }
     setQIndex(i => i + 1)
     setSelected(null)
     setInReview(false)
@@ -149,49 +140,12 @@ export default function ChallengeScreen() {
     )
   }
 
-  // Save exactly once when results show. credit_xp enforces the daily claim
-  // server-side and returns the XP paid (0 = already claimed today).
-  useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !user || !profile || questions.length === 0) return
-    sessionSavedRef.current = true
-    ;(async () => {
-      let xp: number | null = null
-      for (let attempt = 0; attempt < 2 && xp === null; attempt++) {
-        const { data, error } = await supabase.rpc('credit_xp', {
-          p_kind: 'daily_challenge', p_score: score, p_total: questions.length,
-          p_timed: false, p_bonus: 0, p_slot: 0,
-        })
-        if (!error) xp = Number(data ?? 0)
-      }
-      if (xp === null) {
-        // Network/server failure — the claim did NOT land, so the attempt is
-        // still unspent. Never conflate this with "already claimed" (xp = 0).
-        sessionSavedRef.current = false
-        setSaveFailed(true)
-        return
-      }
-      setSaveFailed(false)
-      setXpEarned(xp)
-      if (xp > 0) {
-        const streakUpd = computeStreakUpdate(profile)
-        await trySave(() => supabase.from('quiz_sessions').insert({
-          user_id: user.id, score, question_ids: questions.map(q => q.id),
-          xp_earned: xp, mode: 'daily_challenge', timed: false, topic: null,
-        }))
-        if (Object.keys(streakUpd).length > 0) {
-          await trySave(() => supabase.from('user_profiles').update({ ...streakUpd }).eq('id', user.id))
-        }
-        playSound('complete')
-        refreshProfile()
-      }
-    })()
-  }, [screen, saveNonce]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const cohortLabel = profile
     ? (profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)) +
       (profile.study_year && profile.study_year !== 'practitioner' ? ` · ${profile.study_year.replace('year', 'Year ')}` : profile.study_year === 'practitioner' ? ' · Practitioner' : '')
     : ''
 
+  if (verified.saving) return <VerifiedSessionBusy saving />
   // ── Loading / unavailable / already-done ─────────────────────────────────
   if (screen === 'loading') {
     return (
@@ -286,18 +240,7 @@ export default function ChallengeScreen() {
           <MascotAnimator expr={pct >= 60 ? 'happy' : 'thinking'}><CappyHead expr={pct >= 60 ? 'happy' : 'thinking'} size={96} /></MascotAnimator>
           <Text style={[s.bigTitle, { color: C.text }]}>Challenge complete!</Text>
           <Text style={[s.resultScore, { color: C.teal }]}>{score}/{total}</Text>
-          {saveFailed ? (
-            <View style={{ alignItems: 'center' }}>
-              <Text style={[s.subText, { color: C.red }]}>Couldn't reach the server — your attempt hasn't been used yet.</Text>
-              <TouchableOpacity
-                onPress={() => setSaveNonce(n => n + 1)}
-                style={[s.primaryBtn, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.teal, marginTop: 12, paddingHorizontal: 28 }]}
-                accessibilityRole="button" accessibilityLabel="Retry saving your result"
-              >
-                <Text style={[s.primaryBtnText, { color: C.teal }]}>Try again</Text>
-              </TouchableOpacity>
-            </View>
-          ) : xpEarned === null ? (
+          {xpEarned === null ? (
             <ActivityIndicator size="small" color={C.teal} style={{ marginTop: 8 }} />
           ) : xpEarned > 0 ? (
             <View style={[s.xpPill, { backgroundColor: C.tealTint }]}>

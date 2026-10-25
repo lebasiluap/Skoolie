@@ -84,7 +84,7 @@ function StoreBadge({
 function StoreBadgePair() {
   return (
     <>
-      <StoreBadge href={STORE_LINKS.appstore} logo={<AppleLogo />} small="Download on the" big="App Store" />
+      <StoreBadge href={STORE_LINKS.appstore} logo={<AppleLogo />} small="iOS beta via" big="TestFlight" />
       <StoreBadge href={STORE_LINKS.playstore} logo={<PlayLogo />} small="Get it on" big="Google Play" />
     </>
   )
@@ -221,7 +221,7 @@ export default function Landing() {
           <span style={{ fontSize: 22, fontWeight: 900, color: TEAL_BRIGHT, letterSpacing: -0.5 }}>Skoolie</span>
         </div>
         <a
-          href="https://skoolieapp.com"
+          href="/download"
           className="lp-nav-btn"
           style={{
             color: '#fff',

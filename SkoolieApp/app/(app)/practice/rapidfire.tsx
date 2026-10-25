@@ -28,13 +28,14 @@ import { TopBar } from '@/components/ui/TopBar'
 import { TopicIcon } from '@/components/ui/TopicIcon'
 import { topicColor } from '@/constants/topics'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
-import { computeStreakUpdate } from '@/lib/streak'
+import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
+import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import { preferInterests } from '@/lib/interests'
 import { playSound, playCombo } from '@/lib/sounds'
 import { haptic } from '@/lib/haptics'
-import { trySave } from '@/lib/reliably'
 import { showToast } from '@/lib/toast'
 import type { Question } from '@/types'
 
@@ -62,6 +63,8 @@ export default function RapidFireScreen() {
   const PTint = P + '22'
   const onP = C.onRf
   const { user, profile, refreshProfile } = useAuth()
+  const verified = useVerifiedPractice(user?.id)
+  const runGeneration = useRef(0)
   const { smartStart, barrage, slot } = useLocalSearchParams<{ smartStart?: string; barrage?: string; slot?: string }>()
   // Barrage entry: the FIRST run of this visit is the 2× blitz; "Go again" runs
   // afterwards are normal rapid fire (the daily claim is spent server-side anyway).
@@ -82,6 +85,7 @@ export default function RapidFireScreen() {
 
   // Per-question answer state: null = live, else the letter tapped ('' = timeout)
   const [answered, setAnswered] = useState<string | null>(null)
+  const answerLock = useRef(false)
   const [wasCorrect, setWasCorrect] = useState(false)
 
   // Scoring
@@ -134,6 +138,7 @@ export default function RapidFireScreen() {
   // app leaves the foreground.
   const isFocusedRef = useRef(true)
   const abandonRun = useCallback(() => {
+    runGeneration.current++
     if (advanceTimer.current) clearTimeout(advanceTimer.current)
     barAnim.stopAnimation()
     setAnswered(null)
@@ -156,45 +161,10 @@ export default function RapidFireScreen() {
   // The "you finished" fanfare — same sound at every results screen, win or lose.
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
 
-  // Save the completed run exactly once when results show (mirrors MCQ flow).
-  // Never save from an unfocused screen — a backgrounded zombie run must not
-  // be able to record sessions even if it somehow reaches 'results'.
+  // Grading, history, streak and rewards are saved atomically before results.
   useEffect(() => {
-    if (screen !== 'results' || sessionSavedRef.current || !user || !profile || questions.length === 0) return
-    if (!isFocusedRef.current) return
-    sessionSavedRef.current = true
-    const base = Math.round((score / questions.length) * 50)
-    const bonus = Math.min(25, Math.max(0, bonusPts))
-    const streakUpd = computeStreakUpdate(profile)
-    ;(async () => {
-      const sessionOk = await trySave(() => supabase.from('quiz_sessions').insert({
-        user_id: user.id,
-        score,
-        question_ids: questions.map(q => q.id),
-        // Mirrors the server formula: barrage pays 2× base; claim is enforced there.
-        xp_earned: (isBarrageRun ? base * 2 : base) + bonus,
-        mode: isBarrageRun ? 'barrage' : 'rapid_fire',
-        timed: true,
-        topic: runTopic,
-      }))
-      // XP + level + weekly league standing credited server-side; bonus is clamped there too.
-      const xpOk = await trySave(() => supabase.rpc('credit_xp', { p_kind: isBarrageRun ? 'barrage' : 'rapid_fire', p_score: score, p_total: questions.length, p_timed: false, p_bonus: bonus, p_slot: barrageSlotRef.current }))
-      if (isBarrageRun) {
-        const { count } = await supabase.from('barrage_claims').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
-        setBarrageTotal(count ?? null)
-      }
-      let streakOk = true
-      if (Object.keys(streakUpd).length > 0) {
-        streakOk = await trySave(() => supabase.from('user_profiles').update({ ...streakUpd }).eq('id', user.id))
-      }
-      if (!sessionOk || !xpOk || !streakOk) {
-        showToast(isBarrageRun
-          ? "Couldn't save your barrage — check your connection. Your 2× XP may not have counted."
-          : "Couldn't save your progress — check your connection. This run's XP may not have counted.", 'error')
-      }
-      refreshProfile()
-    })()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+    if(screen==='results'&&isBarrageRun&&user) supabase.from('barrage_claims').select('id',{count:'exact',head:true}).eq('user_id',user.id).then(({count})=>setBarrageTotal(count??null))
+  },[screen,isBarrageRun,user])
 
   async function loadTopics() {
     if (!profile) return
@@ -219,6 +189,7 @@ export default function RapidFireScreen() {
       return
     }
     setLoadingQs(true)
+    const gen=++runGeneration.current
     const { data, error } = await supabase.rpc('get_rapid_fire_questions', {
       p_profession: profile.profession,
       // Over-fetch so areas of interest can lead the run (empty interests = as-is)
@@ -226,21 +197,26 @@ export default function RapidFireScreen() {
       p_topic: topic,
       p_access_key: profile.access_key ?? null,
     })
-    setLoadingQs(false)
     if (error) {
+      setLoadingQs(false)
       showToast("Couldn't load questions — check your connection and try again.", 'error')
       return
     }
     const qs = preferInterests((data ?? []) as Question[], topic ? [] : profile.interests).slice(0, RUN_SIZE)
     if (qs.length === 0) {
+      setLoadingQs(false)
       Alert.alert('No rapid-fire questions', 'This topic has no quick-recall questions yet — try another one.')
       return
     }
+    const items=await verified.prepare('rapid_fire',qs.map(q=>q.id),true,{barrage:barragePendingRef.current,slot:barrageSlotRef.current===1?1:0})
+    setLoadingQs(false)
+    if(!items||gen!==runGeneration.current||!isFocusedRef.current)return
+    answerLock.current=false
     sessionSavedRef.current = false
     setIsBarrageRun(barragePendingRef.current)
     barragePendingRef.current = false   // consume — only the first run is the blitz
     setRunTopic(topic)
-    setQuestions(qs)
+    setQuestions(items as unknown as Question[])
     setQIndex(0); setAnswered(null); setWasCorrect(false)
     setScore(0); setStreak(0); setBestStreak(0); setBonusPts(0)
     setScreen('run')
@@ -248,45 +224,43 @@ export default function RapidFireScreen() {
 
   // Start/restart the bar whenever a new question goes live
   const questionShownAt = useRef(0)
+  const remaining = useVerifiedCountdown(screen==='run'&&answered===null,
+    questions[qIndex]?.id??null,verified.openTimed,()=>void onTimeout())
   useEffect(() => {
-    if (screen !== 'run' || answered !== null || questions.length === 0) return
-    questionShownAt.current = Date.now()
-    barAnim.setValue(1)
+    if (screen !== 'run' || answered !== null || remaining===null) return
+    if(remaining>=SECONDS_PER_Q-1)questionShownAt.current=Date.now()
+    barAnim.setValue(remaining/SECONDS_PER_Q)
     const anim = Animated.timing(barAnim, {
       toValue: 0,
-      duration: SECONDS_PER_Q * 1000,
+      duration: remaining * 1000,
       easing: Easing.linear,
       useNativeDriver: false,
     })
-    anim.start(({ finished }) => { if (finished) onTimeout() })
+    anim.start()
     // Physical nudge as the bar goes red (last quarter) — mirrors the color shift.
     const tickAt = setTimeout(() => haptic('tick'), SECONDS_PER_Q * 750)
     return () => { anim.stop(); clearTimeout(tickAt) }
-  }, [screen, qIndex, answered, questions.length]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function recordHistory(q: Question, correct: boolean, userAnswer: string | null = null) {
-    if (!user) return
-    supabase.rpc('record_answer', {
-      p_question_id: q.id, p_question_type: 'mcq',
-      p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
-      p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
-      p_user_answer: userAnswer,
-    }).then(() => {})
-  }
+  }, [screen, qIndex, answered, remaining]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function advance() {
-    advanceTimer.current = setTimeout(() => {
+    const gen=runGeneration.current
+    advanceTimer.current = setTimeout(async () => {
+      if(gen!==runGeneration.current||!isFocusedRef.current)return
+      if(qIndex+1>=questions.length){
+        const result=await verified.complete(advance)
+        if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
+        setScore(result.score);setScreen('results');void refreshProfile();return
+      }
       setAnswered(null)
       setWasCorrect(false)
-      if (qIndex + 1 >= questions.length) setScreen('results')
-      else setQIndex(i => i + 1)
+      setQIndex(i => i + 1)
     }, ADVANCE_DELAY_MS)
   }
 
   /** Confirm before abandoning a live run — a barrage window especially. */
   function confirmAbandon() {
     const answeredCount = qIndex + (answered !== null ? 1 : 0)
-    if (answeredCount === 0) { setScreen('topics'); return }
+    if (answeredCount === 0) { abandonRun(); return }
     Alert.alert(
       isBarrageRun ? 'Leave the barrage?' : 'Leave this run?',
       isBarrageRun
@@ -294,25 +268,28 @@ export default function RapidFireScreen() {
         : `You've answered ${answeredCount} of ${questions.length}. Progress only saves when you finish.`,
       [
         { text: 'Keep going', style: 'cancel' },
-        { text: 'Exit', style: 'destructive', onPress: () => setScreen('topics') },
+        { text: 'Exit', style: 'destructive', onPress: abandonRun },
       ],
     )
   }
 
-  function onAnswer(letter: string) {
-    if (answered !== null) return
+  async function onAnswer(letter: string) {
+    if (answered !== null||answerLock.current||remaining===null) return
     if (Date.now() - questionShownAt.current < TAP_GRACE_MS) return   // aimed at the previous question
     const q = questions[qIndex]
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
-    const correct = letter === shuf.correctLetter
-    setAnswered(letter)
+    answerLock.current=true
+    const gen=runGeneration.current
+    const result=await verified.answerTimed(q.id,shuf.displayToOriginalLetter[letter]??null,()=>void onAnswer(letter))
+    answerLock.current=false
+    if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
+    const correct = result.answer!==null&&letter===shuf.correctLetter
+    setAnswered(result.answer===null?'':letter)
     setWasCorrect(correct)
-    recordHistory(q, correct, shuf.displayToOriginalLetter[letter] ?? null)
+    setBonusPts(result.bonus_total??0)
     if (correct) {
       playCombo(streak + 1)   // pitch rises as the combo builds
       // combo (based on streak BEFORE this answer) + speed (bar remaining at tap)
-      const extra = Math.round(10 * (comboMult(streak) - 1)) + Math.round(3 * barValueRef.current)
-      setBonusPts(b => b + extra)
       setScore(s => s + 1)
       setStreak(st => { const n = st + 1; setBestStreak(b => Math.max(b, n)); return n })
       popCombo()
@@ -323,19 +300,25 @@ export default function RapidFireScreen() {
     advance()
   }
 
-  function onTimeout() {
-    if (answered !== null) return
+  async function onTimeout() {
+    if (answered !== null||answerLock.current) return
     if (!isFocusedRef.current) return   // never progress a run in the background
     const q = questions[qIndex]
+    if(!q)return
+    answerLock.current=true
+    const gen=runGeneration.current
+    const result=await verified.answerTimed(q.id,null,()=>void onTimeout())
+    answerLock.current=false
+    if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
     playSound('wrong')
     setAnswered('')          // '' = timed out, no option chosen
     setWasCorrect(false)
     setStreak(0)
-    recordHistory(q, false)
     advance()
   }
 
   // ── Topics screen ─────────────────────────────────────────────────────────
+  if(verified.starting||verified.saving)return <VerifiedSessionBusy saving={verified.saving}/>
   if (screen === 'topics') {
     return (
       <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -502,7 +485,7 @@ export default function RapidFireScreen() {
         <Text style={[s.resultTitle, { color: C.text }]}>{isBarrageRun ? '⚡ Barrage complete!' : 'Rapid Fire done!'}</Text>
         <Text style={[s.resultSub, { color: C.textSoft }]}>
           {isBarrageRun
-            ? 'You showed up for the blitz — 2× XP banked. That\u2019s a win every time! 🎉'
+            ? (verified.receipt?.xp ? 'Your barrage result is confirmed. Nice work! 🎉' : 'This barrage slot was already claimed. Your practice result is saved; no second reward was paid.')
             : pct >= 80 ? 'Lightning fast!' : pct >= 60 ? 'Quick thinking — keep at it!' : 'Speed comes with reps!'}
         </Text>
         {isBarrageRun && barrageTotal != null && (
@@ -520,7 +503,7 @@ export default function RapidFireScreen() {
           {[
             { val: `${score}/${total}`, label: 'Correct', color: C.teal },
             { val: `×${comboMult(Math.max(0, bestStreak - 1)).toFixed(1)}`, label: 'Best combo', color: P },
-            { val: `+${base + bonus}`, label: `XP (incl. +${bonus} bonus)`, color: C.green },
+            { val: `+${verified.receipt?.xp??0}`, label: `XP (incl. +${bonus} bonus)`, color: C.green },
           ].map(t => (
             <View key={t.label} style={[s.resultStat, { backgroundColor: C.surface, borderColor: C.border, ...C.shadow }]}>
               <Text style={[s.resultVal, { color: t.color }]}>{t.val}</Text>

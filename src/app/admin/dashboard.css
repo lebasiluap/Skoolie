@@ -18,6 +18,7 @@
 .am-toolbar nav button[aria-pressed=true]{background:var(--teal-tint);color:var(--teal-deep);border-color:var(--teal-tint-2)}
 .am-range{display:flex;align-items:center;gap:10px;color:var(--text-soft);font-size:12px;font-weight:700}
 .am-range select{max-width:100%}
+.am-range input{min-height:44px;max-width:100%;border:1px solid var(--border-strong);border-radius:12px;padding:8px;background:var(--surface);color:var(--text);font:inherit}
 .am-freshness{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--text-soft);padding:16px 0 22px;line-height:1.6}
 .am-freshness span{color:var(--text-soft)}
 .am-grid{display:grid;gap:16px;margin-bottom:20px}

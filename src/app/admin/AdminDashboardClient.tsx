@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { changeLabel, formatRate, toCSV, type BetaMetrics, type ContentMetrics, type AppActivity } from './metrics'
 import './dashboard.css'
+import BetaActivityPanel from './BetaActivityPanel'
 
 const VIEWS = ['Overview', 'Learning', 'Content & quality', 'People', 'App health', 'Measurement'] as const
 type View = typeof VIEWS[number]
@@ -106,7 +107,7 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  <div className="am-grid am-four"><Metric label="Saved result sessions" value={s.sessions} note="Selected period; not session starts"/><Metric label="Recorded responses" value={s.responses} note="Sum of saved session question counts"/><Metric label="Scored accuracy" value={formatRate(s.objective_correct,s.objective_responses)} note={number(s.objective_correct)+' / '+number(s.objective_responses)+' valid scored responses'}/><Metric label="Flashcard recall" value={formatRate(s.flashcard_recalled,s.flashcard_responses)} note="Self-reported “Got it”; not objective accuracy"/></div>
  <div className="am-grid am-two"><Panel title="Practice mix" sub="Every recorded mode is shown; flashcards are self-graded."><SearchTable title="Practice modes" headers={['Mode','Sessions','Responses','Score / recall']} rows={data.modes.map(m=>[friendly(m.mode),m.sessions,m.responses,formatRate(m.correct,m.scored_responses)])}/></Panel><Panel title="Topic performance" sub="Top 30 session topics. Mixed sessions stay separate; accuracy excludes flashcards."><SearchTable title="Learning topics" headers={['Topic','Sessions','Responses','Accuracy']} rows={data.topics.map(t=>[t.topic,t.sessions,t.responses,formatRate(t.correct,t.scored_responses)])}/></Panel></div>
  <div className="am-grid am-four"><Metric label="XP in session records" value={s.xp_recorded} note="Recorded awards; not a financial ledger"/><Metric label="Profiles with a streak" value={s.streak_users} note="Stored current_streak > 0; not recomputed"/><Metric label="Longest stored streak" value={s.max_streak+' days'} note="All profiles, all time"/><Metric label="Invalid score records" value={s.invalid_score_sessions} note="Excluded from accuracy, retained in volume"/></div>
- <Panel title="What these numbers mean"><p className="am-note">The app writes quiz sessions on results, not at the start of practice. Session duration, abandonment and completion rate cannot be inferred. Bookmark review and missed-answer drills may deliberately not create sessions. A saved response count is not a distinct-question count.</p></Panel>
+ <Panel title="What these numbers mean"><p className="am-note">Saved quiz records are written on results. These records alone do not establish session duration, abandonment or completion rate. The People view separately shows observed foreground timing from compatible app builds. Bookmark review and missed-answer drills may deliberately not create saved quiz records. A saved response count is not a distinct-question count.</p></Panel>
  </>}
  {view==='Content & quality'&&<>
  <div className="am-section-heading"><div><h2>Clearance is a gate, not a guess.</h2><p>Global current content snapshot; not filtered by the activity period.</p></div><button disabled={contentLoading} onClick={()=>void loadContent()}>{contentLoading?'Loading…':'Refresh content'}</button></div>
@@ -122,6 +123,7 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  </>}
  </>}
  {view==='People'&&<>
+ <BetaActivityPanel/>
  <Panel title="Sign-ins & app activity" sub="Latest server-confirmed sign-in per person, not token refreshes. App activity is a foreground heartbeat, not proof someone is online. Times are UTC; newest 500 profiles by sign-in.">
  {activityLoading&&<p role="status">Refreshing activity…</p>}{activityError&&<p role="alert">{activityError} <button onClick={()=>void loadActivity()}>Retry activity</button></p>}
  {activity?<><p className="am-note">Activity snapshot: {timestamp(activity.measured_at)} UTC</p><SearchTable title="Live app activity" headers={['Name','Last sign-in (UTC)','Last app activity (UTC)','Last web/app activity (UTC)']} rows={activity.people.map(p=>[p.full_name??'Unnamed',timestamp(p.last_sign_in_at),timestamp(p.app_last_seen_at),timestamp(p.last_seen_at)])}/></>:!activityLoading&&<Empty>No activity snapshot loaded.</Empty>}

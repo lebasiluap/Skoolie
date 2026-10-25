@@ -4,8 +4,10 @@ import { requireOptionalNativeModule } from 'expo-modules-core'
 import { supabase } from '@/lib/supabase'
 import { clearClientMetrics, drainClientMetrics } from '@/lib/clientMetrics'
 import { readWithDeadline } from '@/lib/readWithDeadline'
+import { useBetaActivity } from '@/hooks/useBetaActivity'
 
 export function useAppPresence(userId: string | undefined) {
+  useBetaActivity(userId)
   useEffect(() => {
     clearClientMetrics()
     if (!userId) return

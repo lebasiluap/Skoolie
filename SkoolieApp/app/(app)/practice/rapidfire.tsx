@@ -30,6 +30,7 @@ import { topicColor } from '@/constants/topics'
 import { buildShuffledMcq, LETTERS } from '@/lib/answers'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
+import { timedVerdict } from '@/lib/timedVerdict'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
@@ -283,8 +284,14 @@ export default function RapidFireScreen() {
     const result=await verified.answerTimed(q.id,shuf.displayToOriginalLetter[letter]??null,()=>void onAnswer(letter))
     answerLock.current=false
     if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
-    const correct = result.answer!==null&&letter===shuf.correctLetter
-    setAnswered(result.answer===null?'':letter)
+    showAcceptedAnswer(q,result)
+  }
+
+  function showAcceptedAnswer(q: Question, result: {answer:string|null;bonus_total?:number}) {
+    const shuf=buildShuffledMcq(q.options,q.correct_answer,q.id+shuffleSalt)
+    const verdict=timedVerdict(shuf,result.answer)
+    const correct=verdict.correct
+    setAnswered(verdict.display)
     setWasCorrect(correct)
     setBonusPts(result.bonus_total??0)
     if (correct) {
@@ -310,11 +317,7 @@ export default function RapidFireScreen() {
     const result=await verified.answerTimed(q.id,null,()=>void onTimeout())
     answerLock.current=false
     if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
-    playSound('wrong')
-    setAnswered('')          // '' = timed out, no option chosen
-    setWasCorrect(false)
-    setStreak(0)
-    advance()
+    showAcceptedAnswer(q,result)
   }
 
   // ── Topics screen ─────────────────────────────────────────────────────────

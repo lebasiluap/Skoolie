@@ -41,6 +41,7 @@ import { readWithDeadline } from '@/lib/readWithDeadline'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
+import { timedVerdict } from '@/lib/timedVerdict'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 type Screen = 'topics' | 'quiz' | 'results'
@@ -378,63 +379,43 @@ export default function MCQScreen() {
     setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
   }
 
+  function showAcceptedAnswer(q: Question, canonical: string | null) {
+    const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    const verdict = timedVerdict(shuf, canonical)
+    if (answered.current.has(q.id)) return
+    answered.current.add(q.id)
+    playSound(verdict.correct ? 'correct' : 'wrong')
+    setSelected(verdict.display || null)
+    setReviewSnap({question:q,selected:verdict.display,isCorrect:verdict.correct,timedOut:verdict.timedOut})
+    if (verdict.correct) setScore(s => s + 1)
+    else setWrongQuestions(wq => [...wq,q])
+    setPhase('review');setOverlayVisible(true)
+  }
+
   async function handleSubmit() {
     if (!selected || phase !== 'question' || verified.saving || verified.submitting || (timedOn && timeLeft === null)) return
     const q = questions[qIndex]
     if (!q || answered.current.has(q.id)) return
-    const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
-    let correct = selected === shuf.correctLetter
-    // Map the tapped display letter back to the ORIGINAL stored option letter so
-    // the picked answer is comparable across users despite per-session shuffling.
-    const origLetter = shuf.displayToOriginalLetter[selected] ?? null
+    const shuf = buildShuffledMcq(q.options,q.correct_answer,q.id+shuffleSalt)
+    let canonical: string | null = shuf.displayToOriginalLetter[selected] ?? null
     if (timedOn) {
-      const result = await verified.answerTimed(q.id, origLetter, () => void handleSubmit())
+      const result = await verified.answerTimed(q.id,canonical,()=>void handleSubmit())
       if (!result) return
-      if (result.answer === null) { answered.current.add(q.id);setReviewSnap({question:q,selected:'',isCorrect:false,timedOut:true});setWrongQuestions(wq=>[...wq,q]);setPhase('review');setOverlayVisible(true);playSound('wrong');return }
-      correct = shuf.correctLetter !== null && result.answer === shuf.displayToOriginalLetter[shuf.correctLetter]
-    } else if (!verified.answer(q.id, origLetter)) return
-    answered.current.add(q.id)
-    playSound(correct ? 'correct' : 'wrong')
-    // Record the attempt server-side (increments times_seen/times_correct;
-    // powers "Allow repeat questions", topic progress, and the seen tag).
-    if (user && !verified.active()) {
-      supabase.rpc('record_answer', {
-        p_question_id: q.id, p_question_type: 'mcq',
-        p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
-        p_difficulty: q.difficulty ?? 'medium', p_correct: correct,
-        p_user_answer: origLetter,
-      }).then(() => {})
-    }
-    // Snapshot now — overlay renders from this, never from live state
-    setReviewSnap({ question: q, selected, isCorrect: correct })
-    if (correct) {
-      setScore(s => s + 1)
-    } else {
-      setWrongQuestions(wq => [...wq, q])
-    }
-    setPhase('review')
-    setOverlayVisible(true)
+      canonical=result.answer
+    } else if (!verified.answer(q.id,canonical)) return
+    showAcceptedAnswer(q,canonical)
   }
 
-  /** Timed-mode timeout: counts as wrong, opens the same review overlay. */
   handleTimeoutRef.current = async () => {
     const q = questions[qIndex]
     if (!q || phase !== 'question' || answered.current.has(q.id)) return
-    if (timedOn) { if (!await verified.answerTimed(q.id,null,()=>handleTimeoutRef.current())) return }
-    else if (!verified.answer(q.id, null)) return
-    answered.current.add(q.id)
-    if (user && !verified.active()) {
-      supabase.rpc('record_answer', {
-        p_question_id: q.id, p_question_type: 'mcq',
-        p_topic: q.topic, p_category: q.category, p_subtopic: q.subtopic,
-        p_difficulty: q.difficulty ?? 'medium', p_correct: false,
-      }).then(() => {})
-    }
-    playSound('wrong')
-    setReviewSnap({ question: q, selected: '', isCorrect: false, timedOut: true })
-    setWrongQuestions(wq => [...wq, q])
-    setPhase('review')
-    setOverlayVisible(true)
+    let canonical: string | null = null
+    if (timedOn) {
+      const result=await verified.answerTimed(q.id,null,()=>handleTimeoutRef.current())
+      if (!result) return
+      canonical=result.answer
+    } else if (!verified.answer(q.id,null)) return
+    showAcceptedAnswer(q,canonical)
   }
 
   /** Confirm before abandoning an active session — progress isn't saved until

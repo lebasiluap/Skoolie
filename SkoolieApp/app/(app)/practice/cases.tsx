@@ -31,6 +31,7 @@ import { showToast } from '@/lib/toast'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
+import { timedVerdict } from '@/lib/timedVerdict'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
 const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
@@ -401,45 +402,44 @@ export default function CasesScreen() {
     setScreen('vignette')
   }
 
-  async function submitAnswer() {
-    if (!selected || revealed || verified.saving || verified.submitting || (timedOn && timeLeft === null)) return
-    const id = `${cases[caseIdx].id}:${qIdx}`
+  function showAcceptedAnswer(id: string, canonical: string | null) {
+    const cs=cases[caseIdx],q=cs.questions[qIdx]
+    const verdict=timedVerdict(buildShuffledMcq(q.options,q.correct_answer,`${cs.id}:${qIdx}:${shuffleSalt}`),canonical)
     if (answered.current.has(id)) return
-    const shuffled = buildShuffledMcq(cases[caseIdx].questions[qIdx].options,
-      cases[caseIdx].questions[qIdx].correct_answer, `${cases[caseIdx].id}:${qIdx}:${shuffleSalt}`)
-    if (timedOn) {
-      const result=await verified.answerTimed(id,shuffled.displayToOriginalLetter[selected] ?? null,()=>void submitAnswer())
-      if(!result)return
-      if(result.answer===null){answered.current.add(id);setTimedOut(true);setDetailsVisible(false);setRevealed(true);setOverlayVisible(true);setWrongCaseIds(prev=>new Set(prev).add(cases[caseIdx].id));playSound('wrong');return}
-    } else if (!verified.answer(id, shuffled.displayToOriginalLetter[selected] ?? null)) return
     answered.current.add(id)
-    setDetailsVisible(false)   // never stack the review sheet on the details sheet
-    setRevealed(true)
-    setOverlayVisible(true)
-    const cs = cases[caseIdx]
-    const cq = cs.questions[qIdx]
-    const correct = selected === buildShuffledMcq(cq.options, cq.correct_answer, `${cs.id}:${qIdx}:${shuffleSalt}`).correctLetter
-    playSound(correct ? 'correct' : 'wrong')
-    if (correct) setScore(s => s + 1)
-    else setWrongCaseIds(prev => new Set(prev).add(cs.id))
+    setSelected(verdict.display||null);setTimedOut(verdict.timedOut)
+    setDetailsVisible(false);setRevealed(true);setOverlayVisible(true)
+    playSound(verdict.correct?'correct':'wrong')
+    if(verdict.correct)setScore(s=>s+1)
+    else setWrongCaseIds(prev=>new Set(prev).add(cs.id))
   }
 
-  /** Timed-mode timeout: counts as wrong, opens the same review overlay. */
-  handleTimeoutRef.current = async () => {
-    if (revealed) return
-    const cs = cases[caseIdx]
-    if (!cs) return
-    const id = `${cs.id}:${qIdx}`
-    if (answered.current.has(id)) return
-    if (timedOn) { if(!await verified.answerTimed(id,null,()=>handleTimeoutRef.current()))return }
-    else if (!verified.answer(id, null)) return
-    answered.current.add(id)
-    playSound('wrong')
-    setTimedOut(true)
-    setDetailsVisible(false)   // never stack the review sheet on the details sheet
-    setRevealed(true)
-    setOverlayVisible(true)
-    setWrongCaseIds(prev => new Set(prev).add(cs.id))
+  async function submitAnswer() {
+    if (!selected || revealed || verified.saving || verified.submitting || (timedOn && timeLeft === null)) return
+    const cs=cases[caseIdx],q=cs.questions[qIdx],id=`${cs.id}:${qIdx}`
+    if(answered.current.has(id))return
+    const shuf=buildShuffledMcq(q.options,q.correct_answer,`${cs.id}:${qIdx}:${shuffleSalt}`)
+    let canonical:string|null=shuf.displayToOriginalLetter[selected]??null
+    if(timedOn){
+      const result=await verified.answerTimed(id,canonical,()=>void submitAnswer())
+      if(!result)return
+      canonical=result.answer
+    }else if(!verified.answer(id,canonical))return
+    showAcceptedAnswer(id,canonical)
+  }
+
+  handleTimeoutRef.current=async()=>{
+    const cs=cases[caseIdx]
+    if(revealed||!cs)return
+    const id=`${cs.id}:${qIdx}`
+    if(answered.current.has(id))return
+    let canonical:string|null=null
+    if(timedOn){
+      const result=await verified.answerTimed(id,null,()=>handleTimeoutRef.current())
+      if(!result)return
+      canonical=result.answer
+    }else if(!verified.answer(id,null))return
+    showAcceptedAnswer(id,canonical)
   }
 
   // Replay the full set — saves a session + XP but does NOT advance the streak.

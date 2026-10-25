@@ -17,6 +17,7 @@ import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
 import { TimedModeSheet } from '@/components/ui/TimedModeSheet'
 import { formatSecs } from '@/lib/timing'
 import { effectiveStreak as computeEffectiveStreak, streakColors } from '@/lib/streak'
+import { usePracticeData } from '@/contexts/PracticeDataContext'
 
 interface Counts {
   mcq: number
@@ -29,8 +30,13 @@ export default function PracticeHubScreen() {
   const { isDark } = useThemeMode()
   const { profile, user } = useAuth()
   const { qSet, setQSet } = useFilters()
+  const practiceData = usePracticeData()
+  const regionSlug = profile?.country?.trim().toLowerCase() === 'ghana' ? 'ghana' : null
+  const initialRegion = qSet === 'Global' ? 'universal' : qSet === 'Regional' ? regionSlug : null
   const entrance = useScreenEntrance()
-  const [counts, setCounts] = useState<Counts>({ mcq: 0, flashcard: 0, case_study: 0 })
+  const [counts, setCounts] = useState<Counts>(() => practiceData.peekHub(initialRegion) ?? { mcq: 0, flashcard: 0, case_study: 0 })
+  const [countsReady, setCountsReady] = useState(() => !!practiceData.peekHub(initialRegion))
+  const [countsError, setCountsError] = useState(false)
   // Monotonic request id — fast segment-tapping fires overlapping RPCs and
   // the slowest must not win. Previous counts stay on screen until the
   // NEWEST response arrives (no sub-text flicker mid-swap).
@@ -106,37 +112,35 @@ export default function PracticeHubScreen() {
       (profile.study_year ? ` · ${profile.study_year.replace('year', 'Year ')}` : '')
     : ''
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (profile) loadCounts(qSet)
+    return () => { countsReq.current++ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.profession, profile?.access_key, qSet])
+  }, [profile?.profession, profile?.access_key, profile?.country, qSet, practiceData]))
 
   // Region slug for the user's country — only Ghana has regional content today.
   // Users from countries with no regional bank don't see the breakdown control
   // at all (their Global IS their All).
-  const regionSlug = profile?.country?.trim().toLowerCase() === 'ghana' ? 'ghana' : null
 
   async function loadCounts(set: QSet) {
     if (!profile) return
     const req = ++countsReq.current
-    const prof = profile.profession
-    const ak = profile.access_key ?? null
     // NOTE: this control is a COUNT BREAKDOWN, not a content filter — practice
     // always draws from the user's full visible bank (region gating happens
     // server-side by country). The caption below the control says so.
     const regionVal = set === 'Global' ? 'universal' : set === 'Regional' ? regionSlug : null
 
-    const { data } = await supabase.rpc('get_practice_counts', { p_profession: prof, p_region: regionVal, p_access_key: ak })
-    if (req !== countsReq.current) return   // a newer request superseded this one
-    const row = Array.isArray(data) ? data[0] : data
-
-    withFilterAnim(() => {
-      setCounts({
-        mcq: Number(row?.mcq ?? 0),
-        flashcard: Number(row?.flashcard ?? 0),
-        case_study: Number(row?.case_study ?? 0),
-      })
-    })
+    const cached = practiceData.peekHub(regionVal)
+    setCountsReady(!!cached)
+    setCountsError(false)
+    if (cached) setCounts(cached)
+    try {
+      const row = await practiceData.getHub(regionVal)
+      if (req !== countsReq.current) return
+      withFilterAnim(() => { setCounts(row); setCountsReady(true) })
+    } catch {
+      if (req === countsReq.current && !cached) setCountsError(true)
+    }
   }
 
   const MODES = [
@@ -264,7 +268,7 @@ export default function PracticeHubScreen() {
                   <View style={{ flex: 1, marginLeft: 10 }}>
                     <Text style={[s.modeTitle, { color: C.text }]} numberOfLines={1}>{mode.label}</Text>
                     <Text style={[s.modeSub, { color: C.textFaint }]} numberOfLines={1}>
-                      {mode.count > 0 ? `${roughCount(mode.count)} ${mode.unit}` : mode.sub}
+                      {mode.key === 'rf' ? mode.sub : !countsReady ? (countsError ? 'Counts unavailable' : 'Loading…') : `${roughCount(mode.count)} ${mode.unit}`}
                     </Text>
                   </View>
                 </View>
@@ -295,6 +299,12 @@ export default function PracticeHubScreen() {
           })}
         </View>
 
+        {countsError && (
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry practice counts" onPress={() => loadCounts(qSet)}
+            style={{ minHeight: 44, justifyContent: 'center', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ color: C.teal, fontFamily: 'Nunito_800ExtraBold' }}>Try loading counts again</Text>
+          </TouchableOpacity>
+        )}
         {/* JUMP BACK IN — fills the below-grid space with something personal */}
         {lastTopic && (() => {
           const { color: tColor, bgLight: tBg } = topicColor(lastTopic.topic)

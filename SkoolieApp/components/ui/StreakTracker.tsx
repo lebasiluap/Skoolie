@@ -27,9 +27,9 @@ export function StreakTracker({
   lastActiveDate?: string | null
   createdAt?: string | null
   /** Days saved by a streak freeze — rendered BLUE (still count toward the streak) */
-  frozenDates?: string[] | null
+  frozenDates: string[] | null | undefined
   /** Freezes in the bank */
-  freezes?: number | null
+  freezes: number | null | undefined
   style?: any
 }) {
   const C = useTheme()

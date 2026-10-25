@@ -388,7 +388,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── Streak milestone tracker ──────────────────────── */}
-        <StreakTracker streak={effStreak} userId={user.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} style={{ marginBottom: 14 }} />
+        <StreakTracker streak={effStreak} userId={user.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} frozenDates={profile.frozen_dates} freezes={profile.streak_freezes} style={{ marginBottom: 14 }} />
 
         {/* Trophy case */}
         <TouchableOpacity

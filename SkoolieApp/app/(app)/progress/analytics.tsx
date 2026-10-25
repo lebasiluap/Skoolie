@@ -467,6 +467,8 @@ function Ring({ size, stroke, pct, color, track, children }: {
 
 /** Bar chart — highlighted bar (default: last, i.e. today) is full-strength with a
  *  value bubble; the rest render softened so the eye lands on "now". */
+const CHART_PLOT_HEIGHT = 84
+
 function BarChart({ points, labels, color, C, fixedMax, suffix = '', highlightIndex, missing }: {
   points: number[]; labels: string[]; color: string; C: any; fixedMax?: number; suffix?: string; highlightIndex?: number
   /** per-point "no activity" flags — a missing day renders gray, while a REAL
@@ -477,19 +479,20 @@ function BarChart({ points, labels, color, C, fixedMax, suffix = '', highlightIn
   const max = fixedMax ?? Math.max(1, ...points)
   const hi = highlightIndex ?? points.length - 1
   return (
-    <View>
+    <View style={s.chartFrame}>
       <View style={s.chartRow}>
         {points.map((v, i) => {
           const isMissing = missing ? !!missing[i] : v <= 0
+          const barPercent = Math.max(3, Math.min(100, (v / max) * 100))
           return (
           <View key={i} style={s.chartCol}>
             {i === hi && !isMissing && (
-              <View style={[s.chartBubble, { backgroundColor: color }]}>
+              <View style={[s.chartBubble, { backgroundColor: color, bottom: CHART_PLOT_HEIGHT * barPercent / 100 + 4 }]}>
                 <Text style={[s.chartBubbleText, { color: C.onTeal }]} numberOfLines={1} maxFontSizeMultiplier={1.1}>{v}{suffix}</Text>
               </View>
             )}
             <View style={[s.bar, {
-              height: `${Math.max(3, (v / max) * 100)}%`,
+              height: `${barPercent}%`,
               backgroundColor: isMissing ? C.surface3 : i === hi ? color : color + '73',
             }]} />
           </View>
@@ -555,13 +558,16 @@ const s = StyleSheet.create({
   subBarFill: { height: 6, borderRadius: 3 },
   subPct: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold', width: 36, textAlign: 'right' },
 
+  // Reserve headroom for the tallest bar's value label. Without this, a 100%
+  // bar plus its normal-flow bubble exceeds the 84pt plot and hits the copy.
+  chartFrame: { paddingTop: 28 },
   chartRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
-  chartCol: { flex: 1, height: 84, justifyContent: 'flex-end', alignItems: 'center' },
+  chartCol: { flex: 1, height: CHART_PLOT_HEIGHT, justifyContent: 'flex-end', alignItems: 'center' },
   bar: { width: '100%', borderRadius: 4, minHeight: 3 },
   // Negative horizontal margin lets the pill overflow its narrow bar column so
   // 3-digit values ("134", "60%") never wrap onto two lines; zIndex draws it
   // above the neighboring bars.
-  chartBubble: { paddingVertical: 2, paddingHorizontal: 6, borderRadius: 7, marginBottom: 4, marginHorizontal: -16, alignSelf: 'center', alignItems: 'center', zIndex: 2 },
+  chartBubble: { position: 'absolute', paddingVertical: 2, paddingHorizontal: 6, borderRadius: 7, marginHorizontal: -16, alignSelf: 'center', alignItems: 'center', zIndex: 2 },
   chartBubbleText: { fontSize: 9, fontFamily: 'Nunito_800ExtraBold' },
   chartLabel: { flex: 1, fontSize: 9, textAlign: 'center', marginTop: 4 },
 

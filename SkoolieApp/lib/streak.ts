@@ -1,9 +1,8 @@
 // Streak day math + milestone tiers.
-// Uses LOCAL calendar days (the device's day boundary) so a session at 11pm counts
-// for "today" wherever the user is — and so all read/write sites agree.
+// UTC is the server's study-day boundary (also Ghana time).
 
 export function dateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return d.toISOString().slice(0, 10)
 }
 export const todayKey = () => dateKey(new Date())
 export const yesterdayKey = () => dateKey(new Date(Date.now() - 86_400_000))
@@ -12,28 +11,20 @@ export const yesterdayKey = () => dateKey(new Date(Date.now() - 86_400_000))
 export function effectiveStreak(
   currentStreak: number | null | undefined,
   lastActiveDate: string | null | undefined,
+  frozenDates: string[] | null | undefined = [],
 ): number {
   const s = currentStreak ?? 0
   if (!lastActiveDate) return 0
-  return lastActiveDate === todayKey() || lastActiveDate === yesterdayKey() ? s : 0
-}
-
-/** New {current_streak, longest_streak, last_active_date} after completing a session today. */
-export function computeStreakUpdate(p: {
-  current_streak?: number | null
-  longest_streak?: number | null
-  last_active_date?: string | null
-}) {
-  const today = todayKey()
-  const cur = p.current_streak ?? 0
-  const last = p.last_active_date ?? ''
-  // Same day → unchanged; yesterday → +1; otherwise the streak was broken → restart at 1.
-  const newStreak = last === today ? cur : last === yesterdayKey() ? cur + 1 : 1
-  return {
-    current_streak: newStreak,
-    longest_streak: Math.max(p.longest_streak ?? 0, newStreak),
-    last_active_date: today,
+  if (lastActiveDate === todayKey() || lastActiveDate === yesterdayKey()) return s
+  if (lastActiveDate > todayKey()) return 0
+  const frozen = new Set(frozenDates ?? [])
+  const last = Date.parse(`${lastActiveDate}T00:00:00Z`)
+  const yesterday = Date.parse(`${yesterdayKey()}T00:00:00Z`)
+  if (!Number.isFinite(last) || (yesterday - last) / 86400000 > frozen.size) return 0
+  for (let d = last + 86400000; d <= yesterday; d += 86400000) {
+    if (!frozen.has(dateKey(new Date(d)))) return 0
   }
+  return s
 }
 
 // The streak's signature colour — a bright, vivid gold ("fire"), distinct from the
@@ -44,53 +35,6 @@ export const STREAK_GOLD_DEEP = '#B8780A'   // deeper — readable as text on li
 // Streak-freeze blue — frozen days render this instead of gold in the tracker.
 export const STREAK_FREEZE_BLUE = '#38BDF8'
 export const STREAK_FREEZE_DEEP = '#0284C7'
-
-/** Whole days missed between last activity and today (0 = streak unbroken so far). */
-export function missedDays(lastActiveDate: string | null | undefined): number {
-  if (!lastActiveDate) return 0
-  const [y, m, d] = lastActiveDate.split('-').map(Number)
-  if (!y || !m || !d) return 0
-  const last = new Date(y, m - 1, d)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const diff = Math.round((today.getTime() - last.getTime()) / 86_400_000)
-  return Math.max(0, diff - 1)
-}
-
-/**
- * Streak-freeze auto-consumption: if the gap since last activity is fully
- * covered by available freezes, returns the profile updates that spend them.
- * Frozen days COUNT toward the streak (they render blue, not gold). If freezes
- * can't cover the whole gap, nothing is consumed and the streak dies normally.
- */
-export function computeFreezeConsumption(p: {
-  current_streak?: number | null
-  longest_streak?: number | null
-  last_active_date?: string | null
-  streak_freezes?: number | null
-  frozen_dates?: string[] | null
-}): null | {
-  current_streak: number
-  longest_streak: number
-  last_active_date: string
-  streak_freezes: number
-  frozen_dates: string[]
-} {
-  const gap = missedDays(p.last_active_date)
-  const freezes = p.streak_freezes ?? 0
-  const cur = p.current_streak ?? 0
-  if (gap === 0 || cur === 0 || freezes < gap) return null
-  const dates: string[] = []
-  for (let i = gap; i >= 1; i--) dates.push(dateKey(new Date(Date.now() - i * 86_400_000)))
-  const newStreak = cur + gap
-  return {
-    current_streak: newStreak,
-    longest_streak: Math.max(p.longest_streak ?? 0, newStreak),
-    last_active_date: yesterdayKey(),
-    streak_freezes: freezes - gap,
-    frozen_dates: [...(p.frozen_dates ?? []), ...dates].slice(-60),   // keep recent history
-  }
-}
 
 const luminance = (hex: string) => {
   const c = hex.replace('#', '')

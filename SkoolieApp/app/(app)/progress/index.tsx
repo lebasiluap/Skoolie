@@ -194,7 +194,7 @@ export default function ProgressScreen() {
   const activeList: LeaderboardUser[] = weekUsers
   const filteredUsers = activeList
   const myWeekLeagueId = (weekUsers.find(u => u.id === user?.id)?.league ?? weekUsers[0]?.league ?? 'bronze') as keyof typeof LEAGUE_CONFIG
-  const effectiveStreak = computeEffectiveStreak(profile?.current_streak, profile?.last_active_date)
+  const effectiveStreak = computeEffectiveStreak(profile?.current_streak, profile?.last_active_date, profile?.frozen_dates)
 
   // ── Positional zones (Duolingo look) ──────────────────────────────────────
   // The bands mark the DISPLAYED cut: everyone above the green line is in the

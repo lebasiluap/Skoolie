@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, A
 import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
-import { effectiveStreak as computeEffectiveStreak, streakColors, computeFreezeConsumption } from '@/lib/streak'
+import { effectiveStreak as computeEffectiveStreak, streakColors, todayKey as studyTodayKey } from '@/lib/streak'
 import { StreakTracker } from '@/components/ui/StreakTracker'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Circle } from 'react-native-svg'
@@ -120,14 +120,7 @@ export default function DashboardScreen() {
   async function loadSessions() {
     if (!user) return
 
-    // Streak-freeze auto-consumption: if missed days are fully covered by
-    // banked freezes, spend them — the streak survives (frozen days go blue).
-    if (profile) {
-      const freezeUpd = computeFreezeConsumption(profile)
-      if (freezeUpd) {
-        supabase.from('user_profiles').update(freezeUpd).eq('id', user.id).then(() => refreshProfile())
-      }
-    }
+    // Streaks/freezes are reconciled only by the server via refreshProfile.
 
     // This week's league XP (week_start = ISO Monday, matching Postgres date_trunc('week')).
     const now = new Date()
@@ -146,9 +139,9 @@ export default function DashboardScreen() {
         // Rebuild local mascot nudges from fresh state (streak rescue, lapse,
         // barrage-live, league deadline). Best-effort — never blocks the UI.
         if (profile) {
-          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
           const today = new Date()
-          const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+          const todayKey = studyTodayKey()
           // Zone transition (promotion/demotion cut) piggybacks on the same
           // rebuild. When the server push engine has this device's token, the
           // LOCAL zone ping is skipped — one announcement per transition, ever.
@@ -240,7 +233,7 @@ export default function DashboardScreen() {
 
   if (!profile) return null
 
-  const effectiveStreak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+  const effectiveStreak = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
   const sc = streakColors(effectiveStreak, isDark)
 
   const profLabel = profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)
@@ -272,7 +265,7 @@ export default function DashboardScreen() {
         {(() => {
           const todayDone = todayCount >= 10
           const barrageLive = !!user && nextBarrage(user.id, claimedSlots)?.status === 'live'
-          const streakAtRisk = effectiveStreak > 0 && !todayDone && new Date().getHours() >= 17
+          const streakAtRisk = effectiveStreak > 0 && profile.last_active_date !== studyTodayKey() && new Date().getUTCHours() >= 17
           const expr = barrageLive ? 'wave' : todayDone ? 'happy' : streakAtRisk ? 'thinking' : 'idle'
           return (
             <View style={s.greetingRow}>
@@ -293,7 +286,7 @@ export default function DashboardScreen() {
           )
         })()}
 
-        {/* DAILY GOAL — the "what now?" anchor: 10 questions keeps the streak alive.
+        {/* DAILY GOAL — a separate practice target; one verified session earns a streak day.
             (Barrage banner below outranks it visually while a window is live.) */}
         {(() => {
           const GOAL = 10

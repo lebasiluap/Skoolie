@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
+import { readWithDeadline } from '@/lib/readWithDeadline'
 import { streakColors, dateKey, STREAK_FREEZE_BLUE } from '@/lib/streak'
 
 const DOW = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'] // index 0=Sun … 6=Sat
@@ -42,38 +43,40 @@ export function StreakTracker({
 
   // Fixed current week: Sunday → Saturday.
   const weekStart = new Date(now)
-  weekStart.setDate(now.getDate() - now.getDay())
-  weekStart.setHours(0, 0, 0, 0)
+  weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay())
+  weekStart.setUTCHours(0, 0, 0, 0)
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
-    d.setDate(weekStart.getDate() + i)
+    d.setUTCDate(weekStart.getUTCDate() + i)
     return { key: dateKey(d), label: DOW[i] }
   })
 
   // Real activity this week, from saved (non-bookmark) study sessions.
   const [activeDays, setActiveDays] = useState<Set<string>>(new Set())
   const [loaded, setLoaded] = useState(false)
+  const [verifiedFrozen, setVerifiedFrozen] = useState<string[] | null>(null)
   // Refetch on every screen focus so a session just completed elsewhere ticks today immediately.
   useFocusEffect(useCallback(() => {
     if (!userId) { setLoaded(true); return }
     let cancelled = false
-    supabase
-      .from('quiz_sessions')
-      .select('started_at')
-      .eq('user_id', userId)
-      .gte('started_at', weekStart.toISOString())
-      .then(({ data }) => {
+    setLoaded(false)
+    setActiveDays(new Set())
+    setVerifiedFrozen(null)
+    readWithDeadline(signal => supabase.rpc('get_study_streak').abortSignal(signal),3000)
+      .then(({ data, error }) => {
         if (cancelled) return
+        if (error || !data) return
         const s = new Set<string>()
-        for (const r of data ?? []) s.add(dateKey(new Date((r as any).started_at)))
+        for (const day of data.study_days ?? []) s.add(day)
         setActiveDays(s)
+        setVerifiedFrozen(data.frozen_dates ?? [])
         setLoaded(true)
-      })
+      }).catch(() => { /* No fabricated missed/studied marks on failure. */ })
     return () => { cancelled = true }
   }, [userId, weekStart.getTime()])) // eslint-disable-line react-hooks/exhaustive-deps
 
   const studiedToday = activeDays.has(todayKeyStr) || lastActiveDate === todayKeyStr
-  const frozen = new Set(frozenDates ?? [])
+  const frozen = new Set(verifiedFrozen ?? frozenDates ?? [])
 
   // Projected day they'd reach the next milestone if they study daily from today.
   const streakAfterToday = studiedToday ? streak : streak > 0 ? streak + 1 : 1
@@ -82,7 +85,7 @@ export function StreakTracker({
     const offset = next.days - streakAfterToday
     if (offset >= 0) {
       const g = new Date(now)
-      g.setDate(now.getDate() + offset)
+      g.setUTCDate(now.getUTCDate() + offset)
       goalKey = dateKey(g)
     }
   }
@@ -168,7 +171,7 @@ export function StreakTracker({
         })}
       </View>
 
-      <Text style={[s.caption, { color: C.textFaint }]}>{caption}</Text>
+      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}UTC/Ghana days · Freezes protect, but do not add days.</Text>
     </View>
   )
 }

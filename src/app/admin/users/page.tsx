@@ -10,7 +10,7 @@ export default async function AdminUsersPage() {
   // a raw history read caps at 1000 rows and undercounts as usage grows).
   const [{ data: profiles }, { data: stats }, { data: activity }] = await Promise.all([
     // Do not serialize private notification tokens or unrelated profile fields.
-    supabase.from('user_profiles').select('id,full_name,email,profession,study_year,level,xp,current_streak,longest_streak,last_active_date,last_seen_at,created_at,access_key').order('created_at', { ascending: false }),
+    supabase.from('user_profiles').select('id,full_name,email,profession,study_year,level,xp,current_streak,longest_streak,last_active_date,frozen_dates,last_seen_at,created_at,access_key').order('created_at', { ascending: false }),
     supabase.rpc('admin_user_stats'),
     supabase.rpc('admin_app_activity').abortSignal(AbortSignal.timeout(5000)),
   ])

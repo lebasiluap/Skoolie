@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { effectiveStreak as studyStreak } from '@/lib/streak'
 import { PAGE_PAD, inputStyle, PageHeader, Chip, EmptyState, thStyle } from '../ui'
 
 interface Profile {
@@ -15,6 +16,7 @@ interface Profile {
   current_streak: number | null
   longest_streak: number | null
   last_active_date: string | null
+  frozen_dates: string[] | null
   last_seen_at: string | null
   last_sign_in_at: string | null
   created_at: string
@@ -39,7 +41,7 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
 
   function effectiveStreak(p: Profile) {
     const lastActive = p.last_active_date ?? ''
-    return (lastActive === todayStr || lastActive === yesterdayStr) ? (p.current_streak ?? 0) : 0
+    return studyStreak(p.current_streak, lastActive, p.frozen_dates)
   }
 
   const rows = useMemo(() => {

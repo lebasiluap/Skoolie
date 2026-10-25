@@ -167,7 +167,7 @@ export default function ProfileScreen() {
   const profMeta    = PROF_META[profile.profession] ?? { label: profile.profession, color: C.textSoft, bg: C.surface3 }
   const xpInLevel   = profile.xp % XP_PER_LEVEL
   const xpToNext    = XP_PER_LEVEL - xpInLevel
-  const effStreak   = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+  const effStreak   = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
   const joined      = new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
   const currentYearOptions = YEARS_BY_PROFESSION[profile.profession] ?? DEFAULT_YEARS
   const yearLabel = currentYearOptions.find(y => y.id === profile.study_year)?.label

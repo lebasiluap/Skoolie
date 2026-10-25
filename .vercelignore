@@ -3,6 +3,7 @@ SkoolieApp/*
 !SkoolieApp/lib
 SkoolieApp/lib/*
 !SkoolieApp/lib/verifiedSession.ts
+!SkoolieApp/lib/streak.ts
 # Docs / assets that don't belong in web builds
 email-templates
 skoolie_context_handoff.docx

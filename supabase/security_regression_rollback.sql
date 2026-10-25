@@ -16,7 +16,7 @@ begin
   select id into cid from public.case_studies limit 1;
   if qid is null or cid is null then raise exception 'Released question and case fixtures required'; end if;
   update public.user_profiles set current_streak=5,longest_streak=7,
-    last_active_date=(now() at time zone 'UTC')::date-3,streak_freezes=4,
+    last_active_date=(now() at time zone 'UTC')::date-1,streak_freezes=4,
     frozen_dates='{}',tier=0,tier_score=0 where id=uid;
   insert into public.content_quarantine(content_type,content_id,reason)
     values('question',qid,'rolled_back_security_regression'),('case_study',cid,'rolled_back_security_regression');
@@ -25,14 +25,13 @@ begin
   if n<>1 then raise exception 'Own profile unreadable'; end if;
   update public.user_profiles set sound_enabled=not sound_enabled where id=uid;
   if not found then raise exception 'Preference update failed'; end if;
-  update public.user_profiles set current_streak=7,longest_streak=7,
-    last_active_date=(now() at time zone 'UTC')::date-1,streak_freezes=2,
-    frozen_dates=array[(now() at time zone 'UTC')::date-2,(now() at time zone 'UTC')::date-1] where id=uid;
-  update public.user_profiles set current_streak=8,longest_streak=8,
+  -- Even a plausible +1 must come from verified completion, not REST.
+  blocked:=false;
+  begin update public.user_profiles set current_streak=6,longest_streak=7,
     last_active_date=(now() at time zone 'UTC')::date where id=uid;
-  -- Idempotent same-day saves remain accepted.
-  update public.user_profiles set current_streak=8,longest_streak=8,
-    last_active_date=(now() at time zone 'UTC')::date where id=uid;
+  exception when insufficient_privilege then blocked:=true;end;
+  if not blocked then raise exception 'Client-authored study day accepted';end if;
+  update public.user_profiles set current_streak=current_streak where id=uid;
   blocked:=false;
   begin update public.user_profiles set streak_freezes=9999 where id=uid;
   exception when invalid_parameter_value then blocked:=true; end;

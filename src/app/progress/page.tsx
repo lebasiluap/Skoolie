@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import BottomNav from '@/components/BottomNav'
+import { effectiveStreak as studyStreak } from '@/lib/streak'
 
 function getLeague(xp: number) {
   if (xp >= 4000) return { label: 'Diamond', icon: '💎' }
@@ -28,12 +29,14 @@ export default async function ProgressPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: rawProfile } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-  if (!profile) redirect('/onboarding')
+  if (!rawProfile) redirect('/onboarding')
+  const { data: streak } = await supabase.rpc('get_study_streak').abortSignal(AbortSignal.timeout(2500))
+  const profile = { ...rawProfile, ...(streak ?? {}) }
 
   const { data: topUsers } = await supabase
     .from('user_profiles')
@@ -70,8 +73,7 @@ export default async function ProgressPage() {
   const todayStr = new Date().toISOString().split('T')[0]
   const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
   const lastActiveStr = profile.last_active_date ?? ''
-  const effectiveStreak = (lastActiveStr === todayStr || lastActiveStr === yesterdayStr)
-    ? (profile.current_streak ?? 0) : 0
+  const effectiveStreak = studyStreak(profile.current_streak, lastActiveStr, profile.frozen_dates)
 
   const totalAnswered = profile.xp ? Math.floor(profile.xp / 6) : 0 // rough approximation
   const avgAccuracy = topicStats.length > 0 ? Math.round(topicStats.reduce((s, t) => s + t.accuracy, 0) / topicStats.length) : null

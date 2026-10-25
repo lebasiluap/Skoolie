@@ -5,6 +5,7 @@ import BottomNav from '@/components/BottomNav'
 import AvatarUpload from '@/components/AvatarUpload'
 import ProfileSettingsClient from '@/components/ProfileSettingsClient'
 import type { StudyYear } from '@/types'
+import { effectiveStreak as studyStreak } from '@/lib/streak'
 
 const PROFESSION_META: Record<string, { label: string; color: string; bg: string }> = {
   pharmacy: { label: 'Pharmacy',  color: 'var(--teal)',   bg: 'var(--teal-tint)' },
@@ -18,12 +19,14 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: rawProfile } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', user.id)
     .single()
-  if (!profile) redirect('/onboarding')
+  if (!rawProfile) redirect('/onboarding')
+  const { data: streak } = await supabase.rpc('get_study_streak').abortSignal(AbortSignal.timeout(2500))
+  const profile = { ...rawProfile, ...(streak ?? {}) }
 
   const { data: sessions } = await supabase
     .from('quiz_sessions')
@@ -43,8 +46,7 @@ export default async function ProfilePage() {
   const todayStr = new Date().toISOString().split('T')[0]
   const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
   const lastActiveStr = profile.last_active_date ?? ''
-  const effectiveStreak = (lastActiveStr === todayStr || lastActiveStr === yesterdayStr)
-    ? (profile.current_streak ?? 0) : 0
+  const effectiveStreak = studyStreak(profile.current_streak, lastActiveStr, profile.frozen_dates)
 
   const joined = new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
   const xpInLevel = profile.xp % 400

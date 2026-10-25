@@ -369,7 +369,7 @@ export default function PracticeHubScreen() {
           const met = todayCount >= GOAL
           const ringColor = met ? C.success : C.teal
           const r = 15, sw = 4, circ = 2 * Math.PI * r
-          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date)
+          const streak = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
           const sc = streakColors(streak, isDark)
           return (
             <>

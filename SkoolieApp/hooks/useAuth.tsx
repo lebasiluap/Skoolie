@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authGenRef = useRef(0)
   const identityRef = useRef<string | null>(null)
   const pendingProfile = useRef<{ uid: string; gen: number; promise: Promise<void> } | null>(null)
+  const streakReadRef = useRef(0)
   useAppPresence(session?.user.id)
 
   function loadProfile(userId: string): Promise<void> {
@@ -94,6 +95,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     prevProfileRef.current = data ?? null
     if (prev && data && prev.id === data.id) emitCelebrations(diffProfiles(prev, data))
     setProfile(data ?? null)
+    // Non-blocking: streak telemetry must never delay sign-in/profile hydration.
+    if (data) {
+      const read = ++streakReadRef.current
+      void readWithDeadline(signal => supabase.rpc('get_study_streak').abortSignal(signal),2500).then(({ data: streak, error: streakError }) => {
+        if (streakError || !streak || gen !== authGenRef.current || identityRef.current !== userId || read !== streakReadRef.current) return
+        setProfile(prev => prev?.id === userId ? { ...prev, current_streak: streak.current_streak,
+          longest_streak: streak.longest_streak, last_active_date: streak.last_active_date,
+          streak_freezes: streak.streak_freezes, frozen_dates: streak.frozen_dates } : prev)
+      }).catch(() => { /* Keep last known profile; never affect Auth. */ })
+    }
   }
 
   async function refreshProfile() {

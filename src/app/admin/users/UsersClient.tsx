@@ -21,6 +21,8 @@ interface Profile {
   last_sign_in_at: string | null
   created_at: string
   access_key: string | null
+  has_profile: boolean
+  email_confirmed: boolean
 }
 
 interface StatRow { user_id: string; attempts: number; correct: number; mcq: number; flashcard: number; cases: number; last_active: string }
@@ -29,7 +31,7 @@ type SortKey = 'joined' | 'attempts' | 'accuracy' | 'xp' | 'streak' | 'lastSeen'
 
 const pct = (c: number, a: number) => a > 0 ? Math.round((c / a) * 100) : 0
 
-export default function UsersClient({ profiles, statsById }: { profiles: Profile[]; statsById: Record<string, StatRow> }) {
+export default function UsersClient({ profiles, statsById, loadError, statsUnavailable }: { profiles: Profile[]; statsById: Record<string, StatRow>; loadError: string | null; statsUnavailable: boolean }) {
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('joined')
@@ -37,7 +39,6 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
   // Relative-time columns intentionally read the clock; stale-until-refresh is fine for admin.
   const todayStr = new Date().toISOString().split('T')[0]
   // eslint-disable-next-line react-hooks/purity
-  const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
   function effectiveStreak(p: Profile) {
     const lastActive = p.last_active_date ?? ''
@@ -84,15 +85,18 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
   return (
     <div style={{ padding: PAGE_PAD, maxWidth: 1400, margin: '0 auto' }}>
 
-      <PageHeader title="Users" sub={`${totalUsers} total accounts`} />
+      <PageHeader title="Users" sub={loadError ? 'Account list unavailable' : `${totalUsers} registered accounts · includes unfinished profile setup`} />
       <button onClick={()=>router.refresh()} style={{minHeight:44,marginBottom:16}} aria-label="Refresh user activity">Refresh activity</button>
+      {loadError && <p role="alert">{loadError}</p>}
+      {statsUnavailable && <p role="status">Practice statistics are temporarily unavailable; they are not zero. Refresh to retry.</p>}
 
       {/* Summary chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+      {!loadError && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
         <Chip text={`Total: ${totalUsers}`} />
         <Chip text={`Active today: ${activeToday}`} tone="green" />
         <Chip text={`With access key: ${withKey}`} tone="amber" />
-      </div>
+        <Chip text={`No profile yet: ${profiles.filter(p => !p.has_profile).length}`} tone="amber" />
+      </div>}
 
       {/* Search + sort */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20, alignItems: 'center' }}>
@@ -119,7 +123,7 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
         </div>
       </div>
 
-      {rows.length === 0 ? (
+      {loadError ? null : rows.length === 0 ? (
         <EmptyState title="No users match" sub="Try a different search." />
       ) : (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 20, boxShadow: 'var(--shadow)', overflowX: 'auto' }}>
@@ -156,8 +160,10 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
                     <td style={{ padding: '11px 14px', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         {isOnline && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--green)', flexShrink: 0, display: 'inline-block' }} />}
-                        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{u.full_name}</span>
+                        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{u.full_name || 'Name not set'}</span>
                       </div>
+                      {!u.has_profile && <div style={{marginTop:6}}><Chip text="Profile setup incomplete" tone="amber" /></div>}
+                      {!u.email_confirmed && <div style={{marginTop:6}}><Chip text="Email unconfirmed" tone="muted" /></div>}
                     </td>
                     <td style={{ padding: '11px 14px', fontSize: 12.5, color: 'var(--text-soft)', whiteSpace: 'nowrap' }}>{u.email}</td>
                     <td style={{ padding: '11px 14px', fontSize: 12.5, color: 'var(--text-soft)', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>{u.profession?.replace(/_/g, ' ')}</td>
@@ -175,10 +181,10 @@ export default function UsersClient({ profiles, statsById }: { profiles: Profile
                         <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, marginLeft: 5 }}>(best {u.longest_streak})</span>
                       )}
                     </td>
-                    <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{s?.attempts ?? 0}</td>
+                    <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{statsUnavailable ? 'Unavailable' : s?.attempts ?? 0}</td>
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 13.5, fontWeight: 800, color: accColor, fontVariantNumeric: 'tabular-nums' }}>{acc == null ? '—' : `${acc}%`}</td>
                     <td style={{ padding: '11px 14px', textAlign: 'right', fontSize: 12.5, fontWeight: 600, color: 'var(--text-soft)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                      {s ? `${s.mcq ?? 0} / ${s.flashcard ?? 0} / ${s.cases ?? 0}` : '0 / 0 / 0'}
+                      {statsUnavailable ? 'Unavailable' : s ? `${s.mcq ?? 0} / ${s.flashcard ?? 0} / ${s.cases ?? 0}` : '0 / 0 / 0'}
                     </td>
                     <td title={lastSeen} style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, whiteSpace: 'nowrap' }}>{u.last_seen_at?new Date(u.last_seen_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>
                     <td style={{ padding: '11px 14px', fontSize: 12, color: 'var(--text-faint)', whiteSpace:'nowrap' }}>{u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString('en-GB',{timeZone:'UTC'}):'Not recorded'}</td>

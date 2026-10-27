@@ -964,9 +964,9 @@ export default function MCQScreen() {
             }
 
             return (
-              // Keyed by question + letter: each new question's options
-              // cascade in with a small stagger (Duolingo-style).
-              <Entrance key={`${qIndex}-${letter}`} delay={60 + i * 45} style={{ flexGrow: 1, marginBottom: 12 }}>
+              // Answer controls must never depend on a native opacity animation
+              // completing: interrupted entrances can leave invisible touch targets.
+              <View key={`${q.id}-${letter}`} style={{ flexGrow: 1, marginBottom: 12 }}>
                 <TouchableOpacity
                   onPress={() => { if (!inReview) setSelected(letter) }}
                   activeOpacity={inReview ? 1 : 0.75}
@@ -980,7 +980,7 @@ export default function MCQScreen() {
                   </View>
                   <Text style={[s.optText, { color: textColor }]}>{text}</Text>
                 </TouchableOpacity>
-              </Entrance>
+              </View>
             )
           })}
         </ScrollView>

@@ -26,6 +26,7 @@ import { orderByInterestAndUnseen } from '@/lib/interests'
 import { playSound } from '@/lib/sounds'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { readWithDeadline } from '@/lib/readWithDeadline'
+import { createDeckLoadGuard } from '@/lib/deckLoadGuard'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
@@ -115,6 +116,10 @@ export default function FlashcardsScreen() {
   const [topicsError, setTopicsError] = useState(false)
   const topicRequest = useRef(0)
   const [loadingCards, setLoadingCards] = useState(false)
+  const [cardsError, setCardsError] = useState<string | null>(null)
+  const deckGuard = useRef(createDeckLoadGuard()).current
+  const retryDeck = useRef<() => void>(() => {})
+  useEffect(() => () => { deckGuard.invalidate() }, [user?.id,deckGuard])
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const [answeredByTopic, setAnsweredByTopic] = useState<Record<string, number>>({})
@@ -245,26 +250,64 @@ export default function FlashcardsScreen() {
   /** Seen flashcard ids for this user — empty when repeats are allowed (→ no exclusion). */
   async function fetchSeenFcIds(): Promise<Set<string>> {
     if (!user || profile?.allow_repeat_questions) return new Set()
-    const { data } = await supabase
+    const { data, error } = await readWithDeadline(signal => supabase
       .from('user_question_history')
       .select('question_id')
       .eq('user_id', user.id)
-      .eq('question_type', 'flashcard')
+      .eq('question_type', 'flashcard').abortSignal(signal), 4000)
+      .catch(() => ({data:null,error:null}))
+    if (error) return new Set()
     return new Set((data ?? []).map((r: any) => r.question_id as string))
+  }
+
+  async function readCardPool(name: string, args: Record<string, unknown>) {
+    const {data,error} = await readWithDeadline(signal => supabase.rpc(name,args).abortSignal(signal))
+    if (error) throw error
+    return (data ?? []) as any[]
+  }
+
+  // One load at a time. Every required request is bounded, optional bookmark
+  // reads never block a deck, and stale responses cannot replace a newer deck.
+  async function loadDeck(read: () => Promise<any[]>, order: (rows:any[], seen:Set<string>) => any[], bookmarkReview=false) {
+    if (!profile) return
+    const request=deckGuard.start()
+    if(request===null)return
+    retryDeck.current=() => { void loadDeck(read,order,bookmarkReview) }
+    setCardsError(null);setLoadingCards(true);setScreen('quiz');setCards([])
+    setCardIndex(0);setGotIt(0);setMissed(0);setMissedCards([])
+    flipAnim.setValue(0);setFlipped(false);setRevealed(false);setIsFlipping(false)
+    sessionSavedRef.current=false;fromBookmarksRef.current=bookmarkReview
+    isRetakeRef.current=false;isReviewMissedRef.current=false
+    try {
+      const [pool,seen]=await Promise.all([read(),fetchSeenFcIds()])
+      if(!deckGuard.current(request))return
+      if(!pool.length) {
+        setCardsError('No cleared flashcards match these filters. Go back and try All years, another difficulty or another topic.')
+        return
+      }
+      const issued=await bindCards(order(pool,seen).slice(0,60))
+      if(!deckGuard.current(request))return
+      if(!issued?.length) { setCardsError('The deck could not start. Check your connection and retry. Unavailable or quarantined cards remain blocked.');return }
+      const mapped=issued.map((r:any)=>({id:r.id,front:r.question_text,
+        back:(r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ''),
+        note:(r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null,
+        topic:r.topic,category:r.category,subtopic:r.subtopic,difficulty:r.difficulty}))
+      setCards(mapped);setOriginalCards(mapped);setBookmarked(new Set())
+      if(user) void readWithDeadline(signal => supabase.from('bookmarks').select('question_id')
+        .eq('user_id',user.id).abortSignal(signal),4000).then(({data,error})=>{
+          if(!error && deckGuard.current(request))setBookmarked(new Set((data??[]).map(b=>b.question_id)))
+        }).catch(()=>{})
+    } catch {
+      if(deckGuard.current(request))setCardsError('Flashcards could not load. Check your connection and retry. Your saved progress has not changed.')
+    } finally {
+      if(deckGuard.finish(request))setLoadingCards(false)
+    }
   }
 
   async function startCards(topic: string, category?: string, subtopic?: string) {
     if (!profile) return
-    // Switch away from results BEFORE the await — prevents zero-flash on results screen
-    setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([]); flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
     setLastTopic(topic); setLastCategory(category); setLastSubtopic(subtopic); setLastWasSurprise(false)
-    sessionSavedRef.current = false
-    fromBookmarksRef.current = false
-    isRetakeRef.current = false; isReviewMissedRef.current = false
-    setLoadingCards(true)
-    setScreen('quiz')
-
-    const { data } = await supabase.rpc('get_questions_by_topic', {
+    await loadDeck(() => readCardPool('get_questions_by_topic', {
       p_profession: profile.profession,
       p_question_type: 'flashcard',
       p_topic: topic,
@@ -274,74 +317,26 @@ export default function FlashcardsScreen() {
       p_year: profile.study_year && !allYears ? profile.study_year : null,
       p_access_key: profile.access_key ?? null,
       p_limit: sessionSize * 3,
-    })
-    if (!data || data.length === 0) { setLoadingCards(false); setScreen('topics'); return }
-
-    const seen = await fetchSeenFcIds()
-    const shuffled = await bindCards(orderByUnseen(data, seen).slice(0, sessionSize))
-    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
-    setCards(mapped); setOriginalCards(mapped)
-    if (user) {
-      const { data: bk } = await supabase.from('bookmarks').select('question_id').eq('user_id', user.id)
-      setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
-    }
-    setLoadingCards(false)
+    }), (pool,seen)=>orderByUnseen(pool,seen).slice(0,sessionSize))
   }
 
   async function surpriseMe() {
     if (!profile) return
-    // Switch away from results BEFORE the await — prevents zero-flash on results screen
-    setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([]); flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
     setLastTopic(null); setLastCategory(undefined); setLastSubtopic(undefined); setLastWasSurprise(true)
-    sessionSavedRef.current = false
-    fromBookmarksRef.current = false
-    isRetakeRef.current = false; isReviewMissedRef.current = false
-    setLoadingCards(true)
-    setScreen('quiz')
 
     // Surprise me = truly random across topics (server-side), within the set filters.
-    const { data } = await supabase.rpc('get_random_flashcards', {
+    await loadDeck(() => readCardPool('get_random_flashcards', {
       p_profession: profile.profession,
       p_limit: sessionSize * 3,
       p_difficulty: difficulty !== 'all' ? difficulty : null,
       p_access_key: profile.access_key ?? null,
       p_year: profile.study_year && !allYears ? profile.study_year : null,
-    })
-    if (!data || data.length === 0) { setLoadingCards(false); setScreen('topics'); return }
-
-    const seen = await fetchSeenFcIds()
-    // Areas of interest bias the surprise pool (unseen-interest first); empty = decide for me
-    const shuffled = await bindCards(orderByInterestAndUnseen(data as any[], profile.interests, seen).slice(0, sessionSize))
-    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
-    setCards(mapped); setOriginalCards(mapped)
-    if (user) {
-      const { data: bk } = await supabase.from('bookmarks').select('question_id').eq('user_id', user.id)
-      setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
-    }
-    setLoadingCards(false)
+    }), (pool,seen)=>orderByInterestAndUnseen(pool,profile.interests,seen).slice(0,sessionSize))
   }
 
   async function loadCardsByIds(ids: string[]) {
     if (!profile) return
-    sessionSavedRef.current = false
-    fromBookmarksRef.current = true
-    isRetakeRef.current = false; isReviewMissedRef.current = false
-    setLoadingCards(true)
-    const { data } = await supabase.rpc('get_questions_by_ids', { p_ids: ids, p_limit: 200 })
-    if (!data || data.length === 0) { setLoadingCards(false); return }
-    const shuffled = await bindCards([...data].sort(() => Math.random() - 0.5))
-    if (!shuffled) { setLoadingCards(false); setScreen('topics'); return }
-    const mapped = shuffled.map((r: any) => ({ id: r.id, front: r.question_text, back: (r.correct_answer && String(r.correct_answer).trim()) ? r.correct_answer : (r.explanation ?? ""), note: (r.correct_answer && String(r.correct_answer).trim()) ? r.explanation : null, topic: r.topic, category: r.category, subtopic: r.subtopic, difficulty: r.difficulty }))
-    setCards(mapped); setOriginalCards(mapped)
-    setCardIndex(0); setGotIt(0); setMissed(0); setMissedCards([]); flipAnim.setValue(0); setFlipped(false); setRevealed(false); setIsFlipping(false)
-    if (user) {
-      const { data: bk } = await supabase.from('bookmarks').select('question_id').eq('user_id', user.id)
-      setBookmarked(new Set((bk ?? []).map((b: any) => b.question_id)))
-    }
-    setLoadingCards(false)
-    setScreen('quiz')
+    await loadDeck(() => readCardPool('get_questions_by_ids',{p_ids:ids,p_limit:200}),pool=>shuffle(pool),true)
   }
 
   async function toggleBookmark(cardId: string) {
@@ -673,11 +668,28 @@ export default function FlashcardsScreen() {
 
   // ── Quiz screen ────────────────────────────────────────────────────────────
   if (screen === 'quiz') {
+    if (cardsError || (!loadingCards && !cards[cardIndex])) return (
+      <View style={{flex:1,justifyContent:'center',padding:24,backgroundColor:C.bg,gap:16}}>
+        <Text accessibilityRole="alert" style={{color:C.text,fontFamily:'Nunito_700Bold',fontSize:16}}>{cardsError ?? 'This deck is unavailable. Please retry or choose another topic.'}</Text>
+        <TouchableOpacity accessibilityRole="button" onPress={()=>retryDeck.current()} style={{minHeight:48,justifyContent:'center',alignItems:'center',backgroundColor:C.teal,borderRadius:16}}>
+          <Text style={{color:C.onTeal,fontFamily:'Nunito_800ExtraBold'}}>Retry loading flashcards</Text>
+        </TouchableOpacity>
+        <TouchableOpacity accessibilityRole="button" onPress={()=>{setCardsError(null);setScreen('topics')}} style={{minHeight:48,justifyContent:'center',alignItems:'center'}}>
+          <Text style={{color:C.textSoft,fontFamily:'Nunito_700Bold'}}>Back to topics and filters</Text>
+        </TouchableOpacity>
+      </View>
+    )
     // Cards may not be loaded yet (switched screen early to avoid zero-flash on results)
     if (loadingCards || !cards[cardIndex]) {
       return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg, padding:24, gap:16 }}>
           <ActivityIndicator size="large" color={C.teal} />
+          <Text style={{color:C.textSoft,fontFamily:'Nunito_700Bold'}}>Loading cleared flashcards…</Text>
+          <TouchableOpacity accessibilityRole="button" onPress={()=>{
+            deckGuard.invalidate();setLoadingCards(false);setCardsError(null);setScreen('topics')
+          }} style={{minHeight:48,justifyContent:'center',paddingHorizontal:16}}>
+            <Text style={{color:C.teal,fontFamily:'Nunito_800ExtraBold'}}>Back to topics</Text>
+          </TouchableOpacity>
         </View>
       )
     }

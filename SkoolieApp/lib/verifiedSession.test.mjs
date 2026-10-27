@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createVerifiedSession } from './verifiedSession.ts'
 import { buildShuffledMcq } from './answers.ts'
+import { readWithDeadline } from './readWithDeadline.ts'
 const request = '11111111-1111-4111-8111-111111111111'
 const sid = '22222222-2222-4222-8222-222222222222'
 const qid = '33333333-3333-4333-8333-333333333333'
@@ -54,6 +55,18 @@ test('failed issuance retries the same request id and never permits pre-issuance
   await assert.rejects(s.begin(), /Offline/)
   await s.begin()
   assert.deepEqual(requests[0], requests[1])
+})
+
+test('a stalled issuance times out, then retries exactly the same guarded request', async () => {
+  const requests=[]
+  const s=createVerifiedSession((name,args)=>readWithDeadline(()=>{
+    requests.push(args)
+    return requests.length===1 ? new Promise(()=>{}) : Promise.resolve({data:issued(),error:null})
+  },10),config())
+  await assert.rejects(s.begin(),/timed out/)
+  assert.throws(()=>s.answer(qid,'A'),/issued payload/)
+  await s.begin()
+  assert.deepEqual(requests[0],requests[1])
 })
 
 test('requires every issued answer, preserves explicit timeout null, and rejects extra IDs', async () => {

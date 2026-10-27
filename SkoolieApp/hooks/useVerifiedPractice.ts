@@ -3,6 +3,7 @@ import { Alert } from 'react-native'
 import { randomUUID } from 'expo-crypto'
 import { supabase } from '@/lib/supabase'
 import { createVerifiedSession, type CanonicalAnswer, type RewardReceipt, type VerifiedMode } from '@/lib/verifiedSession'
+import { readWithDeadline } from '@/lib/readWithDeadline'
 
 /** One issued session per deck. No score input, legacy fallback or Auth changes. */
 export function useVerifiedPractice(userId: string | undefined) {
@@ -35,8 +36,11 @@ export function useVerifiedPractice(userId: string | undefined) {
     setStarting(true)
     try {
       const session = createVerifiedSession((name, args) => {
-        if (name === 'begin_verified_session' && typeof policy === 'object') return supabase.rpc('begin_verified_rapid_session', {...args,p_barrage:policy.barrage,p_slot:policy.slot})
-        if (name === 'begin_verified_session' && typeof policy === 'number') return supabase.rpc('begin_verified_timed_session', {...args,p_seconds:policy})
+        if (name === 'begin_verified_session') return readWithDeadline(signal => {
+          if (typeof policy === 'object') return supabase.rpc('begin_verified_rapid_session', {...args,p_barrage:policy.barrage,p_slot:policy.slot}).abortSignal(signal)
+          if (typeof policy === 'number') return supabase.rpc('begin_verified_timed_session', {...args,p_seconds:policy}).abortSignal(signal)
+          return supabase.rpc(policy === 'daily_challenge' ? 'begin_verified_daily_challenge' : name,args).abortSignal(signal)
+        })
         return supabase.rpc(policy === 'daily_challenge' && name === 'begin_verified_session' ? 'begin_verified_daily_challenge' : name, args)
       }, {
         requestId: randomUUID(), mode, itemIds: ids,

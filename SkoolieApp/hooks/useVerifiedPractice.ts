@@ -6,6 +6,7 @@ import { createVerifiedSession, type CanonicalAnswer, type RewardReceipt, type V
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { timedRequest } from '@/lib/timedRequest'
 import { notifyProgressSaved } from '@/lib/progressEvents'
+import type { FlashcardCheckpoint } from '@/lib/flashcardCheckpoint'
 
 /** One issued session per deck. No score input, legacy fallback or Auth changes. */
 export function useVerifiedPractice(userId: string | undefined) {
@@ -23,7 +24,7 @@ export function useVerifiedPractice(userId: string | undefined) {
   const [submitting, setSubmitting] = useState(false)
   useEffect(() => () => { generation.current++; client.current = null; issuedId.current = null }, [userId])
 
-  async function prepare(mode: VerifiedMode, ids: string[], enabled = true, policy?: 'daily_challenge' | number | {barrage:boolean;slot:number}) {
+  async function prepare(mode: VerifiedMode, ids: string[], enabled = true, policy?: 'daily_challenge' | number | {barrage:boolean;slot:number}, resume?:FlashcardCheckpoint) {
     if (beginLock.current || finishLock.current || timedLock.current) return null
     const gen = ++generation.current
     const uid = owner.current
@@ -37,6 +38,7 @@ export function useVerifiedPractice(userId: string | undefined) {
     beginLock.current = true
     setStarting(true)
     try {
+      if(resume&&(mode!=='flashcard'||resume.userId!==uid||JSON.stringify(ids)!==JSON.stringify(resume.itemIds)))throw new Error('Resume binding mismatch')
       const session = createVerifiedSession((name, args) => {
         if (name === 'begin_verified_session') return readWithDeadline(signal => {
           if (typeof policy === 'object') return supabase.rpc('begin_verified_rapid_session', {...args,p_barrage:policy.barrage,p_slot:policy.slot}).abortSignal(signal)
@@ -45,11 +47,12 @@ export function useVerifiedPractice(userId: string | undefined) {
         })
         return supabase.rpc(policy === 'daily_challenge' && name === 'begin_verified_session' ? 'begin_verified_daily_challenge' : name, args)
       }, {
-        requestId: randomUUID(), mode, itemIds: ids,
+        requestId: resume?.requestId??randomUUID(), mode, itemIds: ids,
       })
       // Retry a lost response with the SAME request UUID, never a second issuance.
       const issued = await session.begin().catch(() => session.begin())
       if (gen !== generation.current || uid !== owner.current) return null
+      if(resume)for(const id of ids){if(Object.prototype.hasOwnProperty.call(resume.answers,id))session.answer(id,resume.answers[id])}
       client.current = session
       issuedId.current = issued.session_id
       setReceipt(null)
@@ -123,5 +126,6 @@ export function useVerifiedPractice(userId: string | undefined) {
       if (gen === generation.current) setSaving(false)
     }
   }
-  return { prepare, answer, openTimed, answerTimed, complete, receipt, saving, starting, submitting, active: () => client.current !== null }
+  return { prepare, answer, openTimed, answerTimed, complete, receipt, saving, starting, submitting, active: () => client.current !== null,
+    checkpoint:()=>client.current?.checkpoint()??null }
 }

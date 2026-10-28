@@ -13,6 +13,32 @@ const receipt = () => ({ protocol_version: 1, session_id: sid, quiz_session_id: 
   total: 1, xp: 50, completed_at: '2026-10-25T00:00:00Z' })
 const config = () => ({ requestId: request, mode: 'mcq', itemIds: [qid] })
 
+test('flashcard restart reuses issuance and immutable ratings without caching content',async()=>{
+ const calls=[]
+ const rpc=async(name,args)=>{
+  calls.push({name,args})
+  return {data:name.startsWith('begin')?{...issued(),mode:'flashcard'}:{...receipt(),mode:'flashcard',xp:0,score:0},error:null}
+ }
+ const first=createVerifiedSession(rpc,{...config(),mode:'flashcard'})
+ await first.begin();first.answer(qid,false)
+ const saved=first.checkpoint()
+ assert.equal('items' in saved,false);assert.equal('access_token' in saved,false)
+ const resumed=createVerifiedSession(rpc,{requestId:saved.requestId,mode:'flashcard',itemIds:saved.itemIds})
+ await resumed.begin()
+ for(const [id,rating] of Object.entries(saved.answers))resumed.answer(id,rating)
+ assert.throws(()=>resumed.answer(qid,true),/already recorded/)
+ await Promise.all([resumed.finish(),resumed.finish()])
+ assert.deepEqual(calls[0].args,calls[1].args)
+ assert.equal(calls.filter(c=>c.name==='finish_verified_session').length,1)
+ assert.deepEqual(calls.at(-1).args.p_answers,{[qid]:false})
+})
+test('resume cannot record ratings when server rejects changed/quarantined content',async()=>{
+ const resumed=createVerifiedSession(async()=>({data:null,error:{message:'Content unavailable'}}),{...config(),mode:'flashcard'})
+ await assert.rejects(resumed.begin(),/Content unavailable/)
+ assert.throws(()=>resumed.answer(qid,true),/Wait for the issued payload/)
+ await assert.rejects(resumed.finish(),/incomplete/)
+})
+
 test('deduplicates concurrent issuance and completion without submitting a client score', async () => {
   const calls = []
   const rpc = async (name, args) => { calls.push({ name, args }); return { data: name.startsWith('begin') ? issued() : receipt(), error: null } }

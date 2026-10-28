@@ -106,5 +106,9 @@ export function createVerifiedSession(rpc: SessionRpc, config: {
     })().catch(error => { finishPromise = undefined; throw error })
     return finishPromise.then(copy)
   }
-  return { begin, answer, finish }
+  function checkpoint() {
+    if(!issued||mode!=='flashcard')return null
+    return {requestId,itemIds:[...itemIds],answers:copy(answers) as Record<string,boolean>,expiresAt:issued.expires_at}
+  }
+  return { begin, answer, finish, checkpoint }
 }

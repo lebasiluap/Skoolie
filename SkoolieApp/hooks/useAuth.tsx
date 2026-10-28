@@ -7,6 +7,8 @@ import { setSoundEnabled } from '@/lib/sounds'
 import { setHapticsEnabled } from '@/lib/haptics'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { useAppPresence } from './useAppPresence'
+import { AppState } from 'react-native'
+import { createSessionBootstrap } from '@/lib/sessionBootstrap'
 
 interface AuthContextType {
   session: Session | null
@@ -18,6 +20,8 @@ interface AuthContextType {
    *  a failed fetch on a flaky network would otherwise send an existing user
    *  back through onboarding. */
   profileChecked: boolean
+  sessionRecovery: boolean
+  retrySession: () => void
   refreshProfile: () => Promise<void>
 }
 
@@ -27,6 +31,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   profileChecked: false,
+  sessionRecovery:false,
+  retrySession:()=>{},
   refreshProfile: async () => {},
 })
 
@@ -35,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [profileChecked, setProfileChecked] = useState(false)
+  const [sessionRecovery,setSessionRecovery]=useState(false)
+  const retrySessionRef=useRef<()=>void>(()=>{})
   // Last snapshot used for celebration diffs (kept outside React state so
   // the diff runs exactly once per fetched profile)
   const prevProfileRef = useRef<UserProfile | null>(null)
@@ -151,21 +159,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // but the UI hung on "Signing in…" until an app restart. setTimeout(0)
     // defers the profile fetch until after the lock is released.
     let receivedEvent = false
+    let needsRecovery=false
+    const bootstrap=createSessionBootstrap<Session>(
+      ()=>readWithDeadline(()=>supabase.auth.getSession(),12000),
+      next=>{needsRecovery=false;setSessionRecovery(false);acceptSession(next)},
+      ()=>{if(!disposed){needsRecovery=true;setSessionRecovery(true);setLoading(false)}},
+    )
+    retrySessionRef.current=()=>{if(!disposed)void bootstrap.recover()}
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
       receivedEvent = true
+      if(event==='INITIAL_SESSION'&&!next){
+        // The SDK also emits INITIAL_SESSION(null) on a temporary read/refresh
+        // failure. Re-read outside its auth lock and inspect the actual error.
+        setTimeout(()=>{if(!disposed)void bootstrap.recover()},0)
+        return
+      }
+      if(!next&&event!=='SIGNED_OUT')return
+      bootstrap.invalidate();needsRecovery=false;setSessionRecovery(false)
       acceptSession(next, event === 'USER_UPDATED')
     })
     // Fallback only: INITIAL_SESSION normally supplies this. A late fallback
     // must never overwrite a newer sign-in/sign-out event.
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!receivedEvent) acceptSession(data.session)
-    }).catch(() => { if (!disposed && !receivedEvent) setLoading(false) })
+    const fallback=setTimeout(()=>{if(!receivedEvent&&!disposed)void bootstrap.recover()},0)
+    const foreground=AppState.addEventListener('change',state=>{
+      if(state==='active'&&needsRecovery)void bootstrap.recover()
+    })
 
-    return () => { disposed = true; if (timer) clearTimeout(timer); authGenRef.current++; identityRef.current = null; subscription.unsubscribe() }
+    return () => { disposed = true;clearTimeout(fallback);bootstrap.invalidate();foreground.remove();retrySessionRef.current=()=>{}; if (timer) clearTimeout(timer); authGenRef.current++; identityRef.current = null; subscription.unsubscribe() }
   }, [])
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, profile, loading, profileChecked, refreshProfile }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, profile, loading, profileChecked, refreshProfile, sessionRecovery, retrySession:()=>retrySessionRef.current() }}>
       {children}
     </AuthContext.Provider>
   )

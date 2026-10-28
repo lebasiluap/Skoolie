@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, PanResponder, AppState, AccessibilityInfo, useWindowDimensions } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, PanResponder, AppState, AccessibilityInfo, Alert, useWindowDimensions } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router, useLocalSearchParams, useNavigation, useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -30,6 +31,7 @@ import { createDeckLoadGuard } from '@/lib/deckLoadGuard'
 import { captureCardSwipe, cardSwipeGrade, cardSwipeTranslation, createCardSwipeGuard } from '@/lib/flashcardSwipe'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
+import { flashcardCheckpointKey, parseFlashcardCheckpoint, type FlashcardCheckpoint } from '@/lib/flashcardCheckpoint'
 
 const CAT_ORDER = ['Anatomy & Physiology', 'Pharmacology', 'Pathophysiology', 'Clinicals']
 
@@ -57,6 +59,8 @@ export default function FlashcardsScreen() {
   const { height: screenH, width: screenW } = useWindowDimensions()
   const { user, profile, refreshProfile } = useAuth()
   const verified = useVerifiedPractice(user?.id)
+  const [resumeChecked,setResumeChecked]=useState(false)
+  const checkpointOwner=useRef(user?.id);checkpointOwner.current=user?.id
   const graded = useRef(new Set<string>())
   const practiceData = usePracticeData()
   const { cardIds, smartStart, sessionKey, from, startTopic } = useLocalSearchParams<{ cardIds?: string; smartStart?: string; sessionKey?: string; from?: string; startTopic?: string }>()
@@ -255,8 +259,71 @@ export default function FlashcardsScreen() {
   const [frontH, setFrontH] = useState(0)
   const [backH, setBackH] = useState(0)
 
+  useEffect(()=>{
+    if(!user?.id||!profile)return
+    const uid=user.id
+    let active=true
+    const check=async()=>{
+      try{
+        const raw=await AsyncStorage.getItem(flashcardCheckpointKey(uid))
+        if(!active||checkpointOwner.current!==uid)return
+        const saved=parseFlashcardCheckpoint(raw,uid)
+        if(!saved){if(raw)await AsyncStorage.removeItem(flashcardCheckpointKey(uid));if(active)setResumeChecked(true);return}
+        Alert.alert('Resume your flashcards?',`${Object.keys(saved.answers).length} of ${saved.itemIds.length} cards saved. We’ll check that this deck is still available before resuming.`,[
+          {text:'Start fresh',style:'destructive',onPress:()=>{
+            if(!active)return
+            void AsyncStorage.removeItem(flashcardCheckpointKey(uid)).then(()=>{if(active)setResumeChecked(true)}).catch(()=>{if(active)void check()})
+          }},
+          {text:'Resume',onPress:()=>{if(active){autoStarted.current=true;prevSessionKeyRef.current=sessionKey;setResumeChecked(true);void resumeDeck(saved)}}},
+        ],{cancelable:false})
+      }catch{if(active)Alert.alert('Saved deck unavailable','We couldn’t read your saved position. Retry to avoid losing your progress.',[{text:'Retry',onPress:()=>{if(active)void check()}}],{cancelable:false})}
+    }
+    setResumeChecked(false);void check()
+    return()=>{active=false}
+  },[user?.id,!!profile]) // same-user profile refreshes never restart a deck
+
+  async function saveCheckpoint(){
+    const uid=user?.id,snapshot=verified.checkpoint()
+    if(!uid||!snapshot)throw new Error('No resumable deck')
+    await AsyncStorage.setItem(flashcardCheckpointKey(uid),JSON.stringify({version:1,userId:uid,...snapshot}))
+  }
+  const mapIssuedCards=(rows:Record<string,unknown>[]):Flashcard[]=>rows.map(r=>({id:r.id as string,front:r.question_text as string,
+    back:String(r.correct_answer||r.explanation||''),note:r.correct_answer?r.explanation as string|null:null,
+    topic:r.topic as string,category:r.category as string|null,subtopic:r.subtopic as string|null,difficulty:r.difficulty as string|null}))
+
+  async function resumeDeck(saved:FlashcardCheckpoint){
+    const request=deckGuard.start()
+    if(request===null)return
+    setLoadingCards(true);setScreen('quiz');setCardsError(null)
+    retryDeck.current=()=>void resumeDeck(saved)
+    try{
+      const issued=await verified.prepare('flashcard',saved.itemIds,true,undefined,saved)
+      if(!deckGuard.current(request))return
+      if(!issued)throw new Error('Deck no longer available')
+      const deck=mapIssuedCards(issued),done=Object.keys(saved.answers)
+      fromBookmarksRef.current=false;isReviewMissedRef.current=false;isRetakeRef.current=false
+      setCards(deck);setOriginalCards(deck);graded.current=new Set(done)
+      setCardIndex(Math.min(done.length,deck.length-1))
+      setGotIt(done.filter(id=>saved.answers[id]).length)
+      setMissed(done.filter(id=>!saved.answers[id]).length)
+      setMissedCards(deck.filter(c=>saved.answers[c.id]===false))
+      if(done.length===deck.length){
+        const finish=async()=>{
+          const receipt=await verified.complete(()=>void finish())
+          if(!deckGuard.current(request))return
+          if(!receipt){setCardsError('All ratings are saved. Retry to confirm this same session safely.');return}
+          await AsyncStorage.removeItem(flashcardCheckpointKey(saved.userId)).catch(()=>{})
+          setCardsError(null);setScreen('results');void refreshProfile()
+        }
+        retryDeck.current=()=>void finish()
+        await finish()
+      }
+    }catch{if(deckGuard.current(request))setCardsError('This saved deck could not be revalidated. Retry when connected. Changed, expired or quarantined cards cannot be resumed.')}
+    finally{if(deckGuard.finish(request))setLoadingCards(false)}
+  }
+
   useEffect(() => {
-    if (!profile) return
+    if (!profile||!resumeChecked) return
 
     // Each Practice tap from bookmarks passes a unique sessionKey (Date.now()).
     // When it changes, reset everything so a cached screen re-runs the quiz fresh.
@@ -289,7 +356,7 @@ export default function FlashcardsScreen() {
     }
     loadTopics()
     return () => { topicRequest.current++ }
-  }, [practiceData, profile?.profession, profile?.access_key, difficulty, sessionKey])
+  }, [practiceData, profile?.profession, profile?.access_key, difficulty, sessionKey,resumeChecked])
 
   // The "you finished" fanfare — same sound at every results screen, win or lose.
   useEffect(() => { if (screen === 'results') playSound('complete') }, [screen])
@@ -365,7 +432,7 @@ export default function FlashcardsScreen() {
         setCardsError('No cleared flashcards match these filters. Go back and try All years, another difficulty or another topic.')
         return
       }
-      const issued=await bindCards(order(pool,seen).slice(0,60))
+      const issued=await bindCards(order(pool,seen).slice(0,60),!bookmarkReview)
       if(!deckGuard.current(request))return
       if(!issued?.length) { setCardsError('The deck could not start. Check your connection and retry. Unavailable or quarantined cards remain blocked.');return }
       const mapped=issued.map((r:any)=>({id:r.id,front:r.question_text,
@@ -455,15 +522,27 @@ export default function FlashcardsScreen() {
   async function next(didKnow: boolean,expectedId?:string):Promise<boolean> {
     // Record that this card has been reviewed (powers "Allow repeat questions").
     const card = cards[cardIndex]
+    const owner=user?.id
     if (!card || !revealed || flipInFlight.current || verified.saving || graded.current.has(card.id)) return false
     if(expectedId ? card.id!==expectedId : swipeGuard.busy())return false
     if (!verified.answer(card.id, didKnow)) return false
     // A synchronous guard covers a swipe and button arriving before a render.
     graded.current.add(card.id)
+    if(!fromBookmarksRef.current&&!isReviewMissedRef.current){
+      try{await saveCheckpoint()}
+      catch{
+        graded.current.delete(card.id)
+        Alert.alert('Position not saved','We couldn’t save your place on this device. Retry with the same rating before moving on.',[{text:'Retry',onPress:()=>void next(didKnow)}])
+        return false
+      }
+      if(checkpointOwner.current!==owner||swipeContext.current.id!==card.id)return false
+    }
     if (cardIndex + 1 >= cards.length && !fromBookmarksRef.current && !isReviewMissedRef.current) {
       const result = await verified.complete(() => { graded.current.delete(card.id); void next(didKnow) })
       if (!result) { graded.current.delete(card.id); return false }
       sessionSavedRef.current = true
+      if(checkpointOwner.current!==owner||swipeContext.current.id!==card.id)return false
+      if(owner)await AsyncStorage.removeItem(flashcardCheckpointKey(owner)).catch(()=>{})
       void refreshProfile()
     }
     if (didKnow) setGotIt(k => k + 1)
@@ -493,7 +572,7 @@ export default function FlashcardsScreen() {
   // Re-drill only the cards marked "still learning" — pure practice (no session, XP, or streak).
   async function reviewMissed() {
     if (missedCards.length === 0) return
-    const deck = await reloadCards(missedCards)
+    const deck = await reloadCards(missedCards,false)
     if (!deck) return
     sessionSavedRef.current = false; isReviewMissedRef.current = true; isRetakeRef.current = false
     setCards(deck)
@@ -502,15 +581,17 @@ export default function FlashcardsScreen() {
     setScreen('quiz')
   }
 
-  async function bindCards(pool: { id: string }[]) {
+  async function bindCards(pool: { id: string }[],persist=true) {
     resetSwipe()
     const items = await verified.prepare('flashcard', pool.slice(0, 60).map(c => c.id))
-    if (items) graded.current.clear()
+    if (items){graded.current.clear();if(persist)await saveCheckpoint()}
     return items
   }
 
-  async function reloadCards(deck: Flashcard[]) {
-    const rows = await bindCards(shuffle(deck))
+  async function reloadCards(deck: Flashcard[],persist=true) {
+    let rows:Record<string,unknown>[]|null
+    try{rows=await bindCards(shuffle(deck),persist)}
+    catch{Alert.alert('Deck could not start','We couldn’t save this deck’s recovery checkpoint. Try again before starting.');return null}
     return rows?.map(r => ({ id: r.id as string, front: r.question_text as string,
       back: String(r.correct_answer || r.explanation || ''),
       note: r.correct_answer ? r.explanation as string | null : null,
@@ -542,7 +623,7 @@ export default function FlashcardsScreen() {
   const cardTopOffset = Math.max(12, (availableH - cardH - 88) * 0.30)
 
   // ── Topics screen ──────────────────────────────────────────────────────────
-  if (verified.starting || verified.saving) return <VerifiedSessionBusy saving={verified.saving} />
+  if (!resumeChecked||verified.starting || verified.saving) return <VerifiedSessionBusy saving={verified.saving} />
   if (screen === 'topics') {
     const grouped = topicRows.reduce((acc: Record<string, TopicRow[]>, r) => {
       if (!r.topic) return acc

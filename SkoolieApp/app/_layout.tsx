@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Appearance, Text, TextInput, View, useWindowDimensions } from 'react-native'
+import { Appearance, Text, TextInput, View, TouchableOpacity } from 'react-native'
 import { Stack, router, useSegments } from 'expo-router'
 
 // Accessibility: honor the OS font-size setting but cap scaling at 1.4x so
@@ -21,14 +21,16 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { ThemeProvider, useThemeMode } from '@/contexts/ThemeContext'
 import { ToastHost } from '@/components/ui/ToastHost'
 import { CelebrationHost } from '@/components/ui/CelebrationHost'
+import { useTheme } from '@/hooks/useTheme'
 
 function RootNavigator() {
-  const { session, profile, loading, profileChecked } = useAuth()
+  const { session, profile, loading, profileChecked, sessionRecovery, retrySession } = useAuth()
+  const C=useTheme()
   const { isDark } = useThemeMode()
   const segments = useSegments()
 
   useEffect(() => {
-    if (loading) return
+    if (loading||sessionRecovery) return
     // Legal docs are readable by anyone, signed in or not — never redirect away.
     if (segments[0] === 'legal') return
     const inAuth = segments[0] === '(auth)'
@@ -57,24 +59,27 @@ function RootNavigator() {
     } else {
       if (inAuth) router.replace('/(app)/dashboard')
     }
-  }, [session, profile, loading, profileChecked, segments])
+  }, [session, profile, loading, profileChecked, sessionRecovery, segments])
 
-  // Changing the OS text size mid-session leaves screens with stale measured
-  // layouts (clipped titles, overlapping chips) that only an app restart used
-  // to fix. Keying the navigator on fontScale remounts the whole UI the moment
-  // the setting changes — the automatic equivalent of that restart. Session
-  // survives; the router lands the user back on their home screen.
-  const { fontScale } = useWindowDimensions()
+  // Text/layout remeasure naturally. Remounting the navigator on fontScale
+  // discarded active decks and looked like a random refresh after interruption.
 
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack key={`fs-${fontScale}`} screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(app)" />
         <Stack.Screen name="legal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="users" options={{ presentation: 'card' }} />
       </Stack>
+      {sessionRecovery&&<View style={{position:'absolute',top:0,bottom:0,left:0,right:0,backgroundColor:C.bg,justifyContent:'center',padding:28,alignItems:'center'}}>
+        <Text style={{fontFamily:'Nunito_800ExtraBold',fontSize:22,color:C.text}}>Couldn’t reconnect</Text>
+        <Text style={{fontFamily:'Nunito_600SemiBold',fontSize:16,color:C.textSoft,textAlign:'center',marginVertical:18}}>Check your connection and try again. We couldn’t confirm your saved sign-in; this does not mean you signed out.</Text>
+        <TouchableOpacity accessibilityRole="button" onPress={retrySession} style={{backgroundColor:C.teal,padding:16,borderRadius:16,minHeight:48}}>
+          <Text style={{color:C.onTeal,fontFamily:'Nunito_800ExtraBold'}}>Try again</Text>
+        </TouchableOpacity>
+      </View>}
     </>
   )
 }

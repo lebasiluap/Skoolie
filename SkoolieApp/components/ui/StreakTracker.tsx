@@ -171,7 +171,7 @@ export function StreakTracker({
         })}
       </View>
 
-      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}UTC/Ghana days · Freezes protect, but do not add days.</Text>
+      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}Freezes protect your streak, but do not add days.</Text>
     </View>
   )
 }

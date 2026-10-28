@@ -18,12 +18,12 @@ export const INTROS: Record<IntroKey, { mascot: IntroMascot; title: string; body
   streak: {
     mascot: 'cappy',
     title: "That's a streak! 🔥",
-    body: 'Complete a verified practice session to earn one streak day. Extra sessions on the same UTC/Ghana day do not add days. A missed day breaks the streak unless a freeze protects it.',
+    body: 'Complete a verified practice session to earn one streak day. Extra sessions on the same day do not add days. A missed day breaks the streak unless a freeze protects it.',
   },
   freeze: {
     mascot: 'noggin',
     title: 'You have a Streak Freeze 🧊',
-    body: "A freeze protects a missed UTC/Ghana day without increasing your streak. Protected days show blue, not as studied days. Earn one for every 5 barrages you complete.",
+    body: "A freeze protects a missed day without increasing your streak. Protected days show blue, not as studied days. Earn one for every 5 barrages you complete.",
   },
   tier: {
     mascot: 'cappy',

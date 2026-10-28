@@ -3,6 +3,12 @@ export function captureCardSwipe(dx:number,dy:number,touches=1) {
     && Math.abs(dx)>12 && Math.abs(dx)>Math.abs(dy)*1.5
 }
 
+/** Soft resistance, without the abrupt hard stop of clamping a drag. */
+export function cardSwipeTranslation(dx:number) {
+  if(!Number.isFinite(dx))return 0
+  return Math.sign(dx)*32*(1-Math.exp(-Math.abs(dx)/120))
+}
+
 /** Distance wins over an opposite velocity at the end of a deliberate drag. */
 export function cardSwipeGrade(dx:number,dy:number,vx:number):boolean|null {
   if(!Number.isFinite(vx)||!captureCardSwipe(dx,dy))return null

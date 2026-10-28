@@ -1,6 +1,21 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {captureCardSwipe,cardSwipeGrade,createCardSwipeGuard} from './flashcardSwipe.ts'
+import {captureCardSwipe,cardSwipeGrade,cardSwipeTranslation,createCardSwipeGuard} from './flashcardSwipe.ts'
+
+test('drag motion is symmetric and softly bounded without a hard clamp',()=>{
+  assert.equal(cardSwipeTranslation(0),0)
+  assert.equal(cardSwipeTranslation(NaN),0)
+  for(const dx of [1,24,64,80,120,300,1000]){
+    assert.equal(cardSwipeTranslation(-dx),-cardSwipeTranslation(dx))
+    assert.ok(cardSwipeTranslation(dx)>0&&cardSwipeTranslation(dx)<=32)
+  }
+  assert.ok(cardSwipeTranslation(65)>cardSwipeTranslation(64))
+  assert.ok(cardSwipeTranslation(65)-cardSwipeTranslation(64)<1)
+  assert.ok(cardSwipeTranslation(80)<20)
+  // Visual resistance must not change the deliberate grading threshold.
+  assert.equal(cardSwipeGrade(80,0,0),true)
+  assert.equal(cardSwipeGrade(-80,0,0),false)
+})
 
 test('horizontal drags are captured but taps, vertical scroll and multi-touch are not',()=>{
   assert.equal(captureCardSwipe(20,2),true)

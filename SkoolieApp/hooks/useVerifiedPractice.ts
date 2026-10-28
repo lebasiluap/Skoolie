@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { createVerifiedSession, type CanonicalAnswer, type RewardReceipt, type VerifiedMode } from '@/lib/verifiedSession'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { timedRequest } from '@/lib/timedRequest'
+import { notifyProgressSaved } from '@/lib/progressEvents'
 
 /** One issued session per deck. No score input, legacy fallback or Auth changes. */
 export function useVerifiedPractice(userId: string | undefined) {
@@ -110,6 +111,7 @@ export function useVerifiedPractice(userId: string | undefined) {
       const result = await session.finish()
       if (gen !== generation.current) return null
       setReceipt(result)
+      notifyProgressSaved()
       return result
     } catch {
       if (gen === generation.current) Alert.alert('Progress not confirmed',

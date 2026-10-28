@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, Easing } from 'react-native'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 import { TopBar } from '@/components/ui/TopBar'
@@ -11,7 +10,7 @@ import { TopicIcon } from '@/components/ui/TopicIcon'
 import { topicColor } from '@/constants/topics'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { withAccordionAnim } from '@/lib/anim'
-import { computeAnalytics, type Analytics, type HistRow, type SessRow, type QMeta } from '@/lib/analytics'
+import { type Analytics } from '@/lib/analytics'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
 import Svg, { Circle } from 'react-native-svg'
@@ -20,6 +19,7 @@ import { useResponsive, MAX_CONTENT } from '@/hooks/useResponsive'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { tierScore, tierProgress } from '@/lib/tiers'
 import { IntroGate } from '@/components/ui/IntroGate'
+import { useProgressData } from '@/contexts/ProgressDataContext'
 
 const READY_HINT: Record<string, string> = {
   'Exam ready': 'Keep it warm with quick daily reviews.',
@@ -32,11 +32,13 @@ const READY_HINT: Record<string, string> = {
 export default function AnalyticsScreen() {
   const C = useTheme()
   const { user, profile } = useAuth()
+  const progressData=useProgressData()
+  const request=useRef(0)
   const { isSmall } = useResponsive()
   const entrance = useScreenEntrance()
-  const [data, setData] = useState<Analytics | null>(null)
+  const [data, setData] = useState<Analytics | null>(()=>progressData.peekAnalytics()??null)
   const [standing, setStanding] = useState({ rankField: 0, nField: 0, rankGlobal: 0, nGlobal: 0 })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(()=>!progressData.peekAnalytics())
   const [refreshing, setRefreshing] = useState(false)
   const [openTopic, setOpenTopic] = useState<string | null>(null)
 
@@ -55,40 +57,26 @@ export default function AnalyticsScreen() {
     }
   }, [loading, section])
 
-  useFocusEffect(useCallback(() => { load() }, [user?.id, profile?.id])) // eslint-disable-line react-hooks/exhaustive-deps
+  useFocusEffect(useCallback(() => {
+    const cached=progressData.peekAnalytics()
+    if(cached){setData(cached);setLoading(false)}
+    load()
+    return()=>{request.current++}
+  }, [user?.id, progressData])) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function load() {
     // Wait for profile; the focus effect re-runs when profile.id becomes
     // available. A permanently-missing profile means the account is broken —
     // RootNavigator routes that to onboarding, so this screen never strands.
     if (!user || !profile) return
+    const gen=++request.current
     try {
-    const [{ data: hist }, { data: sess }, { data: mcqC }, { data: fcC }, { data: lb }] = await Promise.all([
-      // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
-      // the limit binds, and "last 14 days" would compute from stale rows.
-      supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).order('answered_at', { ascending: false }).limit(5000),
-      supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500),
-      supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'mcq', p_access_key: profile.access_key ?? null }),
-      supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }),
-      supabase.rpc('get_leaderboard', { p_limit: 200 }),
-    ])
-    const totals: Record<string, number> = {}
-    for (const r of [...(mcqC ?? []), ...(fcC ?? [])]) totals[r.topic] = (totals[r.topic] ?? 0) + Number(r.cnt)
-
-    // Build question→topic/subtopic map for the questions answered in sessions (mcq/flashcard only;
-    // case composite ids like "uuid:0" aren't real question ids and are skipped).
-    // KNOWN LIMIT: capped at 1,000 distinct ids — beyond that, per-topic
-    // coverage undercounts. Newest sessions win (ordered above); a server-side
-    // aggregate is the eventual fix if power users hit this.
-    const ids = [...new Set(((sess ?? []) as SessRow[]).flatMap(s => s.question_ids ?? []))]
-      .filter(id => id && !id.includes(':')).slice(0, 1000)
-    const qMeta: QMeta = {}
-    if (ids.length) {
-      const { data: qrows } = await supabase.rpc('get_question_meta', { p_ids: ids })
-      for (const q of (qrows ?? []) as any[]) qMeta[q.id] = { topic: q.topic, subtopic: q.subtopic, category: q.category }
-    }
-
-    setData(computeAnalytics((hist ?? []) as HistRow[], (sess ?? []) as SessRow[], qMeta, totals))
+    // Rank loading must never hold up the learning insights themselves.
+    const summary=progressData.analytics().then(a=>{
+      if(gen===request.current){setData(a);setLoading(false)}
+    })
+    const ranks=progressData.standing().then(lb=>{
+    if(gen!==request.current)return
 
     // Rank standing (leaderboard is sorted by XP desc; pacers excluded —
     // "how you compare" means against real people)
@@ -100,14 +88,16 @@ export default function AnalyticsScreen() {
       rankField: field.findIndex(p => p.id === user.id) + 1,
       nField: field.length,
     })
+    })
+    await Promise.allSettled([summary,ranks])
     } catch (e) {
       console.warn('analytics load failed', e)
     } finally {
-      setLoading(false)
+      if(gen===request.current)setLoading(false)
     }
   }
 
-  async function onRefresh() { setRefreshing(true); try { await load() } finally { setRefreshing(false) } }
+  async function onRefresh() { progressData.invalidate();setRefreshing(true); try { await load() } finally { setRefreshing(false) } }
 
   const practiceTopic = (topic: string) =>
     router.push({ pathname: '/(app)/practice/mcq', params: { startTopic: topic, from: 'analytics' } } as any)

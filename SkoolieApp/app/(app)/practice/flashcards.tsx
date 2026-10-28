@@ -176,7 +176,7 @@ export default function FlashcardsScreen() {
       gesture.current={token,id};swipeX.stopAnimation();setSwiping(true)
     },
     onPanResponderMove: (_e,g)=>{
-      if(gesture.current&&g.numberActiveTouches===1)swipeX.setValue(g.dx)
+      if(gesture.current&&g.numberActiveTouches===1)swipeX.setValue(Math.max(-64,Math.min(64,g.dx)))
       else resetSwipe()
     },
     onPanResponderRelease: (_e, g) => {
@@ -184,13 +184,12 @@ export default function FlashcardsScreen() {
       if(!active||!swipeGuard.current(active.token,active.id))return
       const commit = cardSwipeGrade(g.dx,g.dy,g.vx)
       if (commit === null) {
-        Animated.spring(swipeX, { toValue: 0, friction: 7, useNativeDriver: true }).start(()=>{
+        Animated.timing(swipeX, { toValue: 0, duration: 100, useNativeDriver: true }).start(()=>{
           if(swipeGuard.current(active.token,active.id))resetSwipe()
         })
         return
       }
-      const distance=Math.max(swipeContext.current.width,320)+80
-      Animated.timing(swipeX, { toValue: commit ? distance : -distance, duration: 150, useNativeDriver: true }).start(({finished}) => {
+      Animated.timing(swipeX, { toValue: commit ? 76 : -76, duration: 90, useNativeDriver: true }).start(({finished}) => {
         if(!swipeGuard.current(active.token,active.id))return
         if(!finished||swipeContext.current.id!==active.id){resetSwipe();return}
         void nextRef.current(commit,active.id).finally(()=>{
@@ -852,7 +851,6 @@ export default function FlashcardsScreen() {
               width: '100%',
               transform: [
                 { translateX: swipeX },
-                { rotate: swipeX.interpolate({ inputRange: [-300, 0, 300], outputRange: ['-9deg', '0deg', '9deg'] }) },
               ],
             }}
           >

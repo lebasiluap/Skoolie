@@ -2,11 +2,13 @@ import { Tabs } from 'expo-router'
 import { TabBar } from '@/components/TabBar'
 import { FiltersProvider } from '@/contexts/FiltersContext'
 import { PracticeDataProvider } from '@/contexts/PracticeDataContext'
+import { ProgressDataProvider } from '@/contexts/ProgressDataContext'
 
 export default function AppLayout() {
   return (
     <FiltersProvider>
     <PracticeDataProvider>
+    <ProgressDataProvider>
     <Tabs
       tabBar={props => <TabBar {...props} />}
       screenOptions={{ headerShown: false }}
@@ -21,6 +23,7 @@ export default function AppLayout() {
       <Tabs.Screen name="search" options={{ href: null }} />
       <Tabs.Screen name="history" options={{ href: null }} />
     </Tabs>
+    </ProgressDataProvider>
     </PracticeDataProvider>
     </FiltersProvider>
   )

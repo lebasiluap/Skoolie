@@ -32,6 +32,7 @@ import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
 import { timedVerdict } from '@/lib/timedVerdict'
 import { advanceRapidTurn, rapidTapReady, type RapidTurn } from '@/lib/rapidTurn'
+import { rapidFeedback, rapidAdvanceWait } from '@/lib/rapidFeedback'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
@@ -89,6 +90,7 @@ export default function RapidFireScreen() {
   // Per-question answer state: null = live, else the letter tapped ('' = timeout)
   const answered=turn.answer
   const [pendingChoice,setPendingChoice]=useState<string|null>(null)
+  const feedbackAt=useRef(0)
   const pendingRef=useRef<{id:string;value:string|null;letter:string;generation:number}|null>(null)
   const answerLock = useRef(false)
   const [wasCorrect, setWasCorrect] = useState(false)
@@ -265,7 +267,7 @@ export default function RapidFireScreen() {
       setWasCorrect(false)
       pendingRef.current=null;setPendingChoice(null)
       setTurn(advanceRapidTurn)
-    }, ADVANCE_DELAY_MS)
+    }, rapidAdvanceWait(feedbackAt.current,Date.now(),ADVANCE_DELAY_MS))
   }
 
   /** Confirm before abandoning a live run — a barrage window especially. */
@@ -285,13 +287,17 @@ export default function RapidFireScreen() {
   }
 
   async function onAnswer(letter: string) {
-    if (answered !== null||answerLock.current||pendingRef.current||remaining===null) return
+    if (answered !== null||answerLock.current||pendingRef.current||remaining===null||remaining<=0) return
     if (!rapidTapReady(Date.now(),questionShownAt.current,TAP_GRACE_MS)) return
     const q = questions[qIndex]
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
     pendingRef.current={id:q.id,value:shuf.displayToOriginalLetter[letter]??null,letter,generation:runGeneration.current}
     setPendingChoice(letter)
-    haptic('tick')
+    feedbackAt.current=Date.now()
+    // Presentation only: all five answer keys came from this issued session.
+    // Never credit a local verdict or open the next timed item before confirmation.
+    if(letter===shuf.correctLetter)playCombo(streak+1)
+    else playSound('wrong')
     void submitPending(q)
   }
 
@@ -314,13 +320,11 @@ export default function RapidFireScreen() {
     setWasCorrect(correct)
     setBonusPts(result.bonus_total??0)
     if (correct) {
-      playCombo(streak + 1)   // pitch rises as the combo builds
       // combo (based on streak BEFORE this answer) + speed (bar remaining at tap)
       setScore(s => s + 1)
       setStreak(st => { const n = st + 1; setBestStreak(b => Math.max(b, n)); return n })
       popCombo()
     } else {
-      playSound('wrong')
       setStreak(0)
     }
     advance()
@@ -333,6 +337,7 @@ export default function RapidFireScreen() {
     if(!q)return
     pendingRef.current={id:q.id,value:null,letter:'',generation:runGeneration.current}
     setPendingChoice('')
+    feedbackAt.current=Date.now()
     void submitPending(q)
   }
 
@@ -392,6 +397,7 @@ export default function RapidFireScreen() {
       </View>
     )
     const shuffled = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    const feedback=rapidFeedback(answered,pendingChoice,shuffled.correctLetter)
     const barColor = barAnim.interpolate({
       // green while >60%, blends to orange around half, red near the end
       inputRange: [0, 0.15, 0.5, 0.62, 1],
@@ -456,7 +462,7 @@ export default function RapidFireScreen() {
             </View>
           </View>
 
-          <Text accessibilityLiveRegion="polite" style={[s.pickLabel, { color: C.textFaint }]}>{pendingChoice!==null&&answered===null?'CHECKING ANSWER…':remaining===null&&answered===null?'STARTING TIMER…':'TAP THE ANSWER'}</Text>
+          <Text accessibilityLiveRegion="polite" style={[s.pickLabel, { color: C.textFaint }]}>{feedback.label??(remaining===null?'STARTING TIMER…':'TAP THE ANSWER')}</Text>
           {pendingChoice!==null&&answered===null&&!verified.submitting&&(
             <TouchableOpacity onPress={()=>void submitPending(q)} accessibilityRole="button" accessibilityLabel="Retry confirming the same answer"
               style={[s.pill,{backgroundColor:PTint,borderColor:P}]}>
@@ -467,10 +473,10 @@ export default function RapidFireScreen() {
           {shuffled.options.map((text, i) => {
             const letter = LETTERS[i]
             const isAns = letter === shuffled.correctLetter
-            const isPick = answered === letter
+            const visibleAnswer=feedback.answer
+            const isPick = visibleAnswer === letter
             let bg = C.surface, border = C.border, fg = C.text
-            if(answered===null&&pendingChoice===letter){bg=PTint;border=P;fg=P}
-            if (answered !== null) {
+            if (visibleAnswer !== null) {
               if (isAns) { bg = C.greenTint; border = C.green; fg = C.green }
               else if (isPick) { bg = C.redTint; border = C.red; fg = C.red }
             }
@@ -478,10 +484,9 @@ export default function RapidFireScreen() {
               <TouchableOpacity key={letter} disabled={answered !== null||pendingChoice!==null||remaining===null} onPress={() => onAnswer(letter)}
                 accessibilityRole="button" accessibilityLabel={text} accessibilityState={{disabled:answered!==null||pendingChoice!==null||remaining===null,selected:pendingChoice===letter||answered===letter}}
                 activeOpacity={0.7}
-                style={[s.pill, { backgroundColor: bg, borderColor: border, opacity: answered !== null && !isAns && !isPick ? 0.4 : 1, ...C.shadow }]}>
-                {answered !== null && isAns && <Ionicons name="checkmark-circle" size={17} color={C.green} />}
-                {answered !== null && isPick && !isAns && <Ionicons name="close-circle" size={17} color={C.red} />}
-                {answered===null&&pendingChoice===letter&&<ActivityIndicator size="small" color={P}/>}
+                style={[s.pill, { backgroundColor: bg, borderColor: border, opacity: visibleAnswer !== null && !isAns && !isPick ? 0.4 : 1, ...C.shadow }]}>
+                {visibleAnswer !== null && isAns && <Ionicons name="checkmark-circle" size={17} color={C.green} />}
+                {visibleAnswer !== null && isPick && !isAns && <Ionicons name="close-circle" size={17} color={C.red} />}
                 <Text style={[s.pillText, { color: fg }]} numberOfLines={1}>{text}</Text>
               </TouchableOpacity>
             )

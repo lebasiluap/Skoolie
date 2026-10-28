@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useRef } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, FlatList } from 'react-native'
-import { computeAnalytics, type Analytics, type QMeta, type HistRow, type SessRow } from '@/lib/analytics'
+import { type Analytics } from '@/lib/analytics'
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { effectiveStreak as computeEffectiveStreak, streakStatus } from '@/lib/streak'
@@ -19,6 +19,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { SkeletonList } from '@/components/ui/Skeleton'
 import { Entrance } from '@/components/ui/Entrance'
+import { useProgressData } from '@/contexts/ProgressDataContext'
 
 interface LeaderboardUser {
   id: string; full_name: string; xp: number; level: number; current_streak: number
@@ -69,15 +70,17 @@ interface TopicMastery {
 export default function ProgressScreen() {
   const C = useTheme()
   const { user, profile, refreshProfile } = useAuth()
+  const progressData=useProgressData()
+  const request=useRef(0)
   const entrance = useScreenEntrance()
-  const [weekUsers, setWeekUsers] = useState<WeeklyRow[]>([])
-  const [analytics, setAnalytics] = useState<Analytics | null>(null)
+  const [weekUsers, setWeekUsers] = useState<WeeklyRow[]>(()=> (progressData.peekLeague()??[]).map(r=>({...r,xp:r.week_xp})))
+  const [analytics, setAnalytics] = useState<Analytics | null>(()=>progressData.peekAnalytics()??null)
   // Diamond Tournament — active entry shows the knockout race above the league
   const [tournament, setTournament] = useState<{
     stage: number; stageLabel: string
     entrants: { id: string; full_name: string; avatar_url: string | null; tier: number | null; xp: number }[]
   } | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(()=>!progressData.peekLeague())
   const [refreshing, setRefreshing] = useState(false)
   // Rank movement since the last baseline (up = green, down/same = ash)
   const [moves, setMoves] = useState<Record<string, 'up' | 'down' | 'same'>>({})
@@ -109,51 +112,38 @@ export default function ProgressScreen() {
   // Refresh leaderboard + stats AND the in-memory profile every time the tab
   // gains focus, so XP/level/streak reflect sessions completed elsewhere.
   useFocusEffect(useCallback(() => {
+    const cached=progressData.peekLeague()
+    if(cached){setWeekUsers(cached.map(r=>({...r,xp:r.week_xp})));setLoading(false)}
+    const summary=progressData.peekAnalytics()
+    if(summary)setAnalytics(summary)
     load()
     refreshProfile()
-  }, [user?.id])) // eslint-disable-line react-hooks/exhaustive-deps
+    return()=>{request.current++}
+  }, [user?.id,progressData])) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function load() {
+    if(!user||!profile)return
+    const gen=++request.current
     try {
-    const [{ data: wk }, { data: sessions }, { data: hist }, { data: mcqC }, { data: fcC }] = await Promise.all([
-      // The board IS the weekly league for your profession (Duolingo model) —
-      // no all-time board, no scope filters. SECURITY DEFINER RPC.
-      supabase.rpc('get_weekly_league'),
-      // ALWAYS newest-first: without ORDER BY the row choice is arbitrary once
-      // the limit binds, and recent activity would silently vanish from stats.
-      user ? supabase.from('quiz_sessions').select('score, question_ids, xp_earned, started_at, mode, topic').eq('user_id', user.id).order('started_at', { ascending: false }).limit(200) : Promise.resolve({ data: [] }),
-      user ? supabase.from('user_question_history').select('question_id, topic, category, subtopic, difficulty, question_type, was_correct, answered_at').eq('user_id', user.id).order('answered_at', { ascending: false }).limit(5000) : Promise.resolve({ data: [] }),
-      profile ? supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'mcq', p_access_key: profile.access_key ?? null }) : Promise.resolve({ data: [] }),
-      profile ? supabase.rpc('get_question_counts', { p_profession: profile.profession, p_question_type: 'flashcard', p_access_key: profile.access_key ?? null }) : Promise.resolve({ data: [] }),
+    // The board is independent of the heavier history/meta aggregation.
+    const [,a]=await Promise.all([
+      progressData.league().then(wk=>{
+        if(gen!==request.current)return
+        const rows=wk.map(r=>({...r,xp:r.week_xp})) as WeeklyRow[]
+        setWeekUsers(rows);setLoading(false);void computeMovement(rows)
+      }),
+      progressData.analytics(),
     ])
-
-    // Weekly league cohort — alias week_xp to xp so the row renderer is shared.
-    const weekRows = ((wk ?? []) as any[]).map(r => ({ ...r, xp: r.week_xp })) as WeeklyRow[]
-    setWeekUsers(weekRows)
-    computeMovement(weekRows)
+    if(gen!==request.current)return
+    setAnalytics(a)
 
     // Tournament (best-effort; RPC is idempotent and resolves finished stages)
     supabase.rpc('get_tournament').then(({ data: t }) => {
+      if(gen!==request.current)return
       setTournament(t?.in_tournament && t.status === 'active'
         ? { stage: Number(t.stage), stageLabel: String(t.stage_label), entrants: (t.entrants ?? []) as any[] }
         : null)
     })
-
-    const totals: Record<string, number> = {}
-    for (const r of [...(mcqC ?? []), ...(fcC ?? [])]) totals[r.topic] = (totals[r.topic] ?? 0) + Number(r.cnt)
-
-    const sess = (sessions ?? []) as SessRow[]
-    // KNOWN LIMIT: 1,000 distinct ids for meta lookup — newest sessions win
-    // (ordered above); server-side aggregation is the eventual fix at scale.
-    const ids = [...new Set(sess.flatMap(s => s.question_ids ?? []))].filter(id => id && !id.includes(':')).slice(0, 1000)
-    const qMeta: QMeta = {}
-    if (ids.length) {
-      const { data: qrows } = await supabase.rpc('get_question_meta', { p_ids: ids })
-      for (const q of (qrows ?? []) as any[]) qMeta[q.id] = { topic: q.topic, subtopic: q.subtopic, category: q.category }
-    }
-
-    const a = computeAnalytics((hist ?? []) as HistRow[], sess, qMeta, totals)
-    setAnalytics(a)
 
     // Specialty tier — rounded expertise (diversity) × distinct questions answered.
     // Persisted so the leaderboard can show everyone's badge and the dashboard can
@@ -170,11 +160,12 @@ export default function ProgressScreen() {
     } catch (e) {
       console.warn('progress load failed', e)
     } finally {
-      setLoading(false)
+      if(gen===request.current)setLoading(false)
     }
   }
 
   async function onRefresh() {
+    progressData.invalidate()
     setRefreshing(true)
     try { await load() } finally { setRefreshing(false) }
   }

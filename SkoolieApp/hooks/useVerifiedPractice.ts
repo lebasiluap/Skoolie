@@ -4,6 +4,7 @@ import { randomUUID } from 'expo-crypto'
 import { supabase } from '@/lib/supabase'
 import { createVerifiedSession, type CanonicalAnswer, type RewardReceipt, type VerifiedMode } from '@/lib/verifiedSession'
 import { readWithDeadline } from '@/lib/readWithDeadline'
+import { timedRequest } from '@/lib/timedRequest'
 
 /** One issued session per deck. No score input, legacy fallback or Auth changes. */
 export function useVerifiedPractice(userId: string | undefined) {
@@ -73,22 +74,24 @@ export function useVerifiedPractice(userId: string | undefined) {
       return false
     }
   }
-  async function openTimed(id: string): Promise<number | null> {
+  async function openTimed(id: string): Promise<{seconds:number;requestedAt:number} | null> {
     if (!issuedId.current) return null
-    const {data,error}=await supabase.rpc('open_verified_timed_item',{p_session_id:issuedId.current,p_item_id:id})
-    if(error||data?.item_id!==id||typeof data.remaining_seconds!=='number') return null
-    return data.remaining_seconds
+    const sessionId=issuedId.current,gen=generation.current
+    let requestedAt=Date.now()
+    const data=await timedRequest(signal=>{
+      requestedAt=Date.now()
+      return supabase.rpc('open_verified_timed_item',{p_session_id:sessionId,p_item_id:id}).abortSignal(signal)
+    })
+    if(gen!==generation.current||issuedId.current!==sessionId||data?.item_id!==id||typeof data.remaining_seconds!=='number'||!Number.isFinite(data.remaining_seconds)||data.remaining_seconds<0) return null
+    return {seconds:data.remaining_seconds,requestedAt}
   }
   async function answerTimed(id: string, value: string | null, retry?: () => void): Promise<{answer: string | null; bonus_total?:number} | null> {
     if (!issuedId.current || !client.current || timedLock.current) return null
     timedLock.current=true;setSubmitting(true)
     const gen=generation.current,sessionId=issuedId.current,session=client.current
     try {
-      const call=()=>supabase.rpc('answer_verified_timed_item',{p_session_id:sessionId,p_item_id:id,p_answer:value})
-      let response=await call()
-      if(response.error)response=await call() // exact replay after a lost response
-      const {data,error}=response
-      if(error||data?.item_id!==id||(data.answer!==null&&!/^[A-F]$/.test(data.answer)))throw new Error('Answer unconfirmed')
+      const data=await timedRequest(signal=>supabase.rpc('answer_verified_timed_item',{p_session_id:sessionId,p_item_id:id,p_answer:value}).abortSignal(signal))
+      if(data?.item_id!==id||(data.answer!==null&&!/^[A-F]$/.test(data.answer)))throw new Error('Answer unconfirmed')
       if(gen!==generation.current)return null
       session.answer(id,data.answer)
       return {answer:data.answer,bonus_total:typeof data.bonus_total==='number'?data.bonus_total:undefined}

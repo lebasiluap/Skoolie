@@ -3,21 +3,22 @@ import { Alert } from 'react-native'
 
 /** Display follows an issued server deadline, including time spent backgrounded. */
 export function useVerifiedCountdown(enabled: boolean, itemId: string | null,
- open: (id: string) => Promise<number | null>, expire: () => void) {
+ open: (id: string) => Promise<{seconds:number;requestedAt:number} | null>, expire: () => void, leave?: () => void) {
  const [state,setState]=useState<{id:string;remaining:number}|null>(null)
- const callbacks=useRef({open,expire});callbacks.current={open,expire}
+ const callbacks=useRef({open,expire,leave});callbacks.current={open,expire,leave}
  useEffect(()=>{
   if(!enabled||!itemId){setState(null);return}
   let stopped=false,interval:ReturnType<typeof setInterval>|undefined
   setState(null)
   const begin=async()=>{
+   if(stopped)return // dismiss stale alerts without reopening an answered item
    try {
-    const sent=Date.now()
-    const seconds=await callbacks.current.open(itemId)
+    const opening=await callbacks.current.open(itemId)
     if(stopped)return
-    if(seconds===null)throw new Error('No deadline')
-    // Deduct the entire round trip conservatively; the server grades lateness.
-    const deadline=sent+seconds*1000
+    if(opening===null)throw new Error('No deadline')
+    // Deduct the successful attempt's round trip, not a failed attempt twice.
+    // The server still owns the original deadline and grades lateness.
+    const deadline=opening.requestedAt+opening.seconds*1000
     let fired=false
     const tick=()=>{
      if(stopped)return
@@ -26,7 +27,10 @@ export function useVerifiedCountdown(enabled: boolean, itemId: string | null,
     }
     interval=setInterval(tick,250);tick()
    }catch{
-    if(!stopped)Alert.alert('Timer could not start','Check your connection. The server keeps the same deadline on retry.',[{text:'Retry',onPress:()=>void begin()}])
+    if(!stopped)Alert.alert('Timer could not start','The timer could not be confirmed. Retry keeps the same server deadline. You can leave and start a fresh run if this one is no longer available.',[
+     ...(callbacks.current.leave ? [{text:'Leave run',style:'cancel' as const,onPress:()=>{if(!stopped)callbacks.current.leave?.()}}] : []),
+     {text:'Retry',onPress:()=>void begin()},
+    ])
    }
   }
   void begin()

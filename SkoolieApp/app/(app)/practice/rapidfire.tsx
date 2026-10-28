@@ -31,6 +31,7 @@ import { buildShuffledMcq, LETTERS } from '@/lib/answers'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { useVerifiedCountdown } from '@/hooks/useVerifiedCountdown'
 import { timedVerdict } from '@/lib/timedVerdict'
+import { advanceRapidTurn, rapidTapReady, type RapidTurn } from '@/lib/rapidTurn'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { CappyHead } from '@/components/mascots/CappyHead'
 import { MascotAnimator } from '@/components/mascots/MascotAnimator'
@@ -81,11 +82,14 @@ export default function RapidFireScreen() {
   const [loadingTopics, setLoadingTopics] = useState(true)
   const [loadingQs, setLoadingQs] = useState(false)
   const [questions, setQuestions] = useState<Question[]>([])
-  const [qIndex, setQIndex] = useState(0)
+  const [turn, setTurn] = useState<RapidTurn>({index:0,answer:null})
+  const qIndex=turn.index
   const [runTopic, setRunTopic] = useState<string | null>(null)
 
   // Per-question answer state: null = live, else the letter tapped ('' = timeout)
-  const [answered, setAnswered] = useState<string | null>(null)
+  const answered=turn.answer
+  const [pendingChoice,setPendingChoice]=useState<string|null>(null)
+  const pendingRef=useRef<{id:string;value:string|null;letter:string;generation:number}|null>(null)
   const answerLock = useRef(false)
   const [wasCorrect, setWasCorrect] = useState(false)
 
@@ -142,8 +146,10 @@ export default function RapidFireScreen() {
     runGeneration.current++
     if (advanceTimer.current) clearTimeout(advanceTimer.current)
     barAnim.stopAnimation()
-    setAnswered(null)
     setScreen(prev => (prev === 'run' ? 'topics' : prev))
+    pendingRef.current=null
+    setPendingChoice(null)
+    setTurn(prev=>({...prev,answer:null}))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useFocusEffect(useCallback(() => {
     isFocusedRef.current = true
@@ -218,18 +224,22 @@ export default function RapidFireScreen() {
     barragePendingRef.current = false   // consume — only the first run is the blitz
     setRunTopic(topic)
     setQuestions(items as unknown as Question[])
-    setQIndex(0); setAnswered(null); setWasCorrect(false)
+    pendingRef.current=null;setPendingChoice(null)
+    setTurn({index:0,answer:null}); setWasCorrect(false)
     setScore(0); setStreak(0); setBestStreak(0); setBonusPts(0)
     setScreen('run')
   }
 
   // Start/restart the bar whenever a new question goes live
   const questionShownAt = useRef(0)
-  const remaining = useVerifiedCountdown(screen==='run'&&answered===null,
-    questions[qIndex]?.id??null,verified.openTimed,()=>void onTimeout())
+  const readyItem=useRef<string|null>(null)
+  const remaining = useVerifiedCountdown(screen==='run'&&answered===null&&pendingChoice===null,
+    questions[qIndex]?.id??null,verified.openTimed,()=>void onTimeout(),abandonRun)
+  useEffect(()=>{readyItem.current=null;questionShownAt.current=0},[screen,qIndex])
   useEffect(() => {
     if (screen !== 'run' || answered !== null || remaining===null) return
-    if(remaining>=SECONDS_PER_Q-1)questionShownAt.current=Date.now()
+    const id=questions[qIndex]?.id??null
+    if(readyItem.current!==id){readyItem.current=id;questionShownAt.current=Date.now()}
     barAnim.setValue(remaining/SECONDS_PER_Q)
     const anim = Animated.timing(barAnim, {
       toValue: 0,
@@ -252,9 +262,9 @@ export default function RapidFireScreen() {
         if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
         setScore(result.score);setScreen('results');void refreshProfile();return
       }
-      setAnswered(null)
       setWasCorrect(false)
-      setQIndex(i => i + 1)
+      pendingRef.current=null;setPendingChoice(null)
+      setTurn(advanceRapidTurn)
     }, ADVANCE_DELAY_MS)
   }
 
@@ -275,13 +285,22 @@ export default function RapidFireScreen() {
   }
 
   async function onAnswer(letter: string) {
-    if (answered !== null||answerLock.current||remaining===null) return
-    if (Date.now() - questionShownAt.current < TAP_GRACE_MS) return   // aimed at the previous question
+    if (answered !== null||answerLock.current||pendingRef.current||remaining===null) return
+    if (!rapidTapReady(Date.now(),questionShownAt.current,TAP_GRACE_MS)) return
     const q = questions[qIndex]
     const shuf = buildShuffledMcq(q.options, q.correct_answer, q.id + shuffleSalt)
+    pendingRef.current={id:q.id,value:shuf.displayToOriginalLetter[letter]??null,letter,generation:runGeneration.current}
+    setPendingChoice(letter)
+    haptic('tick')
+    void submitPending(q)
+  }
+
+  async function submitPending(q:Question) {
+    const pending=pendingRef.current
+    if(!pending||pending.id!==q.id||pending.generation!==runGeneration.current||answerLock.current)return
     answerLock.current=true
     const gen=runGeneration.current
-    const result=await verified.answerTimed(q.id,shuf.displayToOriginalLetter[letter]??null,()=>void onAnswer(letter))
+    const result=await verified.answerTimed(q.id,pending.value,()=>void submitPending(q))
     answerLock.current=false
     if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
     showAcceptedAnswer(q,result)
@@ -291,7 +310,7 @@ export default function RapidFireScreen() {
     const shuf=buildShuffledMcq(q.options,q.correct_answer,q.id+shuffleSalt)
     const verdict=timedVerdict(shuf,result.answer)
     const correct=verdict.correct
-    setAnswered(verdict.display)
+    setTurn(prev=>({...prev,answer:verdict.display}))
     setWasCorrect(correct)
     setBonusPts(result.bonus_total??0)
     if (correct) {
@@ -308,16 +327,13 @@ export default function RapidFireScreen() {
   }
 
   async function onTimeout() {
-    if (answered !== null||answerLock.current) return
+    if (answered !== null||answerLock.current||pendingRef.current) return
     if (!isFocusedRef.current) return   // never progress a run in the background
     const q = questions[qIndex]
     if(!q)return
-    answerLock.current=true
-    const gen=runGeneration.current
-    const result=await verified.answerTimed(q.id,null,()=>void onTimeout())
-    answerLock.current=false
-    if(!result||gen!==runGeneration.current||!isFocusedRef.current)return
-    showAcceptedAnswer(q,result)
+    pendingRef.current={id:q.id,value:null,letter:'',generation:runGeneration.current}
+    setPendingChoice('')
+    void submitPending(q)
   }
 
   // ── Topics screen ─────────────────────────────────────────────────────────
@@ -436,27 +452,36 @@ export default function RapidFireScreen() {
                   transform="rotate(-90 27 27)"
                 />
               </Svg>
-              <Text style={[s.ringSecs, { color: secsLeft <= 3 ? C.red : C.text }]}>{secsLeft}</Text>
+              <Text style={[s.ringSecs, { color: secsLeft <= 3 ? C.red : C.text }]}>{remaining===null&&pendingChoice===null&&answered===null?'…':secsLeft}</Text>
             </View>
           </View>
 
-          <Text style={[s.pickLabel, { color: C.textFaint }]}>TAP THE ANSWER</Text>
+          <Text accessibilityLiveRegion="polite" style={[s.pickLabel, { color: C.textFaint }]}>{pendingChoice!==null&&answered===null?'CHECKING ANSWER…':remaining===null&&answered===null?'STARTING TIMER…':'TAP THE ANSWER'}</Text>
+          {pendingChoice!==null&&answered===null&&!verified.submitting&&(
+            <TouchableOpacity onPress={()=>void submitPending(q)} accessibilityRole="button" accessibilityLabel="Retry confirming the same answer"
+              style={[s.pill,{backgroundColor:PTint,borderColor:P}]}>
+              <Text style={[s.pillText,{color:P}]}>Retry confirming answer</Text>
+            </TouchableOpacity>
+          )}
           {/* Deliberately NOT MCQ-styled — no letters, just quick centered pills */}
           {shuffled.options.map((text, i) => {
             const letter = LETTERS[i]
             const isAns = letter === shuffled.correctLetter
             const isPick = answered === letter
             let bg = C.surface, border = C.border, fg = C.text
+            if(answered===null&&pendingChoice===letter){bg=PTint;border=P;fg=P}
             if (answered !== null) {
               if (isAns) { bg = C.greenTint; border = C.green; fg = C.green }
               else if (isPick) { bg = C.redTint; border = C.red; fg = C.red }
             }
             return (
-              <TouchableOpacity key={letter} disabled={answered !== null} onPress={() => onAnswer(letter)}
+              <TouchableOpacity key={letter} disabled={answered !== null||pendingChoice!==null||remaining===null} onPress={() => onAnswer(letter)}
+                accessibilityRole="button" accessibilityLabel={text} accessibilityState={{disabled:answered!==null||pendingChoice!==null||remaining===null,selected:pendingChoice===letter||answered===letter}}
                 activeOpacity={0.7}
                 style={[s.pill, { backgroundColor: bg, borderColor: border, opacity: answered !== null && !isAns && !isPick ? 0.4 : 1, ...C.shadow }]}>
                 {answered !== null && isAns && <Ionicons name="checkmark-circle" size={17} color={C.green} />}
                 {answered !== null && isPick && !isAns && <Ionicons name="close-circle" size={17} color={C.red} />}
+                {answered===null&&pendingChoice===letter&&<ActivityIndicator size="small" color={P}/>}
                 <Text style={[s.pillText, { color: fg }]} numberOfLines={1}>{text}</Text>
               </TouchableOpacity>
             )

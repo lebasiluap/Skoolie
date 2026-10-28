@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, PanResponder, useWindowDimensions } from 'react-native'
-import { router, useLocalSearchParams, useNavigation } from 'expo-router'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, PanResponder, AppState, useWindowDimensions } from 'react-native'
+import { router, useLocalSearchParams, useNavigation, useFocusEffect } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
@@ -27,6 +27,7 @@ import { playSound } from '@/lib/sounds'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { createDeckLoadGuard } from '@/lib/deckLoadGuard'
+import { captureCardSwipe, cardSwipeGrade, createCardSwipeGuard } from '@/lib/flashcardSwipe'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 
@@ -53,7 +54,7 @@ export default function FlashcardsScreen() {
   useCollapsePracticeStack()
   const C = useTheme()
   const insets = useSafeAreaInsets()
-  const { height: screenH } = useWindowDimensions()
+  const { height: screenH, width: screenW } = useWindowDimensions()
   const { user, profile, refreshProfile } = useAuth()
   const verified = useVerifiedPractice(user?.id)
   const graded = useRef(new Set<string>())
@@ -146,31 +147,88 @@ export default function FlashcardsScreen() {
   // Swipe-to-grade (audit #13): once the answer is revealed, fling the card
   // right = Got it, left = Didn't know. Buttons remain for tap users.
   const swipeX = useRef(new Animated.Value(0)).current
-  const revealedRef = useRef(false)
-  const nextRef = useRef<(didKnow: boolean) => void>(() => {})
+  const swipeFocused=useRef(true)
+  const swipeForeground=useRef(AppState.currentState==='active')
+  const swipeGuard=useRef(createCardSwipeGuard()).current
+  const [swiping,setSwiping]=useState(false)
+  const swipeContext=useRef<{id:string|null;enabled:boolean;width:number}>({id:null,enabled:false,width:screenW})
+  const gesture=useRef<{token:number;id:string}|null>(null)
+  const flipInFlight=useRef(false)
+  const flipGeneration=useRef(0)
+  const flipTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
+  const nextRef = useRef<(didKnow: boolean, expectedId?:string) => Promise<void>>(async () => {})
+  function resetSwipe(updateState=true) {
+    swipeGuard.invalidate();gesture.current=null
+    swipeX.stopAnimation();swipeX.setValue(0)
+    if(updateState)setSwiping(false)
+  }
+  function canCapture(dx:number,dy:number,touches:number) {
+    return swipeFocused.current&&swipeForeground.current&&swipeContext.current.enabled&&!flipInFlight.current&&!swipeGuard.busy()&&captureCardSwipe(dx,dy,touches)
+  }
   const swipePan = useRef(PanResponder.create({
-    onMoveShouldSetPanResponder: (_e, g) =>
-      revealedRef.current && Math.abs(g.dx) > 14 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
-    onPanResponderMove: (_e, g) => swipeX.setValue(g.dx),
+    onMoveShouldSetPanResponderCapture: (_e,g)=>canCapture(g.dx,g.dy,g.numberActiveTouches),
+    onMoveShouldSetPanResponder: (_e,g)=>canCapture(g.dx,g.dy,g.numberActiveTouches),
+    onPanResponderGrant: () => {
+      const {id,enabled}=swipeContext.current
+      if(!id||!enabled||flipInFlight.current||!swipeFocused.current||!swipeForeground.current)return
+      const token=swipeGuard.begin(id)
+      if(token===null)return
+      gesture.current={token,id};swipeX.stopAnimation();setSwiping(true)
+    },
+    onPanResponderMove: (_e,g)=>{
+      if(gesture.current&&g.numberActiveTouches===1)swipeX.setValue(g.dx)
+      else resetSwipe()
+    },
     onPanResponderRelease: (_e, g) => {
-      const commit = g.dx > 90 || g.vx > 1.1 ? true : g.dx < -90 || g.vx < -1.1 ? false : null
+      const active=gesture.current
+      if(!active||!swipeGuard.current(active.token,active.id))return
+      const commit = cardSwipeGrade(g.dx,g.dy,g.vx)
       if (commit === null) {
-        Animated.spring(swipeX, { toValue: 0, friction: 7, useNativeDriver: true }).start()
+        Animated.spring(swipeX, { toValue: 0, friction: 7, useNativeDriver: true }).start(()=>{
+          if(swipeGuard.current(active.token,active.id))resetSwipe()
+        })
         return
       }
-      Animated.timing(swipeX, { toValue: commit ? 520 : -520, duration: 150, useNativeDriver: true }).start(() => {
-        nextRef.current(commit)
-        swipeX.setValue(0)   // next card arrives centered
+      const distance=Math.max(swipeContext.current.width,320)+80
+      Animated.timing(swipeX, { toValue: commit ? distance : -distance, duration: 150, useNativeDriver: true }).start(({finished}) => {
+        if(!swipeGuard.current(active.token,active.id))return
+        if(!finished||swipeContext.current.id!==active.id){resetSwipe();return}
+        void nextRef.current(commit,active.id).finally(()=>{
+          if(swipeGuard.current(active.token,active.id))resetSwipe()
+        })
       })
     },
-    onPanResponderTerminate: () => {
-      Animated.spring(swipeX, { toValue: 0, friction: 7, useNativeDriver: true }).start()
-    },
+    onPanResponderTerminationRequest:()=>false,
+    onPanResponderTerminate:()=>resetSwipe(),
+    onShouldBlockNativeResponder:()=>true,
   })).current
   const [flipped, setFlipped] = useState(false)
   const [revealed, setRevealed] = useState(false)  // true once answer shown; stays true even if flipped back
-  useEffect(() => { revealedRef.current = revealed }, [revealed])
   const [isFlipping, setIsFlipping] = useState(false)
+  swipeContext.current={id:cards[cardIndex]?.id??null,width:screenW,
+    enabled:screen==='quiz'&&revealed&&!isFlipping&&!verified.saving&&!loadingCards}
+  useEffect(()=>{
+    resetSwipe();flipGeneration.current++;flipInFlight.current=false
+    if(flipTimer.current)clearTimeout(flipTimer.current)
+    flipAnim.stopAnimation();flipAnim.setValue(0)
+    setRevealed(false);setFlipped(false);setIsFlipping(false)
+  },[cards,cardIndex,screen,user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  useFocusEffect(useCallback(()=>{
+    swipeFocused.current=true
+    return()=>{swipeFocused.current=false;resetSwipe()}
+  },[])) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>{
+    const sub=AppState.addEventListener('change',state=>{
+      swipeForeground.current=state==='active'
+      if(state!=='active')resetSwipe()
+    })
+    return()=>sub.remove()
+  },[]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>()=>{
+    resetSwipe(false);flipGeneration.current++
+    if(flipTimer.current)clearTimeout(flipTimer.current)
+    flipAnim.stopAnimation()
+  },[]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Card height: locked to max(front, back) so it never resizes during flip
   const [frontH, setFrontH] = useState(0)
@@ -272,6 +330,7 @@ export default function FlashcardsScreen() {
     if (!profile) return
     const request=deckGuard.start()
     if(request===null)return
+    resetSwipe()
     retryDeck.current=() => { void loadDeck(read,order,bookmarkReview) }
     setCardsError(null);setLoadingCards(true);setScreen('quiz');setCards([])
     setCardIndex(0);setGotIt(0);setMissed(0);setMissedCards([])
@@ -351,27 +410,32 @@ export default function FlashcardsScreen() {
   }
 
   function flip() {
-    if (isFlipping) return // block taps mid-animation only
+    if (flipInFlight.current||swipeGuard.busy()||verified.saving) return
     playSound('flip')
     const toValue = flipped ? 0 : 1
     setIsFlipping(true)
+    flipInFlight.current=true
+    const generation=++flipGeneration.current
     Animated.timing(flipAnim, {
       toValue,
       duration: 520,
       useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
-    }).start(() => {
+    }).start(({finished}) => {
+      if(generation!==flipGeneration.current)return
+      flipInFlight.current=false
       setIsFlipping(false)
-      if (!flipped) setRevealed(true) // first forward flip reveals answer
+      if (finished&&!flipped)setRevealed(true)
     })
     // Switch card face at midpoint (when edge-on)
-    setTimeout(() => setFlipped(f => !f), 260)
+    flipTimer.current=setTimeout(()=>{if(generation===flipGeneration.current)setFlipped(f=>!f)},260)
   }
 
-  async function next(didKnow: boolean) {
+  async function next(didKnow: boolean,expectedId?:string) {
     // Record that this card has been reviewed (powers "Allow repeat questions").
     const card = cards[cardIndex]
-    if (!card || !revealed || verified.saving || graded.current.has(card.id)) return
+    if (!card || !revealed || flipInFlight.current || verified.saving || graded.current.has(card.id)) return
+    if(expectedId ? card.id!==expectedId : swipeGuard.busy())return
     if (!verified.answer(card.id, didKnow)) return
     // A synchronous guard covers a swipe and button arriving before a render.
     graded.current.add(card.id)
@@ -417,6 +481,7 @@ export default function FlashcardsScreen() {
   }
 
   async function bindCards(pool: { id: string }[]) {
+    resetSwipe()
     const items = await verified.prepare('flashcard', pool.slice(0, 60).map(c => c.id))
     if (items) graded.current.clear()
     return items
@@ -745,6 +810,8 @@ export default function FlashcardsScreen() {
 
         {/* Card + explanation in a scroll view */}
         <ScrollView
+          scrollEnabled={!swiping}
+          directionalLockEnabled
           contentContainerStyle={[s.quizScroll, { paddingBottom: revealed ? 130 : 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
           showsVerticalScrollIndicator={false}
         >
@@ -796,7 +863,7 @@ export default function FlashcardsScreen() {
             <Animated.View pointerEvents="none" style={[s.swipeBadge, { right: 14, backgroundColor: C.redTint, borderColor: C.red, opacity: swipeX.interpolate({ inputRange: [-70, 0], outputRange: [1, 0], extrapolate: 'clamp' }) }]}>
               <Text style={[s.swipeBadgeText, { color: C.red }]}>✗ Didn't know</Text>
             </Animated.View>
-          <TouchableOpacity onPress={flip} activeOpacity={0.92} style={s.cardTouchable} disabled={isFlipping}>
+          <TouchableOpacity onPress={flip} activeOpacity={0.92} style={s.cardTouchable} disabled={isFlipping||swiping} accessibilityRole="button" accessibilityLabel={flipped?'Show question':'Reveal answer'}>
             <Animated.View style={[
               s.card,
               C.shadowLg,
@@ -870,11 +937,11 @@ export default function FlashcardsScreen() {
           }]}>
             <Text style={[s.actionPrompt, { color: C.textSoft }]}>How did you do? Swipe the card → or ←, or tap</Text>
             <View style={s.actionBtns}>
-              <TouchableOpacity onPress={() => next(false)} style={[s.actionBtn, { backgroundColor: C.redTint, borderColor: C.red }]}>
+              <TouchableOpacity onPress={() => next(false)} disabled={swiping||isFlipping} accessibilityRole="button" accessibilityLabel="Did not know this card" style={[s.actionBtn, { backgroundColor: C.redTint, borderColor: C.red }]}>
                 <Ionicons name="close" size={20} color={C.red} />
                 <Text style={[s.actionText, { color: C.red }]}>Didn't know</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => next(true)} style={[s.actionBtn, { backgroundColor: C.greenTint, borderColor: C.green }]}>
+              <TouchableOpacity onPress={() => next(true)} disabled={swiping||isFlipping} accessibilityRole="button" accessibilityLabel="Knew this card" style={[s.actionBtn, { backgroundColor: C.greenTint, borderColor: C.green }]}>
                 <Ionicons name="checkmark" size={20} color={C.green} />
                 <Text style={[s.actionText, { color: C.green }]}>Got it</Text>
               </TouchableOpacity>

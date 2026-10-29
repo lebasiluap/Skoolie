@@ -93,10 +93,14 @@ export const TERMS: LegalDoc = {
 
 export const PRIVACY: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'July 5, 2026',
+  updated: 'October 29, 2026',
   intro:
     'This Privacy Policy explains what information Skoolie ("we", "us") collects when you use the Skoolie mobile application (the "Service"), how we use it, and the choices you have. We keep it simple: we collect what the Service needs to work, we do not sell your data, and we do not show ads.',
   sections: [
+    {
+      heading: 'Beta testing activity details',
+      body: 'Registered beta testers can enable additional activity details for each app visit. We record named screens, touch counts, screen-to-action delays, flashcard flips, answer-submission events and session completions, without recording typed text, answer contents, touch coordinates or screen recordings. We separate recent interaction, quiet/reading time and possible idle time to help review testing progress and usability. These estimates do not prove attention or automatically determine payment. Detailed interaction records are accessible only to authorized administrators for up to 30 days and are periodically removed. You can decline without losing access to sign-in or practice. Existing basic foreground timing and study history remain separate.',
+    },
     {
       heading: '1. Information we collect',
       body: 'Account information: your name, email address, password (stored as a secure hash — we never see it), and, if you sign in with Google or Apple, the name and email those providers share. Profile information: profession, study year, country, and topics of interest that you choose during onboarding. Study activity: questions answered, scores, streaks, XP, tiers, league standings, bookmarks, and session history — this powers your progress tracking, analytics, and leaderboards. Device information: a push notification token if you enable reminders, and basic technical data needed to run the app.',

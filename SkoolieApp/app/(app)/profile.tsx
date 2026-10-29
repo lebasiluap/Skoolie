@@ -23,6 +23,7 @@ import { YEARS_BY_PROFESSION, DEFAULT_YEARS, PRACTITIONER_TITLES } from '@/const
 import { TIMED_CHOICES, formatSecs } from '@/lib/timing'
 import { setSoundEnabled } from '@/lib/sounds'
 import { setHapticsEnabled } from '@/lib/haptics'
+import { allowBetaDetails } from '@/lib/betaInteraction'
 import { showToast } from '@/lib/toast'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { InterestsSheet } from '@/components/ui/InterestsSheet'
@@ -532,6 +533,9 @@ export default function ProfileScreen() {
             <PillToggle value={soundOn} onValueChange={toggleSound} activeColor={C.teal} />
           </View>
 
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Stop detailed beta activity tracking for this app visit" style={[s.row, s.rowBorder, {borderColor:C.border,minHeight:48}]} onPress={()=>{allowBetaDetails(false);showToast('Detailed beta tracking stopped for this app visit')}}>
+            <View style={{flex:1}}><Text style={[s.rowLabel,{color:C.text}]}>Stop detailed beta tracking</Text><Text style={[s.rowSub,{color:C.textFaint}]}>Stops new interaction details; basic study history remains.</Text></View>
+          </TouchableOpacity>
           {/* Haptics */}
           <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
             <View style={[s.iconBox, { backgroundColor: C.coralTint }]}>

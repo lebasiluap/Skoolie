@@ -7,6 +7,7 @@ import { readWithDeadline } from '@/lib/readWithDeadline'
 import { timedRequest } from '@/lib/timedRequest'
 import { notifyProgressSaved } from '@/lib/progressEvents'
 import type { FlashcardCheckpoint } from '@/lib/flashcardCheckpoint'
+import { betaAction } from '@/lib/betaInteraction'
 
 /** One issued session per deck. No score input, legacy fallback or Auth changes. */
 export function useVerifiedPractice(userId: string | undefined) {
@@ -70,7 +71,7 @@ export function useVerifiedPractice(userId: string | undefined) {
   function answer(id: string, value: CanonicalAnswer) {
     try {
       if (!client.current) throw new Error('No issued session')
-      client.current.answer(id, value)
+      if (client.current.answer(id, value)) betaAction('answer')
       return true
     }
     catch {
@@ -97,7 +98,7 @@ export function useVerifiedPractice(userId: string | undefined) {
       const data=await timedRequest(signal=>supabase.rpc('answer_verified_timed_item',{p_session_id:sessionId,p_item_id:id,p_answer:value}).abortSignal(signal))
       if(data?.item_id!==id||(data.answer!==null&&!/^[A-F]$/.test(data.answer)))throw new Error('Answer unconfirmed')
       if(gen!==generation.current)return null
-      session.answer(id,data.answer)
+      if (session.answer(id,data.answer)) betaAction('answer')
       return {answer:data.answer,bonus_total:typeof data.bonus_total==='number'?data.bonus_total:undefined}
     } catch {
       if(gen===generation.current)Alert.alert('Answer not confirmed','Check your connection and retry. The server keeps the original deadline and cannot award a late answer.',retry?[{text:'Retry',onPress:retry}]:undefined)
@@ -114,6 +115,7 @@ export function useVerifiedPractice(userId: string | undefined) {
       const result = await session.finish()
       if (gen !== generation.current) return null
       setReceipt(result)
+      betaAction('complete')
       notifyProgressSaved()
       return result
     } catch {

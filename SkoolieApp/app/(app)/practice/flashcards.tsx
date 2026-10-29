@@ -30,6 +30,7 @@ import { readWithDeadline } from '@/lib/readWithDeadline'
 import { createDeckLoadGuard } from '@/lib/deckLoadGuard'
 import { captureCardSwipe, cardSwipeGrade, cardSwipeTranslation, createCardSwipeGuard } from '@/lib/flashcardSwipe'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
+import { betaAction } from '@/lib/betaInteraction'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
 import { flashcardCheckpointKey, parseFlashcardCheckpoint, type FlashcardCheckpoint } from '@/lib/flashcardCheckpoint'
 
@@ -499,6 +500,7 @@ export default function FlashcardsScreen() {
 
   function flip() {
     if (flipInFlight.current||swipeGuard.busy()||verified.saving) return
+    betaAction('flip')
     playSound('flip')
     const toValue = flipped ? 0 : 1
     setIsFlipping(true)

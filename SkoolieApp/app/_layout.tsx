@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Appearance, Text, TextInput, View, TouchableOpacity } from 'react-native'
 import { Stack, router, useSegments } from 'expo-router'
 
@@ -22,12 +22,16 @@ import { ThemeProvider, useThemeMode } from '@/contexts/ThemeContext'
 import { ToastHost } from '@/components/ui/ToastHost'
 import { CelebrationHost } from '@/components/ui/CelebrationHost'
 import { useTheme } from '@/hooks/useTheme'
+import { allowBetaDetails, betaAction, betaRoute, betaScreen } from '@/lib/betaInteraction'
 
 function RootNavigator() {
   const { session, profile, loading, profileChecked, sessionRecovery, retrySession } = useAuth()
   const C=useTheme()
   const { isDark } = useThemeMode()
   const segments = useSegments()
+  const [betaNotice,setBetaNotice] = useState(true)
+  useEffect(() => { allowBetaDetails(false);setBetaNotice(true);return () => allowBetaDetails(false) }, [session?.user.id])
+  useEffect(() => { betaRoute(betaScreen(segments as string[])) }, [segments])
 
   useEffect(() => {
     if (loading||sessionRecovery) return
@@ -65,8 +69,17 @@ function RootNavigator() {
   // discarded active decks and looked like a random refresh after interruption.
 
   return (
-    <>
+    <View style={{flex:1}} onStartShouldSetResponderCapture={() => {
+      if (session && segments[0] === '(app)') betaAction('touch')
+      return false // observe without taking ownership from buttons or swipe gestures
+    }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      {session && segments[0] === '(app)' && betaNotice && <View style={{padding:16,paddingTop:48,backgroundColor:C.bg}}>
+        <Text style={{fontFamily:'Nunito_800ExtraBold',color:C.text}}>Beta activity details</Text>
+        <Text style={{fontFamily:'Nunito_600SemiBold',color:C.textSoft}}>For registered beta testers, we can record screens visited, interaction counts and timing to review testing progress. No typed text, answer contents or screen recordings. Quiet time may mean reading, not inactivity.</Text>
+        <TouchableOpacity accessibilityRole="button" onPress={()=>{allowBetaDetails(true);setBetaNotice(false)}} style={{minHeight:44,justifyContent:'center'}}><Text style={{color:C.teal}}>Enable for this app visit</Text></TouchableOpacity>
+        <TouchableOpacity accessibilityRole="button" onPress={()=>setBetaNotice(false)} style={{minHeight:44,justifyContent:'center'}}><Text style={{color:C.textSoft}}>Not now — continue normally</Text></TouchableOpacity>
+      </View>}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(app)" />
@@ -80,7 +93,7 @@ function RootNavigator() {
           <Text style={{color:C.onTeal,fontFamily:'Nunito_800ExtraBold'}}>Try again</Text>
         </TouchableOpacity>
       </View>}
-    </>
+    </View>
   )
 }
 

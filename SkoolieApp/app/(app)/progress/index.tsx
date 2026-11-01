@@ -1,5 +1,5 @@
 import { useCallback, useState, useRef } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, FlatList } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Animated, FlatList, AppState } from 'react-native'
 import { type Analytics } from '@/lib/analytics'
 import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
@@ -72,6 +72,8 @@ export default function ProgressScreen() {
   const { user, profile, refreshProfile } = useAuth()
   const progressData=useProgressData()
   const request=useRef(0)
+  const scope=[user?.id,profile?.profession,profile?.access_key,profile?.country,weekStartKey()].join(':')
+  const visibleScope=useRef<string|null>(null)
   const entrance = useScreenEntrance()
   const [weekUsers, setWeekUsers] = useState<WeeklyRow[]>(()=> (progressData.peekLeague()??[]).map(r=>({...r,xp:r.week_xp})))
   const [analytics, setAnalytics] = useState<Analytics | null>(()=>progressData.peekAnalytics()??null)
@@ -113,13 +115,25 @@ export default function ProgressScreen() {
   // gains focus, so XP/level/streak reflect sessions completed elsewhere.
   useFocusEffect(useCallback(() => {
     const cached=progressData.peekLeague()
-    if(cached){setWeekUsers(cached.map(r=>({...r,xp:r.week_xp})));setLoading(false)}
+    if(cached){visibleScope.current=scope;setWeekUsers(cached.map(r=>({...r,xp:r.week_xp})));setLoading(false)}
+    else if(visibleScope.current!==scope){setWeekUsers([]);setAnalytics(null);setLoading(true)}
     const summary=progressData.peekAnalytics()
     if(summary)setAnalytics(summary)
-    load()
-    refreshProfile()
-    return()=>{request.current++}
-  }, [user?.id,progressData])) // eslint-disable-line react-hooks/exhaustive-deps
+    // Provider revisions refresh focused consumers after a committed session;
+    // focus also reads the current cache generation (including its warm read).
+    void load()
+    void refreshProfile()
+    let wasBackground=AppState.currentState==='background'
+    const foreground=AppState.addEventListener('change',state=>{
+      if(state==='background')wasBackground=true
+      if(state!=='active'||!wasBackground)return
+      wasBackground=false
+      progressData.invalidate()
+      void load()
+      void refreshProfile()
+    })
+    return()=>{foreground.remove();request.current++}
+  }, [user?.id,progressData,scope])) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function load() {
     if(!user||!profile)return
@@ -130,6 +144,7 @@ export default function ProgressScreen() {
       progressData.league().then(wk=>{
         if(gen!==request.current)return
         const rows=wk.map(r=>({...r,xp:r.week_xp})) as WeeklyRow[]
+        visibleScope.current=scope
         setWeekUsers(rows);setLoading(false);void computeMovement(rows)
       }),
       progressData.analytics(),

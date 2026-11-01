@@ -48,3 +48,19 @@ test('filter keys and cache scopes cannot reuse each other’s data', async () =
   assert.equal(a.peek('hard'), 2)
   assert.equal(b.peek('easy'), undefined)
 })
+
+test('post-save reads never join an invalidated pre-save request', async () => {
+  const cache=createSessionReadCache()
+  let resolveOld
+  const old=cache.get('league',()=>new Promise(resolve=>{resolveOld=resolve}))
+  await Promise.resolve()
+  cache.clear()
+  let calls=0
+  const read=async()=>{calls++;return [{week_xp:150}]}
+  const [warm,screen]=await Promise.all([cache.get('league',read),cache.get('league',read)])
+  assert.equal(calls,1)
+  assert.deepEqual(warm,screen)
+  resolveOld([{week_xp:100}])
+  await old
+  assert.deepEqual(cache.peek('league'),[{week_xp:150}])
+})

@@ -8,6 +8,8 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from './supabase'
+import { weekStartKey } from './leagueWeek'
+export { weekStartKey } from './leagueWeek'
 
 /** League v3: top 3 promote in every league (Diamond's top 3 enter the
  *  Tournament); bottom 3 relegate; boards run 13 deep. */
@@ -25,14 +27,6 @@ export interface ZoneEvent {
   rank: number
   league: string
   promoteN: number
-}
-
-/** ISO Monday of the current week — matches Postgres date_trunc('week'). */
-export function weekStartKey(): string {
-  const now = new Date()
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-  return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`
 }
 
 /**

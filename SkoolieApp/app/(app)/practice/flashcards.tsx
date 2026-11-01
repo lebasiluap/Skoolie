@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, PanResponder, AppState, AccessibilityInfo, Alert, useWindowDimensions } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Animated, Easing, Alert, useWindowDimensions } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { router, useLocalSearchParams, useNavigation, useFocusEffect } from 'expo-router'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
@@ -28,7 +28,6 @@ import { playSound } from '@/lib/sounds'
 import { usePracticeData } from '@/contexts/PracticeDataContext'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { createDeckLoadGuard } from '@/lib/deckLoadGuard'
-import { captureCardSwipe, cardSwipeGrade, cardSwipeTranslation, createCardSwipeGuard } from '@/lib/flashcardSwipe'
 import { useVerifiedPractice } from '@/hooks/useVerifiedPractice'
 import { betaAction } from '@/lib/betaInteraction'
 import { VerifiedSessionBusy } from '@/components/ui/VerifiedSessionBusy'
@@ -57,7 +56,7 @@ export default function FlashcardsScreen() {
   useCollapsePracticeStack()
   const C = useTheme()
   const insets = useSafeAreaInsets()
-  const { height: screenH, width: screenW } = useWindowDimensions()
+  const { height: screenH } = useWindowDimensions()
   const { user, profile, refreshProfile } = useAuth()
   const verified = useVerifiedPractice(user?.id)
   const [resumeChecked,setResumeChecked]=useState(false)
@@ -149,109 +148,24 @@ export default function FlashcardsScreen() {
   // Flip animation
   const flipAnim = useRef(new Animated.Value(0)).current
 
-  // Swipe-to-grade: once the answer is revealed, gently slide/fade the card
-  // right = Got it, left = Didn't know. Buttons remain for tap users.
-  const swipeX = useRef(new Animated.Value(0)).current
-  const cardOpacity=useRef(new Animated.Value(1)).current
-  const swipeTransition=useRef(false)
-  const reducedMotion=useRef(false)
-  const swipeFocused=useRef(true)
-  const swipeForeground=useRef(AppState.currentState==='active')
-  const swipeGuard=useRef(createCardSwipeGuard()).current
-  const [swiping,setSwiping]=useState(false)
-  const swipeContext=useRef<{id:string|null;enabled:boolean;width:number}>({id:null,enabled:false,width:screenW})
-  const gesture=useRef<{token:number;id:string}|null>(null)
+  // Tap-only review: no swipe responder or card fade-out.
+  const currentCardId=useRef<string|null>(null)
+  currentCardId.current=cards[cardIndex]?.id??null
   const flipInFlight=useRef(false)
   const flipGeneration=useRef(0)
   const flipTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
-  const nextRef = useRef<(didKnow: boolean, expectedId?:string) => Promise<boolean>>(async () => false)
-  function resetSwipe(updateState=true) {
-    swipeGuard.invalidate();gesture.current=null
-    swipeX.stopAnimation();swipeX.setValue(0)
-    cardOpacity.stopAnimation();cardOpacity.setValue(1);swipeTransition.current=false
-    if(updateState)setSwiping(false)
-  }
-  function canCapture(dx:number,dy:number,touches:number) {
-    return swipeFocused.current&&swipeForeground.current&&swipeContext.current.enabled&&!flipInFlight.current&&!swipeGuard.busy()&&captureCardSwipe(dx,dy,touches)
-  }
-  const swipePan = useRef(PanResponder.create({
-    onMoveShouldSetPanResponderCapture: (_e,g)=>canCapture(g.dx,g.dy,g.numberActiveTouches),
-    onMoveShouldSetPanResponder: (_e,g)=>canCapture(g.dx,g.dy,g.numberActiveTouches),
-    onPanResponderGrant: () => {
-      const {id,enabled}=swipeContext.current
-      if(!id||!enabled||flipInFlight.current||!swipeFocused.current||!swipeForeground.current)return
-      const token=swipeGuard.begin(id)
-      if(token===null)return
-      gesture.current={token,id};swipeX.stopAnimation();setSwiping(true)
-    },
-    onPanResponderMove: (_e,g)=>{
-      if(gesture.current&&g.numberActiveTouches===1)swipeX.setValue(reducedMotion.current?0:cardSwipeTranslation(g.dx))
-      else resetSwipe()
-    },
-    onPanResponderRelease: (_e, g) => {
-      const active=gesture.current
-      if(!active||!swipeGuard.current(active.token,active.id))return
-      const commit = cardSwipeGrade(g.dx,g.dy,g.vx)
-      if (commit === null) {
-        Animated.timing(swipeX, { toValue: 0, duration: reducedMotion.current?0:180, easing:Easing.out(Easing.cubic), useNativeDriver: true }).start(()=>{
-          if(swipeGuard.current(active.token,active.id))resetSwipe()
-        })
-        return
-      }
-      swipeTransition.current=!reducedMotion.current
-      Animated.parallel([
-        Animated.timing(swipeX,{toValue:reducedMotion.current?0:commit?32:-32,duration:reducedMotion.current?0:180,easing:Easing.out(Easing.cubic),useNativeDriver:true}),
-        Animated.timing(cardOpacity,{toValue:reducedMotion.current?1:0,duration:reducedMotion.current?0:160,easing:Easing.inOut(Easing.ease),useNativeDriver:true}),
-      ]).start(({finished}) => {
-        if(!swipeGuard.current(active.token,active.id))return
-        if(!finished||swipeContext.current.id!==active.id){resetSwipe();return}
-        void nextRef.current(commit,active.id).then(advanced=>{
-          // Successful transitions are revealed only after the next card commits.
-          if(!advanced&&swipeGuard.current(active.token,active.id))resetSwipe()
-        }).catch(()=>{
-          if(swipeGuard.current(active.token,active.id))resetSwipe()
-        })
-      })
-    },
-    onPanResponderTerminationRequest:()=>false,
-    onPanResponderTerminate:()=>resetSwipe(),
-    onShouldBlockNativeResponder:()=>true,
-  })).current
   const [flipped, setFlipped] = useState(false)
   const [revealed, setRevealed] = useState(false)  // true once answer shown; stays true even if flipped back
   const [isFlipping, setIsFlipping] = useState(false)
-  swipeContext.current={id:cards[cardIndex]?.id??null,width:screenW,
-    enabled:screen==='quiz'&&revealed&&!isFlipping&&!verified.saving&&!loadingCards}
   useLayoutEffect(()=>{
-    const fadeIn=swipeTransition.current&&!reducedMotion.current
-    resetSwipe();flipGeneration.current++;flipInFlight.current=false
+    flipGeneration.current++;flipInFlight.current=false
     if(flipTimer.current)clearTimeout(flipTimer.current)
     flipAnim.stopAnimation();flipAnim.setValue(0)
     setRevealed(false);setFlipped(false);setIsFlipping(false)
-    if(fadeIn){
-      cardOpacity.setValue(0)
-      Animated.timing(cardOpacity,{toValue:1,duration:180,easing:Easing.out(Easing.cubic),useNativeDriver:true}).start()
-    }
   },[cards,cardIndex,screen,user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(()=>{
-    let active=true
-    void AccessibilityInfo.isReduceMotionEnabled().then(value=>{if(active)reducedMotion.current=value}).catch(()=>{})
-    const sub=AccessibilityInfo.addEventListener('reduceMotionChanged',value=>{reducedMotion.current=value})
-    return()=>{active=false;sub.remove()}
-  },[])
-  useFocusEffect(useCallback(()=>{
-    swipeFocused.current=true
-    return()=>{swipeFocused.current=false;resetSwipe()}
-  },[])) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(()=>{
-    const sub=AppState.addEventListener('change',state=>{
-      swipeForeground.current=state==='active'
-      if(state!=='active')resetSwipe()
-    })
-    return()=>sub.remove()
-  },[]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>()=>{
-    resetSwipe(false);flipGeneration.current++
+    currentCardId.current=null
+    flipGeneration.current++
     if(flipTimer.current)clearTimeout(flipTimer.current)
     flipAnim.stopAnimation()
   },[]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -419,7 +333,6 @@ export default function FlashcardsScreen() {
     if (!profile) return
     const request=deckGuard.start()
     if(request===null)return
-    resetSwipe()
     retryDeck.current=() => { void loadDeck(read,order,bookmarkReview) }
     setCardsError(null);setLoadingCards(true);setScreen('quiz');setCards([])
     setCardIndex(0);setGotIt(0);setMissed(0);setMissedCards([])
@@ -499,7 +412,7 @@ export default function FlashcardsScreen() {
   }
 
   function flip() {
-    if (flipInFlight.current||swipeGuard.busy()||verified.saving) return
+    if (flipInFlight.current||verified.saving) return
     betaAction('flip')
     playSound('flip')
     const toValue = flipped ? 0 : 1
@@ -521,29 +434,35 @@ export default function FlashcardsScreen() {
     flipTimer.current=setTimeout(()=>{if(generation===flipGeneration.current)setFlipped(f=>!f)},260)
   }
 
-  async function next(didKnow: boolean,expectedId?:string):Promise<boolean> {
+  async function next(didKnow: boolean):Promise<boolean> {
     // Record that this card has been reviewed (powers "Allow repeat questions").
     const card = cards[cardIndex]
     const owner=user?.id
+    const generation=flipGeneration.current
     if (!card || !revealed || flipInFlight.current || verified.saving || graded.current.has(card.id)) return false
-    if(expectedId ? card.id!==expectedId : swipeGuard.busy())return false
     if (!verified.answer(card.id, didKnow)) return false
-    // A synchronous guard covers a swipe and button arriving before a render.
+    // A synchronous guard covers repeated button taps arriving before a render.
     graded.current.add(card.id)
     if(!fromBookmarksRef.current&&!isReviewMissedRef.current){
       try{await saveCheckpoint()}
       catch{
+        if(checkpointOwner.current!==owner||currentCardId.current!==card.id)return false
         graded.current.delete(card.id)
-        Alert.alert('Position not saved','We couldn’t save your place on this device. Retry with the same rating before moving on.',[{text:'Retry',onPress:()=>void next(didKnow)}])
+        Alert.alert('Position not saved','We couldn’t save your place on this device. Retry with the same rating before moving on.',[
+          {text:'Cancel',style:'cancel'},
+          {text:'Retry',onPress:()=>{
+            if(checkpointOwner.current===owner&&currentCardId.current===card.id&&flipGeneration.current===generation)void next(didKnow)
+          }},
+        ])
         return false
       }
-      if(checkpointOwner.current!==owner||swipeContext.current.id!==card.id)return false
+      if(checkpointOwner.current!==owner||currentCardId.current!==card.id)return false
     }
     if (cardIndex + 1 >= cards.length && !fromBookmarksRef.current && !isReviewMissedRef.current) {
       const result = await verified.complete(() => { graded.current.delete(card.id); void next(didKnow) })
       if (!result) { graded.current.delete(card.id); return false }
       sessionSavedRef.current = true
-      if(checkpointOwner.current!==owner||swipeContext.current.id!==card.id)return false
+      if(checkpointOwner.current!==owner||currentCardId.current!==card.id)return false
       if(owner)await AsyncStorage.removeItem(flashcardCheckpointKey(owner)).catch(()=>{})
       void refreshProfile()
     }
@@ -557,8 +476,6 @@ export default function FlashcardsScreen() {
     else setCardIndex(i => i + 1)
     return true
   }
-
-  nextRef.current = next
 
   // Replay the full deck — saves a session + XP but does NOT advance the streak.
   async function studyAgain() {
@@ -584,7 +501,6 @@ export default function FlashcardsScreen() {
   }
 
   async function bindCards(pool: { id: string }[],persist=true) {
-    resetSwipe()
     const items = await verified.prepare('flashcard', pool.slice(0, 60).map(c => c.id))
     if (items){graded.current.clear();if(persist)await saveCheckpoint()}
     return items
@@ -915,7 +831,6 @@ export default function FlashcardsScreen() {
 
         {/* Card + explanation in a scroll view */}
         <ScrollView
-          scrollEnabled={!swiping}
           directionalLockEnabled
           contentContainerStyle={[s.quizScroll, { paddingBottom: revealed ? 130 : 40, width: '100%', maxWidth: MAX_CONTENT, alignSelf: 'center' }]}
           showsVerticalScrollIndicator={false}
@@ -950,25 +865,9 @@ export default function FlashcardsScreen() {
             </View>
           </View>
 
-          {/* Flip card — height locked to max(front, back); swipeable once revealed */}
-          <Animated.View
-            {...swipePan.panHandlers}
-            style={{
-              width: '100%',
-              opacity:cardOpacity,
-              transform: [
-                { translateX: swipeX },
-              ],
-            }}
-          >
-            {/* Grade badges fade in as the card is dragged */}
-            <Animated.View pointerEvents="none" style={[s.swipeBadge, { left: 14, backgroundColor: C.greenTint, borderColor: C.green, opacity: swipeX.interpolate({ inputRange: [0, 24], outputRange: [0, 1], extrapolate: 'clamp' }) }]}>
-              <Text style={[s.swipeBadgeText, { color: C.green }]}>✓ Got it</Text>
-            </Animated.View>
-            <Animated.View pointerEvents="none" style={[s.swipeBadge, { right: 14, backgroundColor: C.redTint, borderColor: C.red, opacity: swipeX.interpolate({ inputRange: [-24, 0], outputRange: [1, 0], extrapolate: 'clamp' }) }]}>
-              <Text style={[s.swipeBadgeText, { color: C.red }]}>✗ Didn't know</Text>
-            </Animated.View>
-          <TouchableOpacity onPress={flip} activeOpacity={0.92} style={s.cardTouchable} disabled={isFlipping||swiping} accessibilityRole="button" accessibilityLabel={flipped?'Show question':'Reveal answer'}>
+          {/* Tap to reveal; use the buttons to grade. */}
+          <View style={{ width: '100%' }}>
+          <TouchableOpacity onPress={flip} activeOpacity={0.92} style={s.cardTouchable} disabled={isFlipping||verified.saving} accessibilityRole="button" accessibilityLabel={flipped?'Show question':'Reveal answer'}>
             <Animated.View style={[
               s.card,
               C.shadowLg,
@@ -998,7 +897,7 @@ export default function FlashcardsScreen() {
               )}
             </Animated.View>
           </TouchableOpacity>
-          </Animated.View>
+          </View>
 
           {/* Below-card: hint before reveal, Noggin explains after — same
               Duolingo treatment as MCQ/cases: big mascot, bubble with a
@@ -1040,13 +939,13 @@ export default function FlashcardsScreen() {
             borderTopColor: C.border,
             paddingBottom: insets.bottom + 12,
           }]}>
-            <Text style={[s.actionPrompt, { color: C.textSoft }]}>How did you do? Swipe the card → or ←, or tap</Text>
+            <Text style={[s.actionPrompt, { color: C.textSoft }]}>How did you do? Tap a button below</Text>
             <View style={s.actionBtns}>
-              <TouchableOpacity onPress={() => next(false)} disabled={swiping||isFlipping} accessibilityRole="button" accessibilityLabel="Did not know this card" style={[s.actionBtn, { backgroundColor: C.redTint, borderColor: C.red }]}>
+              <TouchableOpacity onPress={() => next(false)} disabled={isFlipping||verified.saving} accessibilityRole="button" accessibilityLabel="Did not know this card" style={[s.actionBtn, { backgroundColor: C.redTint, borderColor: C.red }]}>
                 <Ionicons name="close" size={20} color={C.red} />
                 <Text style={[s.actionText, { color: C.red }]}>Didn't know</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => next(true)} disabled={swiping||isFlipping} accessibilityRole="button" accessibilityLabel="Knew this card" style={[s.actionBtn, { backgroundColor: C.greenTint, borderColor: C.green }]}>
+              <TouchableOpacity onPress={() => next(true)} disabled={isFlipping||verified.saving} accessibilityRole="button" accessibilityLabel="Knew this card" style={[s.actionBtn, { backgroundColor: C.greenTint, borderColor: C.green }]}>
                 <Ionicons name="checkmark" size={20} color={C.green} />
                 <Text style={[s.actionText, { color: C.green }]}>Got it</Text>
               </TouchableOpacity>
@@ -1195,8 +1094,6 @@ const s = StyleSheet.create({
   quizScroll: { flexGrow: 1, alignItems: 'center', paddingHorizontal: 20 },
   tapHint: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', marginTop: 14, textAlign: 'center' },
   cardTouchable: { width: '100%' },
-  swipeBadge: { position: 'absolute', top: 12, zIndex: 3, borderWidth: 1.5, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 13 },
-  swipeBadgeText: { fontSize: 13, fontFamily: 'Nunito_800ExtraBold' },
   // cardSizer: invisible twin used only for onLayout measurement — must match card padding exactly
   cardSizer: { width: '100%', paddingHorizontal: 28, paddingTop: 24, paddingBottom: 20, alignItems: 'center', justifyContent: 'space-between' },
   card: { width: '100%', borderRadius: 24, borderWidth: 1.5, paddingHorizontal: 28, paddingTop: 24, paddingBottom: 20, alignItems: 'center', justifyContent: 'space-between' },

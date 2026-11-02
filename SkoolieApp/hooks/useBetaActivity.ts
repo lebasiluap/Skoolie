@@ -4,7 +4,7 @@ import { randomUUID } from 'expo-crypto'
 import { requireOptionalNativeModule } from 'expo-modules-core'
 import { supabase } from '@/lib/supabase'
 import { readWithDeadline } from '@/lib/readWithDeadline'
-import { betaDetailsAllowed, createBetaCollector, onBetaAction } from '@/lib/betaInteraction'
+import { betaDetailsAllowed, betaConsentRevision, createBetaCollector, onBetaAction, onBetaConsent } from '@/lib/betaInteraction'
 
 /** Best-effort foreground telemetry; never blocks Auth, practice or rewards. */
 export function useBetaActivity(userId: string | undefined) {
@@ -17,15 +17,19 @@ export function useBetaActivity(userId: string | undefined) {
     let collector: ReturnType<typeof createBetaCollector> | null = null
     let sequence = 0
     let detailsStarted = false
+    let detailsRevision = -1
+    const unsubscribeConsent = onBetaConsent(() => { collector=null;detailsStarted=false;detailsRevision=-1 })
     const prepareDetails = () => {
       if (!betaDetailsAllowed()) { detailsStarted=false;return false }
-      if (!detailsStarted) { collector=createBetaCollector();detailsStarted=true }
+      const revision = betaConsentRevision()
+      if (!detailsStarted || revision !== detailsRevision) { collector=createBetaCollector();detailsStarted=true;detailsRevision=revision }
       return true
     }
     const unsubscribe = onBetaAction((kind, screen) => { if (id && AppState.currentState === 'active' && prepareDetails()) collector?.action(kind, screen) })
     const application = requireOptionalNativeModule<{ nativeApplicationVersion?: string; nativeBuildVersion?: string }>('ExpoApplication')
     const send = (sessionId: string, event: 'start' | 'beat' | 'end') => {
       const detail = prepareDetails() ? collector?.take() : null
+      const consent = betaConsentRevision()
       const seq = ++sequence
       queue = queue.then(async () => {
         if (stopped && event !== 'end') return
@@ -43,7 +47,7 @@ export function useBetaActivity(userId: string | undefined) {
             await call('start'); begun.add(sessionId)
           }
           if (event !== 'start') await call(event)
-          if (detail && !stopped) {
+          if (detail && !stopped && betaDetailsAllowed() && consent === betaConsentRevision()) {
             // One small batch per heartbeat, never one request per click. No retries
             // or offline accumulation that could later inflate testing time.
             try {
@@ -70,6 +74,6 @@ export function useBetaActivity(userId: string | undefined) {
       else send(id, 'beat')
     }, 30000)
     const subscription = AppState.addEventListener('change', state => { if (state === 'active') start(); else end() })
-    return () => { stopped = true; clearTimeout(first); clearInterval(timer); subscription.remove(); unsubscribe(); end() }
+    return () => { stopped = true; clearTimeout(first); clearInterval(timer); subscription.remove(); unsubscribe(); unsubscribeConsent(); end() }
   }, [userId])
 }

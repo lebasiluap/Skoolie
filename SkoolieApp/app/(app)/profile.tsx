@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing, TextInput, Linking, KeyboardAvoidingView, Platform } from 'react-native'
 import Constants from 'expo-constants'
 import { router } from 'expo-router'
@@ -23,7 +23,7 @@ import { YEARS_BY_PROFESSION, DEFAULT_YEARS, PRACTITIONER_TITLES } from '@/const
 import { TIMED_CHOICES, formatSecs } from '@/lib/timing'
 import { setSoundEnabled } from '@/lib/sounds'
 import { setHapticsEnabled } from '@/lib/haptics'
-import { allowBetaDetails } from '@/lib/betaInteraction'
+import { allowBetaDetails, betaDetailsAllowed, requestBetaDetailsEnable, onBetaConsent } from '@/lib/betaInteraction'
 import { showToast } from '@/lib/toast'
 import { TierBadge } from '@/components/ui/TierBadge'
 import { InterestsSheet } from '@/components/ui/InterestsSheet'
@@ -99,6 +99,9 @@ const tog = StyleSheet.create({
 })
 
 export default function ProfileScreen() {
+  const betaDetailsOn = useSyncExternalStore(onBetaConsent, betaDetailsAllowed, () => false)
+  const betaControlMounted = useRef(true)
+  useEffect(() => { betaControlMounted.current=true; return () => { betaControlMounted.current=false } }, [])
   const C = useTheme()
   const { user, profile, refreshProfile } = useAuth()
   const { isDark, themeMode, setThemeMode } = useThemeMode()
@@ -533,8 +536,19 @@ export default function ProfileScreen() {
             <PillToggle value={soundOn} onValueChange={toggleSound} activeColor={C.teal} />
           </View>
 
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Stop detailed beta activity tracking for this app visit" style={[s.row, s.rowBorder, {borderColor:C.border,minHeight:48}]} onPress={()=>{allowBetaDetails(false);showToast('Detailed beta tracking stopped for this app visit')}}>
-            <View style={{flex:1}}><Text style={[s.rowLabel,{color:C.text}]}>Stop detailed beta tracking</Text><Text style={[s.rowSub,{color:C.textFaint}]}>Stops new interaction details; basic study history remains.</Text></View>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Manage optional beta activity details" style={[s.row, s.rowBorder, {borderColor:C.border,minHeight:48}]} onPress={()=>{
+            if (betaDetailsAllowed()) {
+              allowBetaDetails(false)
+              showToast('Detailed beta tracking stopped for this app visit')
+              return
+            }
+            const enable = requestBetaDetailsEnable()
+            Alert.alert('Optional beta activity details', 'Registered testers can share screens visited, interaction counts and timing until sign-out or app restart. No typed text, answer contents or screen recordings. Quiet time may mean reading. This is optional; basic study history remains unchanged.', [
+              {text:'Not now',style:'cancel'},
+              {text:'Enable',onPress:()=>{if(betaControlMounted.current && enable()) showToast('Optional beta details permission enabled')}},
+            ])
+          }}>
+            <View style={{flex:1}}><Text style={[s.rowLabel,{color:C.text}]}>Optional beta activity details</Text><Text style={[s.rowSub,{color:C.textFaint}]}>{betaDetailsOn ? 'Permission on — tap to stop.' : 'Permission off — tap to manage.'} Registered beta testers only; resets at sign-out or app restart.</Text></View>
           </TouchableOpacity>
           {/* Haptics */}
           <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>

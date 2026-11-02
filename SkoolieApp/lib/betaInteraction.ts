@@ -10,8 +10,27 @@ export function betaScreen(segments: readonly string[]): BetaScreen {
 }
 let screen: BetaScreen = 'other'
 let allowed = false
-export function allowBetaDetails(value: boolean) { allowed = value }
+let consentRevision = 0
+const consentListeners = new Set<() => void>()
+export function onBetaConsent(listener: () => void) {
+  consentListeners.add(listener)
+  return () => { consentListeners.delete(listener) }
+}
+export function allowBetaDetails(value: boolean) {
+  allowed = value; consentRevision++
+  for (const listener of consentListeners) { try { listener() } catch { /* optional telemetry cannot break the app */ } }
+}
 export function betaDetailsAllowed() { return allowed }
+export function betaConsentRevision() { return consentRevision }
+/** Delayed dialogs cannot opt in after a reset, sign-out or another choice. */
+export function requestBetaDetailsEnable() {
+  const revision = consentRevision
+  return () => {
+    if (revision !== consentRevision) return false
+    allowBetaDetails(true)
+    return true
+  }
+}
 const listeners = new Set<(kind: BetaAction, screen: BetaScreen) => void>()
 export function betaAction(kind: BetaAction) {
   for (const listener of listeners) { try { listener(kind, screen) } catch { /* telemetry cannot break interaction */ } }

@@ -4,7 +4,8 @@ import { randomUUID } from 'expo-crypto'
 import { requireOptionalNativeModule } from 'expo-modules-core'
 import { supabase } from '@/lib/supabase'
 import { readWithDeadline } from '@/lib/readWithDeadline'
-import { betaDetailsAllowed, betaConsentRevision, createBetaCollector, onBetaAction, onBetaConsent } from '@/lib/betaInteraction'
+import { currentAppScreen, onBetaAction } from '@/lib/betaInteraction'
+import { createAppMetrics } from '@/lib/appMetrics'
 
 /** Best-effort foreground telemetry; never blocks Auth, practice or rewards. */
 export function useBetaActivity(userId: string | undefined) {
@@ -14,23 +15,20 @@ export function useBetaActivity(userId: string | undefined) {
     let stopped = false
     let queue = Promise.resolve()
     const begun = new Set<string>()
-    let collector: ReturnType<typeof createBetaCollector> | null = null
+    let collector: ReturnType<typeof createAppMetrics> | null = null
     let sequence = 0
-    let detailsStarted = false
-    let detailsRevision = -1
-    const unsubscribeConsent = onBetaConsent(() => { collector=null;detailsStarted=false;detailsRevision=-1 })
-    const prepareDetails = () => {
-      if (!betaDetailsAllowed()) { detailsStarted=false;return false }
-      const revision = betaConsentRevision()
-      if (!detailsStarted || revision !== detailsRevision) { collector=createBetaCollector();detailsStarted=true;detailsRevision=revision }
-      return true
-    }
-    const unsubscribe = onBetaAction((kind, screen) => { if (id && AppState.currentState === 'active' && prepareDetails()) collector?.action(kind, screen) })
+    let lastFlush=0
+    let busy=false
+    const unsubscribe = onBetaAction((kind, screen) => { if (id && AppState.currentState === 'active') collector?.action(kind, screen) })
     const application = requireOptionalNativeModule<{ nativeApplicationVersion?: string; nativeBuildVersion?: string }>('ExpoApplication')
     const send = (sessionId: string, event: 'start' | 'beat' | 'end') => {
-      const detail = prepareDetails() ? collector?.take() : null
-      const consent = betaConsentRevision()
+      // Drop a congested heartbeat instead of building an offline event backlog.
+      if(busy && event==='beat')return
+      const flush=event==='end'||(event==='beat'&&performance.now()-lastFlush>=60000)
+      const detail=flush ? collector?.take() : null
+      if(flush)lastFlush=performance.now()
       const seq = ++sequence
+      busy=true
       queue = queue.then(async () => {
         if (stopped && event !== 'end') return
         try {
@@ -47,23 +45,23 @@ export function useBetaActivity(userId: string | undefined) {
             await call('start'); begun.add(sessionId)
           }
           if (event !== 'start') await call(event)
-          if (detail && !stopped && betaDetailsAllowed() && consent === betaConsentRevision()) {
-            // One small batch per heartbeat, never one request per click. No retries
-            // or offline accumulation that could later inflate testing time.
+          if (detail?.length && !stopped) {
+            // One aggregate per minute, no retries, raw event trails or offline queue.
             try {
-              await readWithDeadline(signal => supabase.rpc('record_beta_interactions', {
-                p_session_id: sessionId, p_sequence: seq, p_data: detail,
+              await readWithDeadline(signal => supabase.rpc('record_app_metrics', {
+                p_session_id: sessionId, p_sequence: seq, p_rows: detail,
               }).abortSignal(signal), 2500)
             } catch { /* additive telemetry must not affect existing timing */ }
           }
           if (event === 'end') begun.delete(sessionId)
         } catch { /* Missing/offline telemetry is not a failed sign-in. */ }
+        finally {busy=false}
       })
     }
     const start = () => {
       if (id || stopped) return
       id = randomUUID()
-      collector = createBetaCollector(); sequence = 0; detailsStarted=false
+      collector = createAppMetrics(currentAppScreen()); sequence = 0;lastFlush=performance.now()
       send(id, 'start')
     }
     const end = () => { if (id) { send(id, 'end'); id = null; collector = null } }
@@ -74,6 +72,6 @@ export function useBetaActivity(userId: string | undefined) {
       else send(id, 'beat')
     }, 30000)
     const subscription = AppState.addEventListener('change', state => { if (state === 'active') start(); else end() })
-    return () => { stopped = true; clearTimeout(first); clearInterval(timer); subscription.remove(); unsubscribe(); unsubscribeConsent(); end() }
+    return () => { stopped = true; clearTimeout(first); clearInterval(timer); subscription.remove(); unsubscribe(); end() }
   }, [userId])
 }

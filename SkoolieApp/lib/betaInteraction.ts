@@ -9,6 +9,7 @@ export function betaScreen(segments: readonly string[]): BetaScreen {
   return [...segments].reverse().find(s => (BETA_SCREENS as readonly string[]).includes(s)) as BetaScreen || 'other'
 }
 let screen: BetaScreen = 'other'
+export function currentAppScreen() { return screen }
 let allowed = false
 let consentRevision = 0
 const consentListeners = new Set<() => void>()

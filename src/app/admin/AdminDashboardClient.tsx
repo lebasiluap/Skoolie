@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { changeLabel, formatRate, toCSV, type BetaMetrics, type ContentMetrics, type AppActivity } from './metrics'
 import './dashboard.css'
 import BetaActivityPanel from './BetaActivityPanel'
+import AppMetricsPanel from './AppMetricsPanel'
 
 const VIEWS = ['Overview', 'Learning', 'Content & quality', 'People', 'App health', 'Measurement'] as const
 type View = typeof VIEWS[number]
@@ -123,6 +124,7 @@ export default function AdminDashboardClient({initialData,initialError,days}:{in
  </>}
  </>}
  {view==='People'&&<>
+ <AppMetricsPanel/>
  <BetaActivityPanel/>
  <Panel title="Sign-ins & app activity" sub="Latest server-confirmed sign-in per person, not token refreshes. App activity is a foreground heartbeat, not proof someone is online. Times are UTC; newest 500 profiles by sign-in.">
  {activityLoading&&<p role="status">Refreshing activity…</p>}{activityError&&<p role="alert">{activityError} <button onClick={()=>void loadActivity()}>Retry activity</button></p>}

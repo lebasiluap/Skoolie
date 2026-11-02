@@ -22,14 +22,13 @@ import { ThemeProvider, useThemeMode } from '@/contexts/ThemeContext'
 import { ToastHost } from '@/components/ui/ToastHost'
 import { CelebrationHost } from '@/components/ui/CelebrationHost'
 import { useTheme } from '@/hooks/useTheme'
-import { allowBetaDetails, betaAction, betaRoute, betaScreen } from '@/lib/betaInteraction'
+import { betaAction, betaRoute, betaScreen } from '@/lib/betaInteraction'
 
 function RootNavigator() {
   const { session, profile, loading, profileChecked, sessionRecovery, retrySession } = useAuth()
   const C=useTheme()
   const { isDark } = useThemeMode()
   const segments = useSegments()
-  useEffect(() => { allowBetaDetails(false);return () => allowBetaDetails(false) }, [session?.user.id])
   useEffect(() => { betaRoute(betaScreen(segments as string[])) }, [segments])
 
   useEffect(() => {

@@ -94,13 +94,17 @@ export const TERMS: LegalDoc = {
 
 export const PRIVACY: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'October 29, 2026',
+  updated: 'November 2, 2026',
   intro:
     'This Privacy Policy explains what information Skoolie ("we", "us") collects when you use the Skoolie mobile application (the "Service"), how we use it, and the choices you have. We keep it simple: we collect what the Service needs to work, we do not sell your data, and we do not show ads.',
   sections: [
     {
-      heading: 'Beta testing activity details',
-      body: 'Registered beta testers can enable additional activity details for each app visit. We record named screens, touch counts, screen-to-action delays, flashcard flips, answer-submission events and session completions, without recording typed text, answer contents, touch coordinates or screen recordings. We separate recent interaction, quiet/reading time and possible idle time to help review testing progress and usability. These estimates do not prove attention or automatically determine payment. Detailed interaction records are accessible only to authorized administrators for up to 30 days and are periodically removed. You can decline without losing access to sign-in or practice. Existing basic foreground timing and study history remain separate.',
+      heading: 'App usage metrics',
+      body: 'Updated app versions automatically collect lightweight first-party usage summaries for signed-in users, not only beta testers. These include named app screens, screen-view and interaction counts, answer-submission counts, flashcard-flip counts, reported session completions, app version/platform and estimates of foreground time. We combine these on your device before transmission and store daily per-screen summaries linked to your Skoolie account; they are not anonymous. We do not collect typed text, search terms, answer contents, question identifiers, touch coordinates, audio, screenshots or screen recordings through this analytics system, and we do not track your activity in other apps or websites. Recent interaction, quiet/reading time and possible idle time are estimates, not proof of attention or automatic payment eligibility. We use these summaries to understand feature adoption, improve usability and assess product performance, not advertising or marketing. Access is restricted to authorized administrators. Analytics reports cover the latest 30 days, with scheduled deletion of older summaries in bounded cleanup jobs; account deletion removes the linked records. Existing study history and security records have their separate purposes and retention. Older beta versions may still send optional interaction details under their original per-visit choice; these legacy details are also subject to scheduled cleanup after 30 days. Privacy questions, access or objection requests can be sent to support@skoolieapp.com.',
+    },
+    {
+      heading: 'Support and testing activity',
+      body: 'Authorized administrators may review account-linked app activity to help with support requests, investigate usability problems or abuse, and corroborate beta-testing progress. These records do not automatically determine payment or prove attention. Basic foreground-session timing is included in the scheduled cleanup after 30 days. Completed study history, scores and rewards remain separate account features and are not deleted by the analytics cleanup.',
     },
     {
       heading: '1. Information we collect',

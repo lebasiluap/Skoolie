@@ -6,12 +6,13 @@ export const dynamic = 'force-dynamic'
 export default async function AdminReportsPage() {
   const supabase = await createClient()
 
-  const [{ data: reports }, { data: profiles }] = await Promise.all([
+  const [{ data: reports, error: reportError }, { data: profiles }] = await Promise.all([
     supabase
       .from('question_reports')
       .select(`
         id, user_id, question_id, case_id, question_type, reason, note,
         status, resolution_note, created_at, resolved_at,
+        platform, app_version, app_build, os_version, app_screen,
         questions ( id, topic, subtopic, difficulty, question_type, question_text, options, correct_answer, explanation ),
         case_studies ( id, title, topic, difficulty, clinical_vignette )
       `)
@@ -19,6 +20,8 @@ export default async function AdminReportsPage() {
       .limit(1000),
     supabase.from('user_profiles').select('id, full_name, email'),
   ])
+
+  if(reportError) return <p role="alert">Reports could not be loaded. Please retry; no reports have been removed or resolved.</p>
 
   const emailById: Record<string, { name: string; email: string }> = {}
   for (const p of profiles ?? []) {

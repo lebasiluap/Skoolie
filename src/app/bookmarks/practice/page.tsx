@@ -52,6 +52,7 @@ export default async function BookmarksPracticePage({ searchParams }: PageProps)
     .in('id', allBookmarkedIds)
     .eq('question_type', type)
     .contains('professions', [profile.profession as Profession])
+    .limit(60)
 
   if (!questions || questions.length === 0) {
     // Check if there are bookmarks of the other type to offer a helpful redirect
@@ -101,6 +102,8 @@ export default async function BookmarksPracticePage({ searchParams }: PageProps)
 
   if (type === 'flashcard') {
     return (
+      <>
+      <p role="status" style={{margin:0,padding:'10px 20px',background:'var(--surface-2)',color:'var(--text-soft)',fontSize:13}}>Each bookmarked practice session includes up to 60 available items.</p>
       <FlashcardClient
         questions={shuffled as Question[]}
         userId={user.id}
@@ -109,10 +112,13 @@ export default async function BookmarksPracticePage({ searchParams }: PageProps)
         backUrl={backUrl}
         newSetUrl={newSetUrl}
       />
+      </>
     )
   }
 
   return (
+    <>
+    <p role="status" style={{margin:0,padding:'10px 20px',background:'var(--surface-2)',color:'var(--text-soft)',fontSize:13}}>Each bookmarked practice session includes up to 60 available items.</p>
     <MCQClient
       questions={shuffled as Question[]}
       userId={user.id}
@@ -122,5 +128,6 @@ export default async function BookmarksPracticePage({ searchParams }: PageProps)
       backUrl={backUrl}
       newSetUrl={newSetUrl}
     />
+    </>
   )
 }

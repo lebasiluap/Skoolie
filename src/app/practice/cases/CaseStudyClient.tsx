@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useVerifiedWebPractice } from '@/lib/useVerifiedWebPractice'
+import { normalizeOptions, resolveCorrectLetter } from '@/lib/answers'
 import type { CaseStudy } from '@/types'
 
 interface Props {
@@ -13,28 +14,7 @@ interface Props {
 
 type Phase = 'vignette' | 'questions' | 'done'
 
-const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
-
-function shuffleCases(cases: CaseStudy[]): CaseStudy[] {
-  return cases.map(cs => ({
-    ...cs,
-    questions: cs.questions.map(q => {
-      const opts = q.options ?? []
-      if (opts.length === 0) return q
-      const items = opts.map((text, i) => ({ text, origLetter: OPTION_LETTERS[i] }))
-      for (let i = items.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[items[i], items[j]] = [items[j], items[i]]
-      }
-      const newCorrectIdx = items.findIndex(it => it.origLetter === q.correct_answer)
-      return {
-        ...q,
-        options: items.map((it, i) => it.text.replace(/^[A-E]\.\s*/, `${OPTION_LETTERS[i]}. `)),
-        correct_answer: OPTION_LETTERS[newCorrectIdx],
-      }
-    }),
-  }))
-}
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 
 function InfoCard({ label, data }: { label: string; data: Record<string, string> }) {
   return (
@@ -54,7 +34,8 @@ function InfoCard({ label, data }: { label: string; data: Record<string, string>
   )
 }
 
-export default function CaseStudyClient({ cases, userId, showTags }: Props) {
+export default function CaseStudyClient({ cases: initialCases, userId, showTags }: Props) {
+  const [cases]=useState(()=>initialCases)
   const [caseIndex, setCaseIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('vignette')
   const [qIndex, setQIndex] = useState(0)
@@ -62,15 +43,22 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   const [answered, setAnswered] = useState<Record<number, string>>({})
   const [score, setScore] = useState(0)
   const [totalDone, setTotalDone] = useState(0)
-  const [shuffledCases] = useState<CaseStudy[]>(() => shuffleCases(cases))
-
-  const cs = shuffledCases[caseIndex]
+  const [xp,setXp]=useState(0)
+  const submitted=useRef(new Set<string>())
+  const advancing=useRef(false)
+  const candidate=cases[caseIndex]
+  const verified=useVerifiedWebPractice(userId,'case_study',candidate?.questions.map((_,i)=>`${candidate.id}:${i}`)??[])
+  const issued=verified.items
+  const cs=issued?.length?{...(issued[0].case_context as unknown as CaseStudy),questions:issued.map(q=>({...q,options:normalizeOptions(q.options),correct_answer:resolveCorrectLetter(q.options,q.correct_answer as string)??''}))} as unknown as CaseStudy:undefined
   const currentQ = cs?.questions[qIndex]
   const isReviewing = qIndex in answered
   const isCorrect = isReviewing && answered[qIndex] === currentQ?.correct_answer
 
   function handleAnswer() {
-    if (!selected || isReviewing) return
+    if (!selected || isReviewing || !cs || !currentQ) return
+    const id=`${cs.id}:${qIndex}`
+    if(submitted.current.has(id))return
+    verified.answer(id,selected);submitted.current.add(id)
     const correct = selected === currentQ.correct_answer
     setAnswered(prev => ({ ...prev, [qIndex]: selected }))
     if (correct) setScore(s => s + 1)
@@ -78,17 +66,18 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   }
 
   async function handleNext() {
+    if(!cs||!isReviewing||advancing.current)return
+    advancing.current=true
     if (qIndex + 1 < cs.questions.length) {
       setQIndex(qi => qi + 1)
       setSelected(null)
+      advancing.current=false
       return
     }
-    const supabase = createClient()
-    // Server-authoritative XP: same path as the mobile app (boost, clamps, weekly league)
-    await Promise.allSettled([
-      supabase.rpc('credit_xp', { p_kind: 'case_study', p_score: score, p_total: cs.questions.length, p_timed: false }),
-      supabase.rpc('update_streak', { user_id: userId }),
-    ])
+    const receipt=await verified.finish()
+    advancing.current=false
+    if(!receipt)return
+    setScore(receipt.score);setTotalDone(receipt.total);setXp(receipt.xp)
     setPhase('done')
   }
 
@@ -97,6 +86,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       setCaseIndex(i => i + 1)
       setPhase('vignette')
       setQIndex(0); setSelected(null); setAnswered({}); setScore(0)
+      setTotalDone(0);setXp(0);submitted.current.clear();advancing.current=false
     } else {
       setPhase('done')
     }
@@ -107,7 +97,8 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
         <div>
           <div style={{ fontSize: 44, marginBottom: 16 }}>🔍</div>
-          <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>No cases found</p>
+          <p role="status" style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>{verified.error??'Preparing your verified case…'}</p>
+          {verified.error&&<button onClick={verified.restart}>Retry session</button>}
           <Link href="/practice/cases" style={{ display: 'inline-block', marginTop: 14, color: 'var(--teal)', fontWeight: 700, textDecoration: 'none' }}>← Back</Link>
         </div>
       </div>
@@ -130,7 +121,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
             {[
               { val: `${score}/${totalDone}`, label: 'Correct',   color: 'var(--teal)' },
               { val: `${accuracy}%`,          label: 'Accuracy',  color: 'var(--green)' },
-              { val: `+${score * 10}`,        label: 'XP earned', color: 'var(--coral)' },
+              { val: `+${xp}`,        label: 'XP earned', color: 'var(--coral)' },
             ].map(s => (
               <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '18px 8px' }}>
                 <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: s.color }}>{s.val}</p>
@@ -227,6 +218,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
   }
 
   // ── Questions screen ───────────────────────────────────────────────────────
+  if (!currentQ) return <p role="alert">This question is unavailable. Please return to the case list.</p>
   const progress = ((qIndex + (isReviewing ? 1 : 0)) / cs.questions.length) * 100
 
   return (
@@ -291,7 +283,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
                   {isReviewing && isAnswer ? '✓' : isReviewing && isChosen ? '✗' : letter}
                 </span>
                 <span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.45, color: textColor }}>
-                  {option.replace(/^[A-E]\.\s*/, '')}
+                  {option.replace(/^[A-F]\.\s*/, '')}
                 </span>
               </button>
             )
@@ -308,7 +300,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
               background: isCorrect ? 'var(--green-tint)' : 'var(--red-tint)',
               color: isCorrect ? 'var(--green)' : 'var(--red)',
             }}>
-              {isCorrect ? `✓ Correct! +10 XP` : `✗ Incorrect · +0 XP`}
+              {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
             </div>
 
             {/* Avatar + bubble */}
@@ -329,6 +321,7 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
 
       {/* Bottom button */}
       <div className="cs-fixed-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '14px 20px 20px' }}>
+        {verified.error && <p role="alert" style={{color:'var(--red)',textAlign:'center'}}>{verified.error}</p>}
         {!isReviewing ? (
           <button onClick={handleAnswer} disabled={!selected}
             style={{
@@ -342,14 +335,14 @@ export default function CaseStudyClient({ cases, userId, showTags }: Props) {
             Submit answer
           </button>
         ) : (
-          <button onClick={handleNext} className="cs-next-btn"
+          <button disabled={verified.saving} onClick={handleNext} className="cs-next-btn"
             style={{
               width: '100%', maxWidth: 480, display: 'block', margin: '0 auto', padding: 16, borderRadius: 999, border: 'none',
               background: 'var(--teal)', color: 'var(--on-teal)',
               fontSize: 16, fontWeight: 800, cursor: 'pointer',
               fontFamily: 'inherit', boxShadow: '0 10px 24px -8px var(--teal)',
             }}>
-            {qIndex + 1 >= cs.questions.length ? 'Finish case →' : 'Next question →'}
+            {verified.saving?'Confirming saved result…':qIndex + 1 >= cs.questions.length ? (verified.error?'Retry save →':'Finish case →') : 'Next question →'}
           </button>
         )}
       </div>

@@ -3,8 +3,10 @@
 // a modal with a reason picker + optional note, then inserts one row into
 // `question_reports`. One OPEN report per user per item is enforced server-side
 // (unique index) — a friendly toast covers the duplicate case.
-import { useState } from 'react'
-import { Modal, Pressable, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { useRef, useState } from 'react'
+import { KeyboardAvoidingView, ScrollView, Platform, Modal, Pressable, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { nativeReportContext } from '@/lib/nativeReportContext'
 import { useTheme } from '@/hooks/useTheme'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/lib/toast'
@@ -31,6 +33,8 @@ interface Props {
 
 export default function ReportButton({ questionId, caseId, questionType, compact }: Props) {
   const C = useTheme()
+  const insets = useSafeAreaInsets()
+  const submitLock = useRef(false)
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState<string | null>(null)
   const [note, setNote] = useState('')
@@ -41,7 +45,8 @@ export default function ReportButton({ questionId, caseId, questionType, compact
   }
 
   async function submit() {
-    if (!reason || submitting) return
+    if (!reason || submitLock.current) return
+    submitLock.current = true
     setSubmitting(true)
     try {
       const { data: { user } } = await withTimeout(supabase.auth.getUser(), 20_000)
@@ -56,6 +61,7 @@ export default function ReportButton({ questionId, caseId, questionType, compact
             question_type: questionType,
             reason,
             note: note.trim() ? note.trim().slice(0, 1000) : null,
+            ...nativeReportContext(),
           }),
         ),
         20_000,
@@ -77,7 +83,7 @@ export default function ReportButton({ questionId, caseId, questionType, compact
     } catch (e) {
       showToast(e instanceof TimeoutError ? AUTH_TIMEOUT_MESSAGE : 'Could not send report. Try again.', 'error')
       setSubmitting(false)
-    }
+    } finally { submitLock.current = false }
   }
 
   return (
@@ -93,9 +99,11 @@ export default function ReportButton({ questionId, caseId, questionType, compact
         <Text style={[st.triggerText, { color: C.textFaint }]}>Report a problem</Text>
       </TouchableOpacity>
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => { setOpen(false); reset() }}>
-        <Pressable style={st.backdrop} onPress={() => { setOpen(false); reset() }}>
-          <Pressable style={[st.sheet, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg }]} onPress={(e) => e.stopPropagation()}>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => { if(!submitLock.current){setOpen(false); reset()} }}>
+        <KeyboardAvoidingView style={st.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <Pressable accessibilityLabel="Close report" style={StyleSheet.absoluteFill} onPress={() => { if (!submitLock.current) { setOpen(false); reset() } }} />
+          <View style={[st.sheet, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg, paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom: 8}}>
             <View style={st.grabber} />
             <Text style={[st.title, { color: C.text }]}>Report a problem</Text>
             <Text style={[st.subtitle, { color: C.textFaint }]}>
@@ -108,6 +116,9 @@ export default function ReportButton({ questionId, caseId, questionType, compact
                 return (
                   <TouchableOpacity
                     key={r.key}
+                    accessibilityRole="radio"
+                    accessibilityState={{checked: active, disabled: submitting}}
+                    disabled={submitting}
                     onPress={() => setReason(r.key)}
                     style={[st.reason, {
                       backgroundColor: active ? C.tealTint : C.surface2,
@@ -132,15 +143,20 @@ export default function ReportButton({ questionId, caseId, questionType, compact
               placeholder="Add a note (optional)"
               placeholderTextColor={C.textFaint}
               multiline
+              maxLength={1000}
+              editable={!submitting}
+              accessibilityLabel="Report details"
               style={[st.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
             />
+            <Text style={{color:C.textFaint,fontSize:12,marginTop:8}}>App build, platform and OS version are included to help diagnose this report.</Text>
 
             <View style={st.actions}>
-              <TouchableOpacity onPress={() => { setOpen(false); reset() }} style={[st.btn, { backgroundColor: C.surface2 }]}>
+              <TouchableOpacity disabled={submitting} accessibilityRole="button" onPress={() => { setOpen(false); reset() }} style={[st.btn, { backgroundColor: C.surface2 }]}>
                 <Text style={[st.btnText, { color: C.textSoft }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={submit}
+                accessibilityRole="button"
                 disabled={!reason || submitting}
                 style={[st.btn, { backgroundColor: reason && !submitting ? C.teal : C.borderStrong }]}
               >
@@ -149,8 +165,9 @@ export default function ReportButton({ questionId, caseId, questionType, compact
                 </Text>
               </TouchableOpacity>
             </View>
-          </Pressable>
-        </Pressable>
+          </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   )
@@ -169,7 +186,7 @@ const st = StyleSheet.create({
   trigger: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 2 },
   triggerText: { fontSize: 12.5, fontWeight: '600' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderBottomWidth: 0, padding: 20, paddingBottom: 32 },
+  sheet: { maxHeight: '90%', flexShrink: 1, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderBottomWidth: 0, padding: 20, paddingBottom: 32 },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(128,128,128,0.35)', marginBottom: 14 },
   title: { fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
   subtitle: { fontSize: 13, fontWeight: '500', marginTop: 4, lineHeight: 18 },

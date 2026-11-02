@@ -104,7 +104,7 @@ export const PRIVACY: LegalDoc = {
     },
     {
       heading: 'Support and testing activity',
-      body: 'Authorized administrators may review account-linked app activity to help with support requests, investigate usability problems or abuse, and corroborate beta-testing progress. These records do not automatically determine payment or prove attention. Basic foreground-session timing is included in the scheduled cleanup after 30 days. Completed study history, scores and rewards remain separate account features and are not deleted by the analytics cleanup.',
+      body: 'Authorized administrators may review account-linked app activity to help with support requests, investigate usability problems or abuse, and corroborate beta-testing progress. When you submit a problem report, updated apps attach the app version, build number, platform, operating-system version and named app screen to help reproduce the issue. Support emails opened from the app include these diagnostic labels in the editable message. These records do not automatically determine payment or prove attention. Basic foreground-session timing is included in the scheduled cleanup after 30 days. Completed study history, scores and rewards remain separate account features and are not deleted by the analytics cleanup.',
     },
     {
       heading: '1. Information we collect',

@@ -58,7 +58,10 @@ export function buildShuffledMcq(
   const origCorrect = resolveCorrectLetter(rawOptions, correctAnswer)
   const origCorrectIdx = origCorrect ? LETTERS.indexOf(origCorrect) : -1
 
-  const order = seededOrder(original.length, hashString(seedKey))
+  // Moving relative choices changes their meaning, even if the key mapping is
+  // correct. Keep the original ordering whenever an option refers to positions.
+  const positional = original.some(text => /\b(?:all|none)\s+of\s+(?:the\s+)?(?:above|below)\b|\b[A-F]\s*(?:and|or|&)\s*[A-F]\b|\b(?:option|statement|answer|choice)s?\s+[A-F]\b/i.test(text))
+  const order = positional ? original.map((_, i) => i) : seededOrder(original.length, hashString(seedKey))
   const options = order.map(i => original[i])
   const displayToOriginalLetter: Record<string, string> = {}
   let correctLetter: string | null = null

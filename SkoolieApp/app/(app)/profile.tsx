@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Modal, Pressable, ActivityIndicator, Animated, Easing, TextInput, Linking, KeyboardAvoidingView, Platform } from 'react-native'
 import Constants from 'expo-constants'
+import { nativeReportContext } from '@/lib/nativeReportContext'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
@@ -761,9 +762,8 @@ export default function ProfileScreen() {
               // Prefill subject + account/version footer so support emails are triageable.
               // Chain: default mail app → Gmail app → copy address to clipboard.
               const subject = encodeURIComponent('Skoolie support request')
-              const body = encodeURIComponent(
-                `\n\n\n—\nAccount: ${user?.email ?? ''}\nApp version: ${Constants.expoConfig?.version ?? '1.0.0'}`,
-              )
+              const context = nativeReportContext()
+              const body = encodeURIComponent(`\n\n\n—\nAccount: ${user?.email ?? ''}\nApp version: ${context.app_version}\nBuild: ${context.app_build}\nPlatform: ${context.platform}\nOS version: ${context.os_version}\nScreen: ${context.app_screen}\nDiagnostic labels are device-reported.`)
               try {
                 await Linking.openURL(`mailto:support@skoolieapp.com?subject=${subject}&body=${body}`)
               } catch {

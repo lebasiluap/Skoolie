@@ -46,7 +46,7 @@ export function useVerifiedPractice(userId: string | undefined) {
           if (typeof policy === 'number') return supabase.rpc('begin_verified_timed_session', {...args,p_seconds:policy}).abortSignal(signal)
           return supabase.rpc(policy === 'daily_challenge' ? 'begin_verified_daily_challenge' : name,args).abortSignal(signal)
         })
-        return supabase.rpc(policy === 'daily_challenge' && name === 'begin_verified_session' ? 'begin_verified_daily_challenge' : name, args)
+        return readWithDeadline(signal => supabase.rpc(name, args).abortSignal(signal))
       }, {
         requestId: resume?.requestId??randomUUID(), mode, itemIds: ids,
       })
@@ -112,7 +112,9 @@ export function useVerifiedPractice(userId: string | undefined) {
     finishLock.current = true
     setSaving(true)
     try {
-      const result = await session.finish()
+      // The server may have committed even if the reply was lost. Reconcile
+      // once using the identical frozen session before asking the user to retry.
+      const result = await session.finish().catch(() => session.finish())
       if (gen !== generation.current) return null
       setReceipt(result)
       betaAction('complete')

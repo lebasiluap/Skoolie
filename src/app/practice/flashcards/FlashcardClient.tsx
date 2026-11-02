@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useVerifiedWebPractice } from '@/lib/useVerifiedWebPractice'
 import type { Question } from '@/types'
 import BookmarkButton from '@/components/BookmarkButton'
+import { normalizeOptions, resolveCorrectLetter } from '@/lib/answers'
 
 interface Props {
   questions: Question[]
@@ -19,7 +20,7 @@ export default function FlashcardClient({
   questions, userId, bookmarkedIds, showTags,
   backUrl = '/practice/flashcards', newSetUrl,
 }: Props) {
-  const [workingSet, setWorkingSet] = useState<Question[]>(questions)
+  const [workingSet, setWorkingSet] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState(0)
@@ -28,16 +29,29 @@ export default function FlashcardClient({
   const [done, setDone] = useState(false)
   const [animating, setAnimating] = useState(false)
   const [reviewingMissed, setReviewingMissed] = useState(false)
+  const [reviewIds,setReviewIds]=useState<string[]|null>(null)
+  const ratings=useRef<Record<string,boolean>>({})
+  const advancing=useRef(false)
+  const [sessionIds]=useState(()=>questions.map(q=>q.id))
+  const verified=useVerifiedWebPractice(userId,'flashcard',reviewIds??sessionIds)
+  useEffect(()=>{
+    if(!verified.items)return
+    setWorkingSet(verified.items as unknown as Question[])
+    ratings.current={};advancing.current=false
+    setIndex(0);setFlipped(false);setKnown(0);setUnknown(0);setMissedIds([]);setDone(false);setAnimating(false)
+  },[verified.items])
+
+  if(!verified.items||!workingSet.length)return <div role="status" style={{padding:24}}>{verified.error??'Preparing your verified deck…'}{verified.error&&<button onClick={verified.restart}>Retry deck</button>}<p><Link href={backUrl}>Back to topics</Link></p></div>
 
   const question = workingSet[index]
   const progress = (index / workingSet.length) * 100
 
-  const opts = question?.options as string[]
+  const opts = normalizeOptions(question?.options)
   const isFlashcard = !opts || opts.length === 0
   const answerText = isFlashcard
     ? (question?.correct_answer || question?.explanation)
-    : (opts.find(o => o.startsWith(question?.correct_answer + '.') || o.startsWith(question?.correct_answer + ' '))
-        ?.replace(/^[A-E][\.\s]\s*/, '') ?? question?.explanation)
+    : (opts[['A','B','C','D','E','F'].indexOf(resolveCorrectLetter(opts,question?.correct_answer)??'')]
+        ?.replace(/^[A-F][.):]\s*/, '') ?? question?.correct_answer ?? question?.explanation)
 
   // Dynamic card height so long answers don't overflow
   const answerLen = answerText?.length ?? 0
@@ -45,48 +59,43 @@ export default function FlashcardClient({
   const answerFontSize = answerLen > 300 ? 13 : answerLen > 150 ? 15 : 19
 
   async function handleResult(gotIt: boolean) {
-    const newMissedIds = gotIt ? missedIds : [...missedIds, question.id]
-    const newKnown = gotIt ? known + 1 : known
-    const newUnknown = gotIt ? unknown : unknown + 1
+    if(advancing.current||!flipped)return
+    const previous=ratings.current[question.id]
+    if(previous!==undefined&&previous!==gotIt)return
+    advancing.current=true
+    verified.answer(question.id,gotIt)
+    const first=previous===undefined
+    ratings.current[question.id]=gotIt
+    const newMissedIds = !gotIt&&first ? [...missedIds, question.id] : missedIds
+    const newKnown = gotIt&&first ? known + 1 : known
+    const newUnknown = !gotIt&&first ? unknown + 1 : unknown
     setKnown(newKnown)
     setUnknown(newUnknown)
     setMissedIds(newMissedIds)
 
     if (index + 1 >= workingSet.length) {
       if (!reviewingMissed) {
-        const supabase = createClient()
-        // Parity with the mobile app: flashcards are self-graded and earn NO XP —
-        // otherwise the shared weekly league can be farmed by spamming "Got it".
-        const now = new Date().toISOString()
-        await Promise.allSettled([
-          supabase.rpc('update_streak', { user_id: userId }),
-          supabase.from('user_question_history').upsert(
-            workingSet.map(q => ({
-              user_id: userId, question_id: q.id, question_type: 'flashcard',
-              topic: q.topic, category: (q as unknown as Record<string, unknown>).category as string ?? null,
-              subtopic: q.subtopic ?? null, difficulty: q.difficulty, answered_at: now, was_correct: null,
-            })),
-            { onConflict: 'user_id,question_id' }
-          ),
-        ])
+        const receipt=await verified.finish()
+        if(!receipt){advancing.current=false;return}
       }
       setDone(true)
+      advancing.current=false
       return
     }
 
-    setAnimating(true)
     setFlipped(false)
-    setTimeout(() => { setIndex(i => i + 1); setAnimating(false) }, 400)
+    setIndex(i=>i+1);advancing.current=false
   }
 
   function handleReviewMissed() {
-    setWorkingSet(questions.filter(q => missedIds.includes(q.id)))
+    setReviewIds(missedIds)
+    verified.restart()
     setIndex(0); setFlipped(false); setKnown(0); setUnknown(0)
     setMissedIds([]); setDone(false); setReviewingMissed(true)
   }
 
   function handleStudyAgain() {
-    setWorkingSet(questions)
+    setReviewIds(null);verified.restart()
     setIndex(0); setFlipped(false); setKnown(0); setUnknown(0)
     setMissedIds([]); setDone(false); setReviewingMissed(false)
   }
@@ -117,7 +126,7 @@ export default function FlashcardClient({
               <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>Missed</p>
             </div>
             <div style={{ background: 'var(--teal-tint)', borderRadius: 18, padding: '18px 8px' }}>
-              <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--teal)' }}>+{known * 5}</p>
+              <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--teal)' }}>0</p>
               <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>XP</p>
             </div>
           </div>
@@ -228,16 +237,17 @@ export default function FlashcardClient({
       </div>
 
       {/* Action buttons (after flip) */}
+      {verified.error&&<p role="alert" style={{padding:16}}>{verified.error}</p>}
       {flipped && (
         <div className="fc-action-bar" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '12px 20px 20px' }}>
           <div style={{ maxWidth: 560, margin: '0 auto' }}>
             <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, margin: '0 0 10px' }}>How did you do?</p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => handleResult(false)}
+              <button disabled={verified.saving} onClick={() => handleResult(false)}
                 style={{ flex: 1, padding: 15, borderRadius: 16, background: 'var(--red-tint)', color: 'var(--red)', border: '1.5px solid transparent', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                 ✗ Didn&apos;t know
               </button>
-              <button onClick={() => handleResult(true)}
+              <button disabled={verified.saving} onClick={() => handleResult(true)}
                 style={{ flex: 1, padding: 15, borderRadius: 16, background: reviewingMissed ? 'var(--red)' : 'var(--green)', color: '#fff', border: 'none', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                 ✓ Got it
               </button>

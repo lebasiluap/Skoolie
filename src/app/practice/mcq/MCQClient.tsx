@@ -1,14 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useVerifiedWebPractice } from '@/lib/useVerifiedWebPractice'
+import { buildShuffledMcq } from '@/lib/answers'
 import type { Question } from '@/types'
 import BookmarkButton from '@/components/BookmarkButton'
 
-const XP_PER_CORRECT = 10
-const XP_PER_WRONG = 2
-const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E']
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 
 interface Props {
   questions: Question[]
@@ -31,20 +30,9 @@ interface ShuffledQuestion extends Question {
 
 function shuffleQuestions(questions: Question[]): ShuffledQuestion[] {
   return questions.map(q => {
-    const opts = (q.options as string[]) ?? []
-    if (opts.length === 0) return { ...q, displayOptions: opts, displayCorrect: q.correct_answer, origLetters: [] }
-    const items = opts.map((text, i) => ({ text, origLetter: OPTION_LETTERS[i] }))
-    for (let i = items.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[items[i], items[j]] = [items[j], items[i]]
-    }
-    const newCorrectIdx = items.findIndex(it => it.origLetter === q.correct_answer)
-    return {
-      ...q,
-      displayOptions: items.map((it, i) => it.text.replace(/^[A-E]\.\s*/, `${OPTION_LETTERS[i]}. `)),
-      displayCorrect: OPTION_LETTERS[newCorrectIdx],
-      origLetters: items.map(it => it.origLetter),
-    }
+    const shuffled=buildShuffledMcq(q.options,q.correct_answer,`${q.id}:${Math.random()}`)
+    return {...q,displayOptions:shuffled.options,displayCorrect:shuffled.correctLetter??'',
+      origLetters:OPTION_LETTERS.slice(0,shuffled.options.length).map(letter=>shuffled.displayToOriginalLetter[letter])}
   })
 }
 
@@ -59,7 +47,19 @@ export default function MCQClient({
   const [totalXP, setTotalXP] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('quiz')
-  const [shuffledQs, setShuffledQs] = useState<ShuffledQuestion[]>(() => shuffleQuestions(questions))
+  const [shuffledQs, setShuffledQs] = useState<ShuffledQuestion[]>([])
+  const submitted = useRef(new Set<string>())
+  const advancing = useRef(false)
+  const [sessionIds]=useState(()=>questions.map(q=>q.id))
+  const verified = useVerifiedWebPractice(userId,'mcq',sessionIds)
+  useEffect(()=>{
+    if(!verified.items)return
+    setShuffledQs(shuffleQuestions(verified.items as unknown as Question[]))
+    submitted.current.clear();advancing.current=false
+    setIndex(0);setSelected(null);setPhase('question');setScore(0);setTotalXP(0);setAnswers({});setSessionPhase('quiz')
+  },[verified.items])
+
+  if(!verified.items||!shuffledQs.length)return <div role="status" style={{padding:24}}>{verified.error??'Preparing your verified session…'}{verified.error&&<button onClick={verified.restart}>Retry session</button>}<p><Link href={backUrl}>Back to topics</Link></p></div>
 
   const shuffledQ = shuffledQs[index]
   const question = shuffledQ
@@ -74,65 +74,41 @@ export default function MCQClient({
   }
 
   async function handleSubmit() {
-    if (!selected) return
+    if (!selected || phase!=='question' || submitted.current.has(question.id)) return
+    const canonical = shuffledQ.origLetters[OPTION_LETTERS.indexOf(selected)]
+    verified.answer(question.id,canonical)
+    submitted.current.add(question.id)
     const correct = selected === shuffledQ.displayCorrect
-    const xpEarned = correct ? XP_PER_CORRECT : XP_PER_WRONG
     setScore(s => s + (correct ? 1 : 0))
-    setTotalXP(x => x + xpEarned)
     setAnswers(prev => ({ ...prev, [question.id]: selected }))
     setPhase('review')
-    // XP is credited ONCE at session end via credit_xp (server-authoritative:
-    // boost, clamping, weekly league) — per-answer increment_xp bypassed all of it.
   }
 
   async function handleNext() {
+    if(advancing.current||phase!=='review')return
+    advancing.current=true
     if (index + 1 >= shuffledQs.length) {
-      const supabase = createClient()
-      const now = new Date().toISOString()
-      const finalAnswers = { ...answers, [question.id]: selected! }
-      const finalScore = score + (isCorrect ? 0 : 0) // score already updated
-      // Server-authoritative XP: same path as the mobile app (boost, clamps, league)
-      const { data: creditedXp } = await supabase.rpc('credit_xp', {
-        p_kind: 'mcq', p_score: finalScore, p_total: shuffledQs.length, p_timed: false,
-      })
-      await Promise.allSettled([
-        supabase.rpc('update_streak', { user_id: userId }),
-        supabase.from('quiz_sessions').insert({
-          user_id: userId,
-          question_ids: shuffledQs.map(sq => sq.id),
-          answers: finalAnswers,
-          score: finalScore,
-          xp_earned: typeof creditedXp === 'number' ? creditedXp : totalXP,
-          completed_at: now,
-        }),
-        supabase.from('user_question_history').upsert(
-          shuffledQs.map(sq => ({
-            user_id: userId, question_id: sq.id, question_type: 'mcq',
-            topic: sq.topic, category: (sq as unknown as Record<string, unknown>).category as string ?? null,
-            subtopic: sq.subtopic ?? null, difficulty: sq.difficulty, answered_at: now,
-            was_correct: finalAnswers[sq.id] === sq.displayCorrect,
-          })),
-          { onConflict: 'user_id,question_id' }
-        ),
-      ])
+      const receipt=await verified.finish()
+      advancing.current=false
+      if(!receipt)return
+      setScore(receipt.score);setTotalXP(receipt.xp)
       setSessionPhase('done')
       return
     }
     setIndex(i => i + 1)
     setSelected(null)
     setPhase('question')
+    advancing.current=false
   }
 
   function handleRetake() {
-    setShuffledQs(shuffleQuestions(questions))
-    setIndex(0); setSelected(null); setPhase('question')
-    setScore(0); setTotalXP(0); setAnswers({}); setSessionPhase('quiz')
+    verified.restart()
   }
 
   // ── Results screen ────────────────────────────────────────────────────────
   if (sessionPhase === 'done') {
-    const accuracy = Math.round((score / questions.length) * 100)
-    const wrongCount = questions.length - score
+    const accuracy = Math.round((score / shuffledQs.length) * 100)
+    const wrongCount = shuffledQs.length - score
     const emoji = accuracy >= 80 ? '🏆' : accuracy >= 60 ? '🎉' : '📖'
 
     return (
@@ -146,7 +122,7 @@ export default function MCQClient({
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, maxWidth: 380, margin: '0 auto 26px' }}>
             {[
-              { val: `${score}/${questions.length}`, label: 'Correct', color: 'var(--teal)' },
+              { val: `${score}/${shuffledQs.length}`, label: 'Correct', color: 'var(--teal)' },
               { val: `${accuracy}%`,                 label: 'Accuracy', color: 'var(--green)' },
               { val: `+${totalXP}`,                  label: 'XP earned', color: 'var(--coral)' },
             ].map(s => (
@@ -388,7 +364,7 @@ export default function MCQClient({
               background: isCorrect ? 'var(--green-tint)' : 'var(--red-tint)',
               color: isCorrect ? 'var(--green)' : 'var(--red)',
             }}>
-              {isCorrect ? `✓ Correct · +${XP_PER_CORRECT} XP` : `✗ Not quite · +${XP_PER_WRONG} XP`}
+              {isCorrect ? '✓ Correct' : '✗ Not quite'}
             </div>
 
             {/* Avatar */}
@@ -430,7 +406,8 @@ export default function MCQClient({
             </div>
 
             {/* Next button */}
-            <button onClick={handleNext} className="anim-ovBtn mcq-next-btn"
+            {verified.error && <p role="alert">{verified.error}</p>}
+            <button disabled={verified.saving} onClick={handleNext} className="anim-ovBtn mcq-next-btn"
               style={{
                 marginTop: 18, width: '100%', maxWidth: 340, padding: 16, borderRadius: 999,
                 background: 'var(--teal)', color: 'var(--on-teal)', border: 'none',
@@ -438,7 +415,7 @@ export default function MCQClient({
                 boxShadow: '0 12px 26px -10px var(--teal)',
                 fontFamily: 'inherit',
               }}>
-              {index + 1 >= shuffledQs.length ? 'See results →' : 'Next question →'}
+              {verified.saving?'Confirming saved result…':index + 1 >= shuffledQs.length ? (verified.error?'Retry save →':'See results →') : 'Next question →'}
             </button>
           </div>
         </div>

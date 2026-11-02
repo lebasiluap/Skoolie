@@ -26,6 +26,11 @@ interface Report {
   resolution_note: string | null
   created_at: string
   resolved_at: string | null
+  platform: string | null
+  app_version: string | null
+  app_build: string | null
+  os_version: string | null
+  app_screen: string | null
   questions: EmbeddedQuestion | null
   case_studies: EmbeddedCase | null
 }
@@ -56,6 +61,8 @@ export default function ReportsClient({ reports, reporters }: Props) {
   const [tab, setTab] = useState<'open' | 'resolved' | 'dismissed' | 'all'>('open')
   const [busy, setBusy] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [buildFilter,setBuildFilter]=useState('all')
+  const builds=useMemo(()=>Array.from(new Set(reports.map(r=>`${r.platform??'unknown'} / ${r.app_build??'unknown'}`))).sort(),[reports])
 
   const counts = useMemo(() => ({
     open: reports.filter(r => r.status === 'open').length,
@@ -65,8 +72,9 @@ export default function ReportsClient({ reports, reporters }: Props) {
   }), [reports])
 
   const visible = useMemo(
-    () => (tab === 'all' ? reports : reports.filter(r => r.status === tab)),
-    [reports, tab],
+    () => reports.filter(r => (tab === 'all' || r.status === tab) &&
+      (buildFilter==='all' || `${r.platform??'unknown'} / ${r.app_build??'unknown'}`===buildFilter)),
+    [reports, tab, buildFilter],
   )
 
   // Open-report counts per item, to surface "N users flagged this"
@@ -130,10 +138,17 @@ export default function ReportsClient({ reports, reporters }: Props) {
       </div>
 
       {/* Empty state */}
+      <label style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:10,marginBottom:20,color:'var(--text-soft)'}}>
+        Reported platform / build
+        <select value={buildFilter} onChange={e=>setBuildFilter(e.target.value)} style={{maxWidth:'100%',padding:10,borderRadius:10,background:'var(--surface)',color:'var(--text)',border:'1px solid var(--border)'}}>
+          <option value="all">All builds</option>
+          {builds.map(build=><option key={build} value={build}>{build}</option>)}
+        </select>
+      </label>
       {visible.length === 0 ? (
         <EmptyState
-          title={tab === 'open' ? 'No open reports 🎉' : 'Nothing here'}
-          sub={tab === 'open' ? 'The question bank is clean for now.' : 'Switch tabs to see other reports.'}
+          title="No matching reports"
+          sub="Try another status or build filter. This is not a clearance verdict on the question bank."
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -180,6 +195,9 @@ export default function ReportsClient({ reports, reporters }: Props) {
                   {/* Reporter + note */}
                   <p style={{ margin: '0 0 4px', fontSize: 12.5, color: 'var(--text-faint)', fontWeight: 600 }}>
                     Reported by {rp?.name ?? 'Unknown'} {rp?.email ? `· ${rp.email}` : ''}
+                  </p>
+                  <p style={{fontSize:12,color:'var(--text-faint)',overflowWrap:'anywhere'}}>
+                    {r.platform ? `${r.platform} · version ${r.app_version??'unknown'} · build ${r.app_build??'unknown'} · OS ${r.os_version??'unknown'} · ${r.app_screen??'unknown screen'} (device-reported)` : 'Build context unavailable — older report'}
                   </p>
                   {r.note && (
                     <p style={{ margin: '0 0 12px', fontSize: 13.5, color: 'var(--text)', fontWeight: 600, background: 'var(--surface-3)', borderRadius: 12, padding: '10px 14px', lineHeight: 1.5 }}>

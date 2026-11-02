@@ -13,6 +13,18 @@ const receipt = () => ({ protocol_version: 1, session_id: sid, quiz_session_id: 
   total: 1, xp: 50, completed_at: '2026-10-25T00:00:00Z' })
 const config = () => ({ requestId: request, mode: 'mcq', itemIds: [qid] })
 
+test('positional answer choices retain canonical ordering across shuffle seeds',()=>{
+ for(const relative of ['All of the above','None of the above','Both A and B','Options B and C']){
+  const opts=['First','Second',relative,'Fourth']
+  for(let n=0;n<15;n++){
+   const shuffled=buildShuffledMcq(opts,'C',String(n))
+   assert.deepEqual(shuffled.options,opts)
+   assert.equal(shuffled.correctLetter,'C')
+   assert.deepEqual(shuffled.displayToOriginalLetter,{A:'A',B:'B',C:'C',D:'D'})
+  }
+ }
+})
+
 test('flashcard restart reuses issuance and immutable ratings without caching content',async()=>{
  const calls=[]
  const rpc=async(name,args)=>{

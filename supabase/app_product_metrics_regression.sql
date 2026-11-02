@@ -2,7 +2,7 @@
 begin;
 set local statement_timeout='8s';
 do $test$
-declare uid uuid; sid uuid:=gen_random_uuid(); sid2 uuid:=gen_random_uuid(); rowdata jsonb; before_n numeric; after_n numeric; rejected boolean; other_uid uuid;
+declare uid uuid; sid uuid:=gen_random_uuid(); sid2 uuid:=gen_random_uuid(); expired_sid uuid:=gen_random_uuid(); rowdata jsonb; before_n numeric; after_n numeric; rejected boolean; other_uid uuid;
 begin
  select u.id into uid from auth.users u where lower(u.email)<>'lebasiluap@gmail.com' and not exists(select 1 from app_private.beta_tester_assignments a where a.email=lower(u.email)) order by u.created_at limit 1;
  if uid is null then raise exception 'Missing non-beta fixture account';end if;
@@ -55,9 +55,14 @@ begin
  -- More than one cleanup chunk, all rollback-only fixtures.
  insert into app_private.app_usage_daily(user_id,activity_date,platform,version,build,screen)
  select uid,(clock_timestamp() at time zone 'UTC')::date-40,'ios','test','cleanup-'||n,'mcq' from generate_series(1,1100) n;
+ insert into app_private.beta_activity_sessions(id,user_id,platform,version,build,started_at,last_seen_at)
+ values(expired_sid,uid,'ios','test','expired-metrics-fixture',clock_timestamp()-interval '40 days',clock_timestamp()-interval '40 days');
+ insert into app_private.app_usage_cursors values(expired_sid,1,clock_timestamp()-interval '40 days');
  perform app_private.purge_app_metrics();
  if exists(select 1 from app_private.app_usage_daily where user_id=uid and build like 'cleanup-%') then raise exception 'Cleanup stopped after one chunk';end if;
  if not exists(select 1 from app_private.app_usage_daily where user_id=uid and build='metrics-test') then raise exception 'Cleanup removed current data';end if;
+ if exists(select 1 from app_private.beta_activity_sessions where id=expired_sid) or exists(select 1 from app_private.app_usage_cursors where session_id=expired_sid) then raise exception 'Expired foreground session cleanup failed';end if;
+ if not exists(select 1 from app_private.beta_activity_sessions where id=sid) then raise exception 'Cleanup removed current foreground session';end if;
  raise notice 'PASS: disabled switch, auth/owner binding, non-beta insertion, replay, payload, short end, unknown gaps, private access, admin guard and multi-chunk retention';
 end $test$;
 rollback;

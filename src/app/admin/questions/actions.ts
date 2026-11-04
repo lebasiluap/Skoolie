@@ -17,7 +17,7 @@ export type ActionResult = { ok: true; changed?: boolean } | { ok: false; error:
 
 export async function archiveQuestion(id: string): Promise<ActionResult> {
   const supabase = await assertAdmin()
-  const { data, error } = await supabase.rpc('admin_archive_question', { p_id: id })
+  const { data, error } = await supabase.rpc('admin_archive_question', { p_id: id }).abortSignal(AbortSignal.timeout(15_000))
   if (error) return { ok: false, error: error.message }
   if (data !== 1) return { ok: false, error: 'Archive was not confirmed. Reload and retry.' }
   revalidatePath('/admin/questions')
@@ -36,7 +36,7 @@ export async function updateQuestionField(id: string, field: string, value: stri
 
   const { data, error } = await supabase.rpc('admin_edit_question', {
     p_id: id, p_field: field, p_value: value, p_expected: expected,
-  })
+  }).abortSignal(AbortSignal.timeout(15_000))
   if (error) return { ok: false, error: error.message }
   if (!data || typeof data.changed !== 'boolean') return { ok: false, error: 'Save was not confirmed. Reload and retry.' }
   revalidatePath('/admin/questions')

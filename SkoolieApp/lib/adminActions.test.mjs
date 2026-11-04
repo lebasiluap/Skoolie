@@ -9,7 +9,7 @@ function load(path, modules){
 }
 function harness(path){
  let reply={data:1,error:null}, email='lebasiluap@gmail.com';const calls=[],invalidations=[]
- const client={auth:{getUser:async()=>({data:{user:email?{email}:null}})},rpc:async(name,args)=>{calls.push({name,args});return reply}}
+ const client={auth:{getUser:async()=>({data:{user:email?{email}:null}})},rpc:(name,args)=>({abortSignal:signal=>{assert.ok(signal instanceof AbortSignal);calls.push({name,args});return Promise.resolve(reply)}})}
  const actions=load(path,{'@/lib/supabase/server':{createClient:async()=>client},'next/cache':{revalidatePath:path=>invalidations.push(path)}})
  return {actions,calls,invalidations,reply:x=>{reply=x},user:x=>{email=x}}
 }

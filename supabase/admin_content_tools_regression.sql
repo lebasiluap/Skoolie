@@ -58,7 +58,7 @@ begin
  set local role authenticated;
  out_json:=public.admin_edit_question(qid,'question_text',old_text,old_text);
  if (out_json->>'changed')::boolean then raise exception 'No-op marked changed'; end if;
- blocked:=false; begin perform public.admin_edit_question(qid,'question_text','new text','stale value'); exception when serialization_failure then blocked:=true; end;
+ blocked:=false; begin perform public.admin_edit_question(qid,'question_text','new text','stale value'); exception when sqlstate 'PT409' then blocked:=true; end;
  if not blocked then raise exception 'Stale draft overwrote content'; end if;
  blocked:=false; begin perform public.admin_edit_question(qid,'id','bad',null); exception when invalid_parameter_value then blocked:=true; end;
  if not blocked then raise exception 'Unsafe field allowed'; end if;

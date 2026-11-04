@@ -60,7 +60,9 @@ begin
  select * into row_before from public.questions_base where id=p_id for update;
  if not found then raise exception 'Question not found' using errcode='P0002'; end if;
  old_value:=to_jsonb(row_before)->>p_field;
- if old_value is distinct from p_expected then raise exception 'Question changed. Reload before saving.' using errcode='40001'; end if;
+ -- A stale form is an application conflict, NOT a retryable serialization
+ -- failure. PostgREST may retry 40001, so return an explicit HTTP 409 instead.
+ if old_value is distinct from p_expected then raise exception 'Question changed. Reload before saving.' using errcode='PT409'; end if;
  parsed:=p_value;
  if p_field in ('category','subtopic','explanation','access_key','region') and coalesce(btrim(parsed),'')='' then parsed:=null; end if;
  if p_field in ('topic','question_text','difficulty') and coalesce(btrim(parsed),'')='' then

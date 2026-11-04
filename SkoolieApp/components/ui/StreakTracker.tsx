@@ -57,7 +57,6 @@ export function StreakTracker({
   const [loaded, setLoaded] = useState(false)
   const [verifiedFrozen, setVerifiedFrozen] = useState<string[] | null>(null)
   const [verifiedBalance, setVerifiedBalance] = useState<number | null>(null)
-  const [capacityAdjusted, setCapacityAdjusted] = useState(false)
   // Refetch on every screen focus so a session just completed elsewhere ticks today immediately.
   useFocusEffect(useCallback(() => {
     if (!userId) { setLoaded(true); return }
@@ -66,7 +65,6 @@ export function StreakTracker({
     setActiveDays(new Set())
     setVerifiedFrozen(null)
     setVerifiedBalance(null)
-    setCapacityAdjusted(false)
     readWithDeadline(signal => supabase.rpc('get_study_streak').abortSignal(signal),3000)
       .then(({ data, error }) => {
         if (cancelled) return
@@ -76,7 +74,6 @@ export function StreakTracker({
         setActiveDays(s)
         setVerifiedFrozen(data.frozen_dates ?? [])
         setVerifiedBalance(freezeBalance(data.streak_freezes))
-        setCapacityAdjusted(data.freeze_cap_adjusted === true)
         setLoaded(true)
       }).catch(() => { /* No fabricated missed/studied marks on failure. */ })
     return () => { cancelled = true }
@@ -109,16 +106,6 @@ export function StreakTracker({
     return 'missed'
   }
 
-  const toGo = next ? Math.max(0, next.days - streak) : 0
-  const caption =
-    streak === 0
-      ? 'Start your streak today!'
-      : !studiedToday
-        ? 'Study today to keep your streak alive 🔥'
-        : next
-          ? `${toGo} day${toGo === 1 ? '' : 's'} to your ${next.label}`
-          : 'Top streak tier reached 🎉'
-
   return (
     <View
       style={[
@@ -139,11 +126,6 @@ export function StreakTracker({
           <View accessibilityLabel={`${balance} of ${FREEZE_CAPACITY} streak freezes stored`} style={[s.badge, { backgroundColor: STREAK_FREEZE_BLUE + '26', flexDirection: 'row', alignItems: 'center', gap: 3 }]}>
             <Ionicons name="snow" size={12} color={STREAK_FREEZE_BLUE} />
             <Text style={[s.badgeText, { color: STREAK_FREEZE_BLUE }]}>{balance}/{FREEZE_CAPACITY}</Text>
-          </View>
-        )}
-        {current && (
-          <View style={[s.badge, { backgroundColor: fill }]}>
-            <Text style={[s.badgeText, { color: onFill }]}>{current.short}</Text>
           </View>
         )}
       </View>
@@ -179,8 +161,6 @@ export function StreakTracker({
         })}
       </View>
 
-      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}Store up to 2 freezes. Use one, then earn a replacement. Freezes protect your streak but do not add days.</Text>
-      {capacityAdjusted && <Text style={[s.caption, { color: C.textFaint }]}>The freeze limit is now 2. Older excess freezes were removed; earned study days are unchanged.</Text>}
     </View>
   )
 }
@@ -196,5 +176,4 @@ const s = StyleSheet.create({
   dayCol: { alignItems: 'center', gap: 6, flex: 1 },
   dow: { fontSize: 12, fontFamily: 'Nunito_800ExtraBold' },
   circle: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  caption: { fontSize: 12.5, fontFamily: 'Nunito_600SemiBold', marginTop: 12, textAlign: 'center' },
 })

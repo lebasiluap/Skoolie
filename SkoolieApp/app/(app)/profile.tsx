@@ -533,9 +533,6 @@ export default function ProfileScreen() {
             <PillToggle value={soundOn} onValueChange={toggleSound} activeColor={C.teal} />
           </View>
 
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Read about app usage metrics and privacy" style={[s.row, s.rowBorder, {borderColor:C.border,minHeight:48}]} onPress={()=>router.push('/legal/privacy')}>
-            <View style={{flex:1}}><Text style={[s.rowLabel,{color:C.text}]}>App usage metrics</Text><Text style={[s.rowSub,{color:C.textFaint}]}>Skoolie collects lightweight, account-linked usage summaries to improve the app. No typed text or recordings. Read our privacy policy.</Text></View>
-          </TouchableOpacity>
           {/* Haptics */}
           <View style={[s.row, s.rowBorder, { borderColor: C.border }]}>
             <View style={[s.iconBox, { backgroundColor: C.coralTint }]}>

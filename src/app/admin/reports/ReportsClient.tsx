@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setReportStatus, reopenReport, resolveAllForItem } from './actions'
@@ -60,6 +60,9 @@ export default function ReportsClient({ reports, reporters }: Props) {
   const [, startTransition] = useTransition()
   const [tab, setTab] = useState<'open' | 'resolved' | 'dismissed' | 'all'>('open')
   const [busy, setBusy] = useState<string | null>(null)
+  const actionLock = useRef(false)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [buildFilter,setBuildFilter]=useState('all')
   const builds=useMemo(()=>Array.from(new Set(reports.map(r=>`${r.platform??'unknown'} / ${r.app_build??'unknown'}`))).sort(),[reports])
@@ -89,10 +92,20 @@ export default function ReportsClient({ reports, reporters }: Props) {
   }, [reports])
 
   async function act(fn: () => Promise<void>, id: string) {
+    if (actionLock.current) return
+    actionLock.current = true
     setBusy(id)
-    await fn()
-    setBusy(null)
-    startTransition(() => router.refresh())
+    setActionError(null); setActionSuccess(null)
+    try {
+      await fn()
+      setActionSuccess('Report status saved. Audit clearance and quarantine were not changed.')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Update failed. Reload and retry.')
+    } finally {
+      actionLock.current = false
+      setBusy(null)
+    }
   }
 
   function toggle(id: string) {
@@ -113,6 +126,8 @@ export default function ReportsClient({ reports, reporters }: Props) {
   return (
     <div style={{ padding: PAGE_PAD, maxWidth: 1100, margin: '0 auto' }}>
       <PageHeader title="Reported questions" sub={`User-flagged content · ${counts.open} open`} />
+      {actionError && <p role="alert" style={{color:'var(--red)'}}>{actionError}</p>}
+      {actionSuccess && <p role="status" style={{color:'var(--teal)'}}>{actionSuccess}</p>}
 
       {/* Tabs */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22 }}>
@@ -268,7 +283,7 @@ export default function ReportsClient({ reports, reporters }: Props) {
                     </>
                   ) : (
                     <p style={{ margin: 0, fontSize: 13, color: 'var(--text-faint)', fontWeight: 600, fontStyle: 'italic' }}>
-                      The reported item was deleted.
+                      The reported item is unavailable. It may have been removed; quarantine is not a deletion.
                     </p>
                   )}
 

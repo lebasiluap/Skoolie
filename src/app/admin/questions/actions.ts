@@ -13,31 +13,35 @@ async function assertAdmin() {
   return supabase
 }
 
-export type ActionResult = { ok: true } | { ok: false; error: string }
+export type ActionResult = { ok: true; changed?: boolean } | { ok: false; error: string }
 
-export async function deleteQuestion(id: string): Promise<ActionResult> {
+export async function archiveQuestion(id: string): Promise<ActionResult> {
   const supabase = await assertAdmin()
-  const { error } = await supabase.from('questions').delete().eq('id', id)
+  const { data, error } = await supabase.rpc('admin_archive_question', { p_id: id })
   if (error) return { ok: false, error: error.message }
+  if (data !== 1) return { ok: false, error: 'Archive was not confirmed. Reload and retry.' }
   revalidatePath('/admin/questions')
   return { ok: true }
 }
 
-export async function updateQuestionField(id: string, field: string, value: string): Promise<ActionResult> {
+export async function updateQuestionField(id: string, field: string, value: string, expected: string | null): Promise<ActionResult> {
   const supabase = await assertAdmin()
 
   const ALLOWED_FIELDS = [
-    'topic', 'category', 'subtopic', 'question_type', 'difficulty',
+    'topic', 'category', 'subtopic', 'difficulty',
     'question_text', 'correct_answer', 'explanation', 'region',
-    'access_key', 'high_yield', 'source_reference',
+    'access_key', 'high_yield',
   ]
   if (!ALLOWED_FIELDS.includes(field)) return { ok: false, error: 'Field not allowed' }
 
-  const parsed = field === 'high_yield' ? value === 'true' : (value === '' ? null : value)
-  const { error } = await supabase.from('questions').update({ [field]: parsed }).eq('id', id)
+  const { data, error } = await supabase.rpc('admin_edit_question', {
+    p_id: id, p_field: field, p_value: value, p_expected: expected,
+  })
   if (error) return { ok: false, error: error.message }
+  if (!data || typeof data.changed !== 'boolean') return { ok: false, error: 'Save was not confirmed. Reload and retry.' }
   revalidatePath('/admin/questions')
-  return { ok: true }
+  revalidatePath('/admin/reports')
+  return { ok: true, changed: data.changed }
 }
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']

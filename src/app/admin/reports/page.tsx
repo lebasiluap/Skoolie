@@ -7,17 +7,7 @@ export default async function AdminReportsPage() {
   const supabase = await createClient()
 
   const [{ data: reports, error: reportError }, { data: profiles }] = await Promise.all([
-    supabase
-      .from('question_reports')
-      .select(`
-        id, user_id, question_id, case_id, question_type, reason, note,
-        status, resolution_note, created_at, resolved_at,
-        platform, app_version, app_build, os_version, app_screen,
-        questions ( id, topic, subtopic, difficulty, question_type, question_text, options, correct_answer, explanation ),
-        case_studies ( id, title, topic, difficulty, clinical_vignette )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(1000),
+    supabase.rpc('admin_report_queue'),
     supabase.from('user_profiles').select('id, full_name, email'),
   ])
 

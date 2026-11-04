@@ -3,8 +3,8 @@
 // a modal with a reason picker + optional note, then inserts one row into
 // `question_reports`. One OPEN report per user per item is enforced server-side
 // (unique index) — a friendly toast covers the duplicate case.
-import { useRef, useState } from 'react'
-import { KeyboardAvoidingView, ScrollView, Platform, Modal, Pressable, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Keyboard, KeyboardAvoidingView, ScrollView, Platform, Modal, Pressable, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { nativeReportContext } from '@/lib/nativeReportContext'
 import { useTheme } from '@/hooks/useTheme'
@@ -35,17 +35,36 @@ export default function ReportButton({ questionId, caseId, questionType, compact
   const C = useTheme()
   const insets = useSafeAreaInsets()
   const submitLock = useRef(false)
+  const scroll = useRef<ScrollView>(null)
+  const noteFocused = useRef(false)
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState<string | null>(null)
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    if (!open) return
+    const subscription = Keyboard.addListener('keyboardDidShow', () => {
+      if (noteFocused.current) scroll.current?.scrollToEnd({ animated: false })
+    })
+    return () => subscription.remove()
+  }, [open])
+
   function reset() {
+    noteFocused.current = false
     setReason(null); setNote(''); setSubmitting(false)
   }
 
   async function submit() {
     if (!reason || submitLock.current) return
+    if (!!questionId === !!caseId) { showToast('This report has no valid question attached.', 'error'); return }
+    // Freeze target and text before authentication/network waits. The screen
+    // behind the modal may advance, but this report must not change targets.
+    const payload = {
+      question_id: questionId ?? null, case_id: caseId ?? null,
+      question_type: questionType, reason, note: note.trim().slice(0, 1000) || null,
+      ...nativeReportContext(),
+    }
     submitLock.current = true
     setSubmitting(true)
     try {
@@ -56,12 +75,7 @@ export default function ReportButton({ questionId, caseId, questionType, compact
         Promise.resolve(
           supabase.from('question_reports').insert({
             user_id: user.id,
-            question_id: questionId ?? null,
-            case_id: caseId ?? null,
-            question_type: questionType,
-            reason,
-            note: note.trim() ? note.trim().slice(0, 1000) : null,
-            ...nativeReportContext(),
+            ...payload,
           }),
         ),
         20_000,
@@ -79,6 +93,7 @@ export default function ReportButton({ questionId, caseId, questionType, compact
       } else {
         showToast('Thanks — report sent for review.', 'success')
       }
+      Keyboard.dismiss()
       setOpen(false); reset()
     } catch (e) {
       showToast(e instanceof TimeoutError ? AUTH_TIMEOUT_MESSAGE : 'Could not send report. Try again.', 'error')
@@ -103,7 +118,8 @@ export default function ReportButton({ questionId, caseId, questionType, compact
         <KeyboardAvoidingView style={st.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Pressable accessibilityLabel="Close report" style={StyleSheet.absoluteFill} onPress={() => { if (!submitLock.current) { setOpen(false); reset() } }} />
           <View style={[st.sheet, { backgroundColor: C.surface, borderColor: C.border, ...C.shadowLg, paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom: 8}}>
+          <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" style={{flexShrink:1}} contentContainerStyle={{paddingBottom: 8}}
+            onContentSizeChange={() => { if (noteFocused.current) scroll.current?.scrollToEnd({animated:false}) }}>
             <View style={st.grabber} />
             <Text style={[st.title, { color: C.text }]}>Report a problem</Text>
             <Text style={[st.subtitle, { color: C.textFaint }]}>
@@ -146,6 +162,8 @@ export default function ReportButton({ questionId, caseId, questionType, compact
               maxLength={1000}
               editable={!submitting}
               accessibilityLabel="Report details"
+              onFocus={() => { noteFocused.current = true; scroll.current?.scrollToEnd({animated:false}) }}
+              onBlur={() => { noteFocused.current = false }}
               style={[st.input, { backgroundColor: C.surface2, borderColor: C.border, color: C.text }]}
             />
             <Text style={{color:C.textFaint,fontSize:12,marginTop:8}}>App build, platform and OS version are included to help diagnose this report.</Text>

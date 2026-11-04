@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { deleteQuestion, updateQuestionField } from './actions'
+import { archiveQuestion, updateQuestionField } from './actions'
 import NewQuestionModal from './NewQuestionModal'
 import {
   PAGE_PAD, inputStyle, selectStyle, primaryBtn, ghostBtn, dangerBtn, textBtn,
-  thStyle, PageHeader, EmptyState, Chip, ModalScrim, modalSheet,
+  thStyle, PageHeader, EmptyState, Chip, ModalScrim, modalSheet, normalizeMcqOptions,
 } from '../ui'
 
 interface Question {
@@ -18,6 +18,9 @@ interface Question {
   difficulty: string
   question_text: string
   correct_answer: string
+  options: unknown
+  explanation: string | null
+  released: boolean
   access_key: string | null
   high_yield: boolean | null
   region: string | null
@@ -53,6 +56,9 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
   const [editField, setEditField] = useState<string>('')
   const [editValue, setEditValue] = useState<string>('')
   const [saving, setSaving] = useState(false)
+  const saveLock = useRef(false)
+  const [editExpected, setEditExpected] = useState<string | null>(null)
+  const [savedMessage, setSavedMessage] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [confirmDeleteText, setConfirmDeleteText] = useState<string>('')
@@ -79,18 +85,28 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
   }
 
   function startEdit(id: string, field: string, current: string) {
+    if (saveLock.current) return
     setActionError(null)
+    setSavedMessage(null)
+    const original = questions.find(q => q.id === id)?.[field as keyof Question]
+    setEditExpected(original == null ? null : String(original))
     setEditingId(id); setEditField(field); setEditValue(current ?? '')
   }
 
   async function saveEdit() {
-    if (!editingId) return
+    if (!editingId || saveLock.current) return
+    saveLock.current = true
     setSaving(true)
-    const res = await updateQuestionField(editingId, editField, editValue)
-    setSaving(false)
-    if (!res.ok) { setActionError(res.error); return }
-    setEditingId(null)
-    startTransition(() => router.refresh())
+    setActionError(null)
+    try {
+      const res = await updateQuestionField(editingId, editField, editValue, editExpected)
+      if (!res.ok) { setActionError(res.error); return }
+      setEditingId(null)
+      setSavedMessage(res.changed ? 'Save confirmed. Changed content stays unavailable until current-version audit clearance; reports are not automatically resolved.' : 'No changes were made. Existing clearance is unchanged.')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Save failed. Your draft is retained; reload if your session expired.')
+    } finally { saveLock.current = false; setSaving(false) }
   }
 
   function handleDelete(id: string, text: string) {
@@ -99,12 +115,17 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
   }
 
   async function confirmDelete() {
-    if (!confirmDeleteId) return
+    if (!confirmDeleteId || saveLock.current) return
+    saveLock.current = true
     setDeleting(confirmDeleteId); setConfirmDeleteId(null)
-    const res = await deleteQuestion(confirmDeleteId)
-    setDeleting(null)
-    if (!res.ok) { setActionError(res.error); return }
-    startTransition(() => router.refresh())
+    try {
+      const res = await archiveQuestion(confirmDeleteId)
+      if (!res.ok) { setActionError(res.error); return }
+      setSavedMessage('Question archived in quarantine. Content, reports and study history are retained.')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Archive failed. Reload and retry.')
+    } finally { saveLock.current=false; setDeleting(null) }
   }
 
   return (
@@ -130,6 +151,7 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
       )}
 
       {/* Surfaced action errors (saves/deletes no longer fail silently) */}
+      {savedMessage && <p role="status" style={{color:'var(--teal)'}}>{savedMessage}</p>}
       {actionError && (
         <div style={{ background: 'var(--red-tint)', color: 'var(--red)', borderRadius: 14, padding: '12px 16px', fontSize: 13.5, fontWeight: 700, marginBottom: 14, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
           <span>Action failed: {actionError}</span>
@@ -222,17 +244,17 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
               <div style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--red-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </div>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Delete question?</h3>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>Archive question?</h3>
             </div>
             <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--text-faint)', fontWeight: 600 }}>
-              This cannot be undone. Any user reports on it are deleted too.
+              This keeps the question quarantined. Content, reports and study history are preserved; nothing is permanently deleted.
             </p>
             <p style={{ margin: '0 0 24px', fontSize: 13, color: 'var(--text-soft)', lineHeight: 1.6, background: 'var(--surface-3)', borderRadius: 12, padding: '10px 14px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {confirmDeleteText}
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button onClick={() => setConfirmDeleteId(null)} style={textBtn}>Cancel</button>
-              <button onClick={confirmDelete} style={{ ...dangerBtn, padding: '10px 20px' }}>Yes, delete</button>
+              <button onClick={confirmDelete} style={{ ...dangerBtn, padding: '10px 20px' }}>Yes, archive</button>
             </div>
           </div>
         </ModalScrim>
@@ -240,25 +262,25 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
 
       {/* Edit modal */}
       {editingId && (
-        <ModalScrim onClose={() => setEditingId(null)}>
+        <ModalScrim onClose={() => { if (!saveLock.current) setEditingId(null) }}>
           <div style={modalSheet} onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 3px', fontSize: 16, fontWeight: 800, color: 'var(--text)', textTransform: 'capitalize' }}>Edit {editField.replace(/_/g, ' ')}</h3>
             <p style={{ margin: '0 0 16px', fontSize: 12, color: 'var(--text-faint)', fontWeight: 600 }}>ID: {editingId}</p>
+            <p>Saving changes does not release this question. Current-version audit clearance is required.</p>
+            {actionError && <p role="alert" style={{color:'var(--red)'}}>{actionError}</p>}
+            {editField === 'correct_answer' && <div style={{whiteSpace:'pre-wrap',marginBottom:16}}>
+              <strong>{questions.find(q=>q.id===editingId)?.question_text}</strong>
+              {normalizeMcqOptions(questions.find(q=>q.id===editingId)?.options).map(option=><p key={option.letter}><strong>{option.letter}.</strong> {option.text}</p>)}
+            </div>}
 
-            {editField === 'question_type' && (
-              <p style={{ margin: '0 0 14px', fontSize: 12.5, fontWeight: 700, color: 'var(--amber)', background: 'var(--amber-tint)', borderRadius: 11, padding: '9px 13px', lineHeight: 1.5 }}>
-                Careful: converting between MCQ and flashcard does NOT convert the options/answer format — only change this if the underlying data already matches the new type.
-              </p>
-            )}
-
-            {['difficulty', 'question_type', 'region'].includes(editField) ? (
-              <select value={editValue} onChange={e => setEditValue(e.target.value)} style={{ ...selectStyle, width: '100%', marginBottom: 20 }}>
+            {['difficulty', 'region'].includes(editField) ? (
+              <select disabled={saving} value={editValue} onChange={e => setEditValue(e.target.value)} style={{ ...selectStyle, width: '100%', marginBottom: 20 }}>
                 {editField === 'difficulty' && ['easy', 'medium', 'hard'].map(v => <option key={v} value={v}>{v}</option>)}
-                {editField === 'question_type' && ['mcq', 'flashcard', 'case_study'].map(v => <option key={v} value={v}>{v}</option>)}
                 {editField === 'region' && ['universal', 'ghana'].map(v => <option key={v} value={v}>{v}</option>)}
+                {editField === 'region' && <option value="">Unspecified</option>}
               </select>
             ) : (
-              <textarea value={editValue} onChange={e => setEditValue(e.target.value)}
+              <textarea disabled={saving} aria-label="New field value" value={editValue} onChange={e => setEditValue(editField==='correct_answer' && questions.find(q=>q.id===editingId)?.question_type==='mcq' ? e.target.value.toUpperCase() : e.target.value)}
                 rows={editField === 'question_text' ? 5 : 2}
                 style={{ ...inputStyle, width: '100%', marginBottom: 20, resize: 'none' }}
                 className="admin-input-focus"
@@ -266,7 +288,7 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
             )}
 
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setEditingId(null)} style={textBtn}>Cancel</button>
+              <button disabled={saving} onClick={() => setEditingId(null)} style={textBtn}>Cancel</button>
               <button onClick={saveEdit} disabled={saving} style={{ ...primaryBtn, padding: '10px 24px', opacity: saving ? 0.6 : 1, cursor: saving ? 'default' : 'pointer' }}>
                 {saving ? 'Saving…' : 'Save'}
               </button>
@@ -293,7 +315,7 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['Topic', 'Course', 'Subtopic', 'Type', 'Difficulty', 'Question', 'Region', 'Access', 'Actions'].map(h => (
+                  {['Topic', 'Course', 'Subtopic', 'Type', 'Difficulty', 'Question', 'Region', 'Access', 'Release / Actions'].map(h => (
                     <th key={h} style={thStyle}>{h}</th>
                   ))}
                 </tr>
@@ -320,9 +342,7 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
                         </button>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
-                        <button onClick={() => startEdit(q.id, 'question_type', q.question_type)} title="Edit type" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
-                          <Chip text={q.question_type.replace('_', ' ')} tone={TYPE_TONE[q.question_type] ?? 'muted'} />
-                        </button>
+                        <Chip text={q.question_type.replace('_', ' ')} tone={TYPE_TONE[q.question_type] ?? 'muted'} />
                       </td>
                       <td style={{ padding: '10px 14px' }}>
                         <button onClick={() => startEdit(q.id, 'difficulty', q.difficulty)} title="Edit difficulty" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -335,7 +355,7 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
                         </button>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
-                        <button onClick={() => startEdit(q.id, 'region', q.region ?? 'universal')} title="Edit region" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12.5, color: 'var(--text-soft)', fontFamily: 'inherit' }} className="admin-cell-btn">
+                        <button onClick={() => startEdit(q.id, 'region', q.region ?? '')} title="Edit region" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12.5, color: 'var(--text-soft)', fontFamily: 'inherit' }} className="admin-cell-btn">
                           {q.region ?? '—'}
                         </button>
                       </td>
@@ -348,8 +368,11 @@ export default function QuestionsClient({ questions, total, page, perPage, topic
                         </button>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
+                        <Chip text={q.released ? 'Released' : 'Quarantined / awaiting clearance'} tone={q.released ? 'green' : 'amber'} />
+                        <button onClick={() => startEdit(q.id, 'correct_answer', q.correct_answer ?? '')} style={textBtn}>Edit answer</button>
+                        <button onClick={() => startEdit(q.id, 'explanation', q.explanation ?? '')} style={textBtn}>Edit explanation</button>
                         <button onClick={() => handleDelete(q.id, q.question_text)} disabled={deleting === q.id} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: 'var(--red)', fontFamily: 'inherit', opacity: deleting === q.id ? 0.4 : 1 }} className="admin-delete-btn">
-                          {deleting === q.id ? '…' : 'Delete'}
+                          {deleting === q.id ? '…' : 'Archive'}
                         </button>
                       </td>
                     </tr>

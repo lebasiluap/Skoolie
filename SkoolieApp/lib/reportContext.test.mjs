@@ -23,6 +23,6 @@ test('web practice never submits a client score or legacy reward/history writes'
 })
 test('report sheet has keyboard avoidance, scrolling and safe-area padding on both platforms',()=>{
  const text=readFileSync(new URL('../components/ui/ReportButton.tsx',import.meta.url),'utf8')
- assert.match(text,/<KeyboardAvoidingView/);assert.match(text,/<ScrollView keyboardShouldPersistTaps="handled"/)
+ assert.match(text,/<KeyboardAvoidingView/);assert.match(text,/<ScrollView[^>]*keyboardShouldPersistTaps="handled"/)
  assert.match(text,/insets.bottom/);assert.match(text,/nativeReportContext\(\)/)
 })

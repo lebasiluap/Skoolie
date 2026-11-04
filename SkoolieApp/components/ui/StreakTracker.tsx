@@ -7,6 +7,7 @@ import { useThemeMode } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { readWithDeadline } from '@/lib/readWithDeadline'
 import { streakColors, dateKey, STREAK_FREEZE_BLUE } from '@/lib/streak'
+import { freezeBalance, FREEZE_CAPACITY } from '@/lib/freezePolicy'
 
 const DOW = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'] // index 0=Sun … 6=Sat
 
@@ -27,7 +28,7 @@ export function StreakTracker({
   userId?: string | null
   lastActiveDate?: string | null
   createdAt?: string | null
-  /** Days saved by a streak freeze — rendered BLUE (still count toward the streak) */
+  /** Protected days render blue, but do not earn streak days. */
   frozenDates: string[] | null | undefined
   /** Freezes in the bank */
   freezes: number | null | undefined
@@ -55,6 +56,8 @@ export function StreakTracker({
   const [activeDays, setActiveDays] = useState<Set<string>>(new Set())
   const [loaded, setLoaded] = useState(false)
   const [verifiedFrozen, setVerifiedFrozen] = useState<string[] | null>(null)
+  const [verifiedBalance, setVerifiedBalance] = useState<number | null>(null)
+  const [capacityAdjusted, setCapacityAdjusted] = useState(false)
   // Refetch on every screen focus so a session just completed elsewhere ticks today immediately.
   useFocusEffect(useCallback(() => {
     if (!userId) { setLoaded(true); return }
@@ -62,6 +65,8 @@ export function StreakTracker({
     setLoaded(false)
     setActiveDays(new Set())
     setVerifiedFrozen(null)
+    setVerifiedBalance(null)
+    setCapacityAdjusted(false)
     readWithDeadline(signal => supabase.rpc('get_study_streak').abortSignal(signal),3000)
       .then(({ data, error }) => {
         if (cancelled) return
@@ -70,6 +75,8 @@ export function StreakTracker({
         for (const day of data.study_days ?? []) s.add(day)
         setActiveDays(s)
         setVerifiedFrozen(data.frozen_dates ?? [])
+        setVerifiedBalance(freezeBalance(data.streak_freezes))
+        setCapacityAdjusted(data.freeze_cap_adjusted === true)
         setLoaded(true)
       }).catch(() => { /* No fabricated missed/studied marks on failure. */ })
     return () => { cancelled = true }
@@ -77,6 +84,7 @@ export function StreakTracker({
 
   const studiedToday = activeDays.has(todayKeyStr) || lastActiveDate === todayKeyStr
   const frozen = new Set(verifiedFrozen ?? frozenDates ?? [])
+  const balance = verifiedBalance ?? freezeBalance(freezes)
 
   // Projected day they'd reach the next milestone if they study daily from today.
   const streakAfterToday = studiedToday ? streak : streak > 0 ? streak + 1 : 1
@@ -127,10 +135,10 @@ export function StreakTracker({
         <Ionicons name="flame" size={26} color={text} />
         <Text style={[s.count, { color: text }]}>{streak}</Text>
         <Text style={[s.unit, { color: C.textSoft }]}>day streak</Text>
-        {(freezes ?? 0) > 0 && (
-          <View style={[s.badge, { backgroundColor: STREAK_FREEZE_BLUE + '26', flexDirection: 'row', alignItems: 'center', gap: 3 }]}>
+        {balance !== null && (
+          <View accessibilityLabel={`${balance} of ${FREEZE_CAPACITY} streak freezes stored`} style={[s.badge, { backgroundColor: STREAK_FREEZE_BLUE + '26', flexDirection: 'row', alignItems: 'center', gap: 3 }]}>
             <Ionicons name="snow" size={12} color={STREAK_FREEZE_BLUE} />
-            <Text style={[s.badgeText, { color: STREAK_FREEZE_BLUE }]}>{freezes}</Text>
+            <Text style={[s.badgeText, { color: STREAK_FREEZE_BLUE }]}>{balance}/{FREEZE_CAPACITY}</Text>
           </View>
         )}
         {current && (
@@ -171,7 +179,8 @@ export function StreakTracker({
         })}
       </View>
 
-      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}Freezes protect your streak, but do not add days.</Text>
+      <Text style={[s.caption, { color: C.textFaint }]}>{caption}{'\n'}Store up to 2 freezes. Use one, then earn a replacement. Freezes protect your streak but do not add days.</Text>
+      {capacityAdjusted && <Text style={[s.caption, { color: C.textFaint }]}>The freeze limit is now 2. Older excess freezes were removed; earned study days are unchanged.</Text>}
     </View>
   )
 }

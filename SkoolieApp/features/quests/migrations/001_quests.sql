@@ -212,6 +212,7 @@ declare
   v_inserted boolean := false;
   c_xp constant integer := 100;
   c_freezes constant integer := 1;
+  v_freezes integer;
 begin
   if v_uid is null then raise exception 'not authenticated'; end if;
 
@@ -237,11 +238,13 @@ begin
 
   update user_profiles
      set xp = xp + c_xp,
-         level = floor((xp + c_xp) / 400.0)::int + 1,
-         streak_freezes = coalesce(streak_freezes, 0) + c_freezes
+         level = floor((xp + c_xp) / 400.0)::int + 1
    where id = v_uid;
+  -- Requires the shared freeze-cap migration. Report only actual credits.
+  v_freezes := app_private.grant_streak_freezes(v_uid,c_freezes);
+  update quest_chest_claims set freezes_granted=v_freezes where user_id=v_uid and week_start=v_week;
 
-  return jsonb_build_object('granted', true, 'xp', c_xp, 'freezes', c_freezes,
+  return jsonb_build_object('granted', true, 'xp', c_xp, 'freezes', v_freezes,
                             'days_count', v_days);
 end;
 $$;

@@ -76,7 +76,7 @@ export function diffProfiles(prev: UserProfile, next: UserProfile): Celebration[
       kind: 'freeze_saved',
       title: 'Your streak survived! ❄️',
       body: days === 1
-        ? 'You missed a day, but a banked freeze spent itself and kept your streak alive. It still counts — welcome back.'
+        ? 'You missed a day, but a banked freeze kept your streak alive without adding a study day. Welcome back.'
         : `You missed ${days} days, but your banked freezes covered every one. The streak lives — welcome back.`,
       mascot: 'noggin',
       accent: STREAK_FREEZE_BLUE,

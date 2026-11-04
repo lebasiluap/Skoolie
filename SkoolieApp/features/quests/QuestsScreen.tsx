@@ -161,7 +161,7 @@ export function QuestsScreen({ onBack }: Props) {
                   <>
                     <Text style={[s.chestTitle, { color: C.text }]}>Chest opened!</Text>
                     <Text style={[s.chestSub, { color: C.textSoft }]}>
-                      +{justOpened.xp} XP and {justOpened.freezes} streak freeze{justOpened.freezes === 1 ? '' : 's'} banked. See you next week!
+                      +{justOpened.xp} XP. {justOpened.freezes > 0 ? `${justOpened.freezes} streak freeze added.` : 'No freeze added; the bank holds at most 2.'} See you next week!
                     </Text>
                   </>
                 ) : chest?.claimed ? (
@@ -172,7 +172,7 @@ export function QuestsScreen({ onBack }: Props) {
                 ) : chest?.eligible ? (
                   <>
                     <Text style={[s.chestTitle, { color: C.text }]}>Your chest is ready!</Text>
-                    <Text style={[s.chestSub, { color: C.textSoft }]}>+100 XP and a streak freeze inside.</Text>
+                    <Text style={[s.chestSub, { color: C.textSoft }]}>+100 XP and a freeze if there is space (max 2 stored).</Text>
                     <TouchableOpacity onPress={openChest} disabled={opening} style={[s.openBtn, { backgroundColor: C.gold, opacity: opening ? 0.7 : 1 }]} activeOpacity={0.85}>
                       {opening
                         ? <ActivityIndicator size="small" color="#FFFFFF" />
@@ -185,7 +185,7 @@ export function QuestsScreen({ onBack }: Props) {
                       {(chest?.needed ?? 5) - today.week.count} more quest day{(chest?.needed ?? 5) - today.week.count === 1 ? '' : 's'} to go
                     </Text>
                     <Text style={[s.chestSub, { color: C.textSoft }]}>
-                      Complete all 3 quests on {chest?.needed ?? 5} days this week to unlock +100 XP and a streak freeze.
+                      Complete all 3 quests on {chest?.needed ?? 5} days this week to unlock +100 XP and a freeze if there is space (max 2 stored).
                     </Text>
                   </>
                 )}

@@ -14,6 +14,7 @@ import { Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { barrageWindows } from '@/lib/barrage'
 import { weekStartKey, type ZoneEvent } from '@/lib/league'
+import { FREEZE_REMINDER, BARRAGE_FREEZE_REMINDER } from './freezePolicy'
 
 // expo-notifications is a NATIVE module — loading it eagerly crashes on any
 // runtime whose binary doesn't include it yet (Expo Go variants, stale dev
@@ -65,11 +66,11 @@ const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
 type Msg = { title: string; body: string }
 
-const STREAK_TONIGHT = (streak: number): Msg[] => [
-  { title: 'Cappy 🎓', body: `Your ${streak}-day streak is one quiz away from surviving the night. Don't make me watch it die.` },
-  { title: 'Noggin 🧠', body: `Fun fact: streaks reset at midnight. Your ${streak}-day one included. Just saying.` },
-  { title: 'Buddy 💬', body: `Hey, it's me. Your ${streak}-day streak asked me to remind you it exists. 5 questions?` },
-  { title: 'Cappy 🎓', body: `${streak} days of momentum vs. 3 minutes of effort. Easy math. Come save the streak!` },
+const STREAK_TONIGHT: Msg[] = [
+  { title: 'Cappy 🎓', body: `Time for a study session? ${FREEZE_REMINDER}` },
+  { title: 'Noggin 🧠', body: `Study days end at midnight UTC. ${FREEZE_REMINDER}` },
+  { title: 'Buddy 💬', body: `A little practice tonight? ${FREEZE_REMINDER}` },
+  { title: 'Cappy 🎓', body: `Make time for one session today. ${FREEZE_REMINDER}` },
 ]
 
 const PRACTICE_TONIGHT: Msg[] = [
@@ -91,7 +92,7 @@ const LAPSE_5D: Msg[] = [
 ]
 
 const BARRAGE_LIVE: Msg[] = [
-  { title: 'Cappy ⚡', body: `SURPRISE BARRAGE IS LIVE! 2× XP for 2 hours. Drop everything (safely). GO!` },
+  { title: 'Cappy ⚡', body: `SURPRISE BARRAGE IS LIVE! 2× XP for 1 hour. Drop everything (safely). GO!` },
   { title: 'Buddy ⚡', body: `It's happening!! Your 2× XP barrage window just opened. See you inside!` },
   { title: 'Noggin ⚡', body: `Statistically optimal moment to practice: right now. Barrage live, 2× XP, clock ticking.` },
 ]
@@ -191,8 +192,6 @@ interface ScheduleState {
   practicedToday: boolean
   /** today's already-claimed barrage slots (0 and/or 1) */
   claimedSlotsToday?: number[]
-  /** barrages remaining until the next streak freeze (1–5) */
-  barragesToFreeze?: number
   /** per-category opt-outs from profile.notif_prefs — missing key = enabled */
   prefs?: import('@/types').NotifPrefs | null
   /** league zone transition detected at app-open (lib/league.detectZoneEvent) */
@@ -235,7 +234,7 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
 
     // 1) Tonight, 19:30 — streak rescue (or a gentle practice nudge if no streak)
     if (on('streak') && !state.practicedToday) {
-      const msg = state.streak > 0 ? pick(STREAK_TONIGHT(state.streak)) : pick(PRACTICE_TONIGHT)
+      const msg = state.streak > 0 ? pick(STREAK_TONIGHT) : pick(PRACTICE_TONIGHT)
       jobs.push(sched(msg, todayAt(19, 30)))
     }
     // Tomorrow evening too (covers users who don't reopen the app)
@@ -247,11 +246,8 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
     }
 
     // 3) Barrage — window start today (if still ahead and unclaimed) and tomorrow.
-    // Messages carry streak-freeze progress: every 5th completed barrage earns one.
-    const toFreeze = state.barragesToFreeze ?? 0
-    const freezeLine = toFreeze === 1
-      ? ' And this one earns you a streak freeze 🧊!'
-      : toFreeze > 1 ? ` (${toFreeze} more barrages to a 🧊 streak freeze)` : ''
+    // Future delivery cannot know the current balance or barrage progress.
+    const freezeLine = ` ${BARRAGE_FREEZE_REMINDER}`
     const withFreeze = (m: Msg): Msg => ({ title: m.title, body: m.body + freezeLine })
     if (on('barrage')) {
       const claimed = new Set(state.claimedSlotsToday ?? [])

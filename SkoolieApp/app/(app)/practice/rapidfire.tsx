@@ -525,9 +525,7 @@ export default function RapidFireScreen() {
           <View style={[s.freezeEarned, { backgroundColor: '#38BDF826' }]}>
             <Ionicons name="snow" size={14} color="#38BDF8" />
             <Text style={s.freezeEarnedText}>
-              {barrageTotal % 5 === 0
-                ? 'Streak Freeze earned! 5 barrages done 🎉'
-                : `${5 - (barrageTotal % 5)} more barrage${5 - (barrageTotal % 5) === 1 ? '' : 's'} to a Streak Freeze`}
+              Every fifth barrage can refill a freeze · max 2 stored
             </Text>
           </View>
         )}

@@ -23,7 +23,7 @@ export const INTROS: Record<IntroKey, { mascot: IntroMascot; title: string; body
   freeze: {
     mascot: 'noggin',
     title: 'You have a Streak Freeze 🧊',
-    body: "A freeze protects a missed day without increasing your streak. Protected days show blue, not as studied days. Earn one for every 5 barrages you complete.",
+    body: "A freeze protects a missed day without increasing your streak. Store at most 2. After using one, earn a replacement from a new reward. Every fifth completed barrage can refill a slot; rewards earned while full are not saved for later.",
   },
   tier: {
     mascot: 'cappy',
@@ -38,7 +38,7 @@ export const INTROS: Record<IntroKey, { mascot: IntroMascot; title: string; body
   barrage: {
     mascot: 'buddy',
     title: 'Surprise Barrage! ⚡',
-    body: 'Twice a day, a secret 1-hour window opens where a rapid-fire blitz pays 2× XP. Catch it while it lasts — and every 5 completed barrages earn you a Streak Freeze.',
+    body: 'Twice a day, a secret 1-hour window opens where a rapid-fire blitz pays 2× XP. Every fifth completed barrage can refill a Streak Freeze if there is space in your 2-freeze bank.',
   },
   readiness: {
     mascot: 'noggin',

@@ -153,7 +153,6 @@ export default function DashboardScreen() {
               streak,
               practicedToday: profile.last_active_date === todayKey,
               claimedSlotsToday: [...slots],
-              barragesToFreeze: 5 - (total % 5),
               prefs: profile.notif_prefs,
               zoneEvent,
             })
@@ -353,7 +352,7 @@ export default function DashboardScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={[s.barrageTitle, { color: onP }]}>SURPRISE BARRAGE · LIVE</Text>
                 <Text style={[s.barrageSub, { color: onP + 'D9' }]}>
-                  2× XP — ends in {bw.minutesLeft} min · {5 - (barrageTotal % 5) === 1 ? 'this one earns a 🧊 freeze!' : `${5 - (barrageTotal % 5)} more to a 🧊 freeze`}
+                  2× XP — ends in {bw.minutesLeft} min · Every fifth barrage can refill a 🧊 freeze (max 2 stored)
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={onP} />

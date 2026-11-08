@@ -18,7 +18,7 @@ import { AVATAR_PRESETS } from '@/lib/avatars'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { TopBar } from '@/components/ui/TopBar'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
-import { effectiveStreak as computeEffectiveStreak } from '@/lib/streak'
+import { useStreakSnapshot } from '@/contexts/StreakContext'
 import { StreakTracker } from '@/components/ui/StreakTracker'
 import { YEARS_BY_PROFESSION, DEFAULT_YEARS, PRACTITIONER_TITLES } from '@/constants/professions'
 import { TIMED_CHOICES, formatSecs } from '@/lib/timing'
@@ -101,6 +101,7 @@ const tog = StyleSheet.create({
 export default function ProfileScreen() {
   const C = useTheme()
   const { user, profile, refreshProfile } = useAuth()
+  const streakSnapshot = useStreakSnapshot()
   const { isDark, themeMode, setThemeMode } = useThemeMode()
   const entrance = useScreenEntrance()
 
@@ -168,7 +169,7 @@ export default function ProfileScreen() {
   const profMeta    = PROF_META[profile.profession] ?? { label: profile.profession, color: C.textSoft, bg: C.surface3 }
   const xpInLevel   = profile.xp % XP_PER_LEVEL
   const xpToNext    = XP_PER_LEVEL - xpInLevel
-  const effStreak   = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
+  const effStreak = streakSnapshot?.current_streak
   const joined      = new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
   const currentYearOptions = YEARS_BY_PROFESSION[profile.profession] ?? DEFAULT_YEARS
   const yearLabel = currentYearOptions.find(y => y.id === profile.study_year)?.label
@@ -389,7 +390,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── Streak milestone tracker ──────────────────────── */}
-        <StreakTracker streak={effStreak} userId={user.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} frozenDates={profile.frozen_dates} freezes={profile.streak_freezes} style={{ marginBottom: 14 }} />
+        <StreakTracker snapshot={streakSnapshot} createdAt={profile.created_at} style={{ marginBottom: 14 }} />
 
         {/* Trophy case */}
         <TouchableOpacity
@@ -414,10 +415,10 @@ export default function ProfileScreen() {
           {([
             [
               { val: profile.xp.toLocaleString(), label: 'Total XP',       color: C.teal  },
-              { val: `${effStreak}d`,              label: 'Current streak', color: C.coral },
+              { val: effStreak === undefined ? '—' : `${effStreak}d`, label: 'Current streak', color: C.coral },
             ],
             [
-              { val: `${profile.longest_streak}d`, label: 'Best streak', color: C.green },
+              { val: streakSnapshot ? `${streakSnapshot.longest_streak}d` : '—', label: 'Best streak', color: C.green },
               { val: `${profile.level}`,            label: 'Level',       color: C.text  },
             ],
           ] as { val: string; label: string; color: string }[][]).map((row, ri) => (

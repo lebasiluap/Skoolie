@@ -29,5 +29,7 @@ test('Streak card is compact while retaining the count, freeze balance and calen
   assert.match(streak, /\{streak\}/)
   assert.match(streak, /\{balance\}\/\{FREEZE_CAPACITY\}/)
   assert.match(streak, /week\.map/)
-  assert.match(streak, /rpc\('get_study_streak'\)/)
+  assert.match(streak, /snapshot\.current_streak/)
+  const provider = readFileSync(new URL('../contexts/StreakContext.tsx', import.meta.url), 'utf8')
+  assert.match(provider, /rpc\('get_study_streak'\)/)
 })

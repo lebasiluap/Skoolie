@@ -5,6 +5,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { useScreenEntrance } from '@/hooks/useScreenEntrance'
 import { effectiveStreak as computeEffectiveStreak, streakColors, todayKey as studyTodayKey } from '@/lib/streak'
 import { StreakTracker } from '@/components/ui/StreakTracker'
+import { useStreakSnapshot } from '@/contexts/StreakContext'
 import { Ionicons } from '@expo/vector-icons'
 import Svg, { Circle } from 'react-native-svg'
 import { SkeletonList } from '@/components/ui/Skeleton'
@@ -72,6 +73,7 @@ export default function DashboardScreen() {
   const C = useTheme()
   const { isDark } = useThemeMode()
   const { user, profile, refreshProfile } = useAuth()
+  const streakSnapshot = useStreakSnapshot()
   const entrance = useScreenEntrance()
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [statTotals, setStatTotals] = useState({ answered: 0, attempts: 0, correct: 0 })
@@ -232,7 +234,7 @@ export default function DashboardScreen() {
 
   if (!profile) return null
 
-  const effectiveStreak = computeEffectiveStreak(profile.current_streak, profile.last_active_date, profile.frozen_dates)
+  const effectiveStreak = streakSnapshot?.current_streak ?? 0
   const sc = streakColors(effectiveStreak, isDark)
 
   const profLabel = profile.profession.charAt(0).toUpperCase() + profile.profession.slice(1)
@@ -250,7 +252,7 @@ export default function DashboardScreen() {
 
       {/* One-time system explanations, staged so they never stack */}
       <IntroGate introKey="streak" when={effectiveStreak >= 1} />
-      <IntroGate introKey="freeze" when={(profile.streak_freezes ?? 0) > 0 || (profile.frozen_dates?.length ?? 0) > 0} />
+      <IntroGate introKey="freeze" when={(streakSnapshot?.streak_freezes ?? 0) > 0 || (streakSnapshot?.frozen_dates.length ?? 0) > 0} />
       <IntroGate introKey="barrage" when={!!user && !!nextBarrage(user.id, claimedSlots) && nextBarrage(user.id, claimedSlots)!.status === 'live'} />
 
       <Animated.View style={[{ flex: 1 }, entrance]}>
@@ -264,7 +266,7 @@ export default function DashboardScreen() {
         {(() => {
           const todayDone = todayCount >= 10
           const barrageLive = !!user && nextBarrage(user.id, claimedSlots)?.status === 'live'
-          const streakAtRisk = effectiveStreak > 0 && profile.last_active_date !== studyTodayKey() && new Date().getUTCHours() >= 17
+          const streakAtRisk = effectiveStreak > 0 && streakSnapshot?.last_active_date !== streakSnapshot?.today && new Date().getUTCHours() >= 17
           const expr = barrageLive ? 'wave' : todayDone ? 'happy' : streakAtRisk ? 'thinking' : 'idle'
           return (
             <View style={s.greetingRow}>
@@ -449,7 +451,7 @@ export default function DashboardScreen() {
         })()}
 
         {/* Streak — Duolingo-style milestone tracker */}
-        <StreakTracker streak={effectiveStreak} userId={user?.id} lastActiveDate={profile.last_active_date} createdAt={profile.created_at} frozenDates={profile.frozen_dates} freezes={profile.streak_freezes} style={{ marginBottom: 22 }} />
+        <StreakTracker snapshot={streakSnapshot} createdAt={profile.created_at} style={{ marginBottom: 22 }} />
 
         {/* RECENT ACTIVITY — skeleton on first load so the page doesn't jump */}
         {!booted && sessions.length === 0 && (

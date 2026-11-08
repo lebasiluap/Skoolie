@@ -1,13 +1,10 @@
-import { useCallback, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '@/hooks/useTheme'
 import { useThemeMode } from '@/contexts/ThemeContext'
-import { supabase } from '@/lib/supabase'
-import { readWithDeadline } from '@/lib/readWithDeadline'
 import { streakColors, dateKey, STREAK_FREEZE_BLUE } from '@/lib/streak'
-import { freezeBalance, FREEZE_CAPACITY } from '@/lib/freezePolicy'
+import { FREEZE_CAPACITY } from '@/lib/freezePolicy'
+import type { StreakSnapshot } from '@/lib/streakSnapshot'
 
 const DOW = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'] // index 0=Sun … 6=Sat
 
@@ -16,30 +13,27 @@ const DOW = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'] // index 0=Sun … 6=Sat
 //   ☆ = the day you're projected to hit your next milestone.
 // Streak elements are gold (theme/contrast-aware); only missed days are red.
 export function StreakTracker({
-  streak,
-  userId,
-  lastActiveDate,
+  snapshot,
   createdAt,
-  frozenDates,
-  freezes,
   style,
 }: {
-  streak: number
-  userId?: string | null
-  lastActiveDate?: string | null
+  snapshot: StreakSnapshot | null
   createdAt?: string | null
-  /** Protected days render blue, but do not earn streak days. */
-  frozenDates: string[] | null | undefined
-  /** Freezes in the bank */
-  freezes: number | null | undefined
   style?: any
 }) {
   const C = useTheme()
   const { isDark } = useThemeMode()
+  // Both cards render one atomic server response; no private reads or overrides.
+  if (!snapshot) return (
+    <View accessibilityLabel="Loading streak" style={[s.card, { backgroundColor: C.surface, borderColor: C.border }, style]}>
+      <Text style={{ color: C.textSoft, fontFamily: 'Nunito_700Bold' }}>— day streak</Text>
+    </View>
+  )
+  const streak = snapshot.current_streak
   const { current, next, fill, text, onFill, goal } = streakColors(streak, isDark)
 
-  const now = new Date()
-  const todayKeyStr = dateKey(now)
+  const now = new Date(`${snapshot.today}T12:00:00Z`)
+  const todayKeyStr = snapshot.today
   const createdKey = createdAt ? dateKey(new Date(createdAt)) : null
 
   // Fixed current week: Sunday → Saturday.
@@ -52,36 +46,10 @@ export function StreakTracker({
     return { key: dateKey(d), label: DOW[i] }
   })
 
-  // Real activity this week, from saved (non-bookmark) study sessions.
-  const [activeDays, setActiveDays] = useState<Set<string>>(new Set())
-  const [loaded, setLoaded] = useState(false)
-  const [verifiedFrozen, setVerifiedFrozen] = useState<string[] | null>(null)
-  const [verifiedBalance, setVerifiedBalance] = useState<number | null>(null)
-  // Refetch on every screen focus so a session just completed elsewhere ticks today immediately.
-  useFocusEffect(useCallback(() => {
-    if (!userId) { setLoaded(true); return }
-    let cancelled = false
-    setLoaded(false)
-    setActiveDays(new Set())
-    setVerifiedFrozen(null)
-    setVerifiedBalance(null)
-    readWithDeadline(signal => supabase.rpc('get_study_streak').abortSignal(signal),3000)
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error || !data) return
-        const s = new Set<string>()
-        for (const day of data.study_days ?? []) s.add(day)
-        setActiveDays(s)
-        setVerifiedFrozen(data.frozen_dates ?? [])
-        setVerifiedBalance(freezeBalance(data.streak_freezes))
-        setLoaded(true)
-      }).catch(() => { /* No fabricated missed/studied marks on failure. */ })
-    return () => { cancelled = true }
-  }, [userId, weekStart.getTime()])) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const studiedToday = activeDays.has(todayKeyStr) || lastActiveDate === todayKeyStr
-  const frozen = new Set(verifiedFrozen ?? frozenDates ?? [])
-  const balance = verifiedBalance ?? freezeBalance(freezes)
+  const activeDays = new Set(snapshot.study_days)
+  const studiedToday = activeDays.has(todayKeyStr) || snapshot.last_active_date === todayKeyStr
+  const frozen = new Set(snapshot.frozen_dates)
+  const balance = snapshot.streak_freezes
 
   // Projected day they'd reach the next milestone if they study daily from today.
   const streakAfterToday = studiedToday ? streak : streak > 0 ? streak + 1 : 1
@@ -98,10 +66,9 @@ export function StreakTracker({
   type DayState = 'done' | 'frozen' | 'missed' | 'today' | 'goal' | 'upcoming' | 'none'
   function dayState(key: string): DayState {
     if (activeDays.has(key)) return 'done'
-    if (frozen.has(key) && key < todayKeyStr) return 'frozen'   // saved by a freeze — blue, still counts
+    if (frozen.has(key) && key < todayKeyStr) return 'frozen' // protected, not an earned day
     if (key === todayKeyStr) return studiedToday ? 'done' : 'today'
     if (key > todayKeyStr) return key === goalKey ? 'goal' : 'upcoming'
-    if (!loaded) return 'none'
     if (createdKey && key < createdKey) return 'none' // account didn't exist yet
     return 'missed'
   }

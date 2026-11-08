@@ -41,6 +41,7 @@
     "typescript": "~5.3.3"
   },
   "scripts": {
+    "eas-build-post-install": "node scripts/prepare-android-gradle.cjs",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

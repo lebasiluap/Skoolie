@@ -1,20 +1,21 @@
 import { View, Text, Image, StyleSheet } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
-import { parsePreset } from '@/lib/avatars'
+import { parsePreset, publicAvatar } from '@/lib/avatars'
 
 interface AvatarProps {
   name: string
   avatarUrl?: string | null
   size?: number
+  publicId?: string
 }
 
-export function Avatar({ name, avatarUrl, size = 48 }: AvatarProps) {
+export function Avatar({ name, avatarUrl, size = 48, publicId }: AvatarProps) {
   const C = useTheme()
   const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   const fontSize = size * 0.38
 
   // Preset tiles (`preset:<n>`) — the built-in avatar set anyone can pick
-  const preset = parsePreset(avatarUrl)
+  const preset = publicId ? publicAvatar(avatarUrl, publicId) : parsePreset(avatarUrl)
   if (preset) {
     return (
       <View style={[s.circle, { width: size, height: size, borderRadius: size / 2, backgroundColor: preset.bg }]}>

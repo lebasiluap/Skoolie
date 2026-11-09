@@ -72,7 +72,7 @@ export default function UserProfileScreen() {
           {/* Avatar + name */}
           <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border }]}>
             <View style={s.avatarRow}>
-              <Avatar name={profile.full_name} avatarUrl={profile.avatar_url} size={80} />
+              <Avatar name={profile.full_name} avatarUrl={profile.avatar_url} publicId={profile.id} size={80} />
             </View>
             <Text style={[s.name, { color: C.text }]}>{profile.full_name}</Text>
 

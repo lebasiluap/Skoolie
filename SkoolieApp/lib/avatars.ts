@@ -47,3 +47,12 @@ export function parsePreset(avatarUrl: string | null | undefined): AvatarPreset 
   const id = Number(avatarUrl.slice(7))
   return AVATAR_PRESETS.find(p => p.id === id) ?? null
 }
+
+/** Public surfaces use only our bundled artwork, never user-uploaded images. */
+export function publicAvatar(avatarUrl: string | null | undefined, stableId: string): AvatarPreset {
+  const preset = parsePreset(avatarUrl)
+  if (preset) return preset
+  let hash = 0
+  for (const char of stableId) hash = (Math.imul(hash, 31) + char.charCodeAt(0)) >>> 0
+  return AVATAR_PRESETS[hash % AVATAR_PRESETS.length]
+}

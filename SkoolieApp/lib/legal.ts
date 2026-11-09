@@ -21,7 +21,7 @@ export interface LegalDoc {
 
 export const TERMS: LegalDoc = {
   title: 'Terms of Service',
-  updated: 'July 5, 2026',
+  updated: 'November 9, 2026',
   intro:
     'Welcome to Skoolie. These Terms of Service ("Terms") govern your use of the Skoolie mobile application and related services (the "Service"), operated by Skoolie ("we", "us"). By creating an account or using the Service, you agree to these Terms. If you do not agree, please do not use the Service.',
   sections: [
@@ -63,7 +63,7 @@ export const TERMS: LegalDoc = {
     },
     {
       heading: '10. Suspension and termination',
-      body: 'You may discontinue use of the Service, or request deletion of your account and associated data, at any time by contacting us at the address in Section 16. We may suspend, restrict, or terminate your access to all or part of the Service, with or without notice depending on the severity of the circumstances, where we reasonably believe that you have violated these Terms, abused or attempted to abuse the Service or its Gamification Elements or Competitive Features, harmed or threatened other users, or exposed us to legal liability. Sections 5, 6, 7, 11, 12, 13, 14, and 15 survive any termination.',
+      body: 'You may discontinue use of the Service at any time. You can delete your account in Profile → Account & data → Delete my account, or contact us at the address in Section 16 for assistance. We may suspend, restrict, or terminate your access to all or part of the Service, with or without notice depending on the severity of the circumstances, where we reasonably believe that you have violated these Terms, abused or attempted to abuse the Service or its Gamification Elements or Competitive Features, harmed or threatened other users, or exposed us to legal liability. Sections 5, 6, 7, 11, 12, 13, 14, and 15 survive any termination.',
     },
     {
       heading: '11. Disclaimers',
@@ -94,7 +94,7 @@ export const TERMS: LegalDoc = {
 
 export const PRIVACY: LegalDoc = {
   title: 'Privacy Policy',
-  updated: 'November 2, 2026',
+  updated: 'November 9, 2026',
   intro:
     'This Privacy Policy explains what information Skoolie ("we", "us") collects when you use the Skoolie mobile application (the "Service"), how we use it, and the choices you have. We keep it simple: we collect what the Service needs to work, we do not sell your data, and we do not show ads.',
   sections: [
@@ -116,7 +116,7 @@ export const PRIVACY: LegalDoc = {
     },
     {
       heading: '3. Leaderboards and visibility',
-      body: 'Your display name, avatar, tier badge, profession, and XP totals are visible to other users on leaderboards and public profiles. Your email address, country, and detailed study history are never shown to other users.',
+      body: 'Your display name, curated avatar, tier badge, profession, and XP totals are visible to other users on leaderboards and public profiles. Uploaded profile photos are not shown to other users in the app. Photo files use public storage URLs and may be accessible to anyone who has or can infer their URL; do not upload sensitive images. Your email address, country, and detailed study history are never shown to other users.',
     },
     {
       heading: '4. Service providers',
@@ -124,7 +124,7 @@ export const PRIVACY: LegalDoc = {
     },
     {
       heading: '5. Data retention and deletion',
-      body: 'We keep your data while your account is active so your progress is preserved. You can request deletion of your account and associated personal data at any time by contacting support@skoolieapp.com; we will complete verified requests within 30 days, except for minimal records we are legally required to keep.',
+      body: 'We keep account and study data while your account is active so your progress is preserved. Delete your account in Profile → Account & data → Delete my account; email is not required. Updated apps remove your account, profile, study progress, linked activity summaries, submitted question reports and uploaded avatar from the active service when deletion succeeds. Unlinked aggregate page-view records may remain. If automatic deletion cannot finish, the app reports that it could not confirm deletion and you can retry or contact support@skoolieapp.com for assistance. We complete verified support deletion requests within 30 days, except for minimal records we are legally required to retain. If Apple authorization is unavailable, you can still delete your Skoolie account and disconnect Skoolie separately in your Apple Account settings.',
     },
     {
       heading: '6. Security',

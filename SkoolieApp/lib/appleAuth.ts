@@ -55,6 +55,21 @@ export async function appleAuthAvailable(): Promise<boolean> {
   }
 }
 
+/** Reauthorize only when deleting; the normal sign-in flow is unchanged.
+ * Codes stay in memory and are sent only to our authenticated deletion endpoint. */
+export async function appleDeletionCode(): Promise<string | null> {
+  const Apple = getAppleModule()
+  if (!Apple) throw new Error('Apple authorization is unavailable on this device.')
+  try {
+    const credential = await Apple.signInAsync({ requestedScopes: [] })
+    if (!credential.authorizationCode) throw new Error('Apple authorization did not complete.')
+    return credential.authorizationCode
+  } catch (error: any) {
+    if (error?.code === 'ERR_REQUEST_CANCELED') return null
+    throw error
+  }
+}
+
 export type AppleSignInResult =
   | { ok: true }
   | { ok: false; error?: string }   // no error string = user canceled (stay silent)

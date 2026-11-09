@@ -62,6 +62,52 @@ function getNotifications(): NotificationsModule | null {
   return _notifications
 }
 
+/** No permission request: forget reminders when their account leaves this device. */
+let scheduleGeneration = 0
+let accountGeneration = 0
+let scheduleTail: Promise<void> = Promise.resolve()
+const registrationTasks = new Set<Promise<boolean>>()
+let devicePushToken: string | null = null
+export async function cancelAccountNotifications(userId?: string): Promise<void> {
+  scheduleGeneration++
+  accountGeneration++
+  tokenRegistered = null
+  registeredUserId = null
+  const cancel = scheduleTail.catch(() => {}).then(async () => {
+    const notifications = getNotifications()
+    if (notifications) await notifications.cancelAllScheduledNotificationsAsync()
+  })
+  scheduleTail = cancel.catch(() => {})
+  const remoteCleanup = (async () => {
+   await Promise.allSettled([...registrationTasks])
+   if (userId) {
+    try {
+      const notifications = getNotifications()
+      if (!devicePushToken && notifications && await ensureNotificationPermissions(false)) {
+        const Constants = require('expo-constants').default
+        const projectId: string | undefined =
+          Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId
+        devicePushToken = (await notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data || null
+      }
+      if (devicePushToken) {
+        const { supabase } = require('@/lib/supabase')
+        await supabase.from('user_profiles').update({ push_token: null })
+          .eq('id', userId).eq('push_token', devicePushToken)
+      }
+    } catch { /* Offline sign-out must still work. */ }
+   }
+  })()
+  // Keep sign-out responsive offline. Cleanup may finish later, but is always
+  // restricted to the departing account and this device's exact token.
+  let deadline: ReturnType<typeof setTimeout> | undefined
+  try {
+    await Promise.race([remoteCleanup, new Promise<void>(resolve => {
+      deadline = setTimeout(resolve, 5000)
+    })])
+  } finally { if (deadline) clearTimeout(deadline) }
+  await cancel
+}
+
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
 type Msg = { title: string; body: string }
@@ -128,6 +174,7 @@ const ZONE_MSGS: Record<ZoneEvent['kind'], (e: ZoneEvent) => Msg[]> = {
 
 let permissionAsked = false
 let tokenRegistered: boolean | null = null
+let registeredUserId: string | null = null
 
 /**
  * Register this device's Expo push token on the profile so the server-side
@@ -136,25 +183,32 @@ let tokenRegistered: boolean | null = null
  * zone notifications so the same transition is never announced twice.
  */
 export async function registerPushToken(userId: string): Promise<boolean> {
-  if (tokenRegistered !== null) return tokenRegistered
+  const task = registerPushTokenForGeneration(userId, accountGeneration)
+  registrationTasks.add(task)
+  try { return await task } finally { registrationTasks.delete(task) }
+}
+async function registerPushTokenForGeneration(userId: string, generation: number): Promise<boolean> {
+  if (registeredUserId === userId && tokenRegistered !== null) return tokenRegistered
   const Notifications = getNotifications()
-  if (!Notifications) { tokenRegistered = false; return false }
+  if (!Notifications) return false
   try {
     const ok = await ensureNotificationPermissions(false)
-    if (!ok) { tokenRegistered = false; return false }
+    if (!ok || generation !== accountGeneration) return false
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Constants = require('expo-constants').default
     const projectId: string | undefined =
       Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId
     const token = (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data
-    if (!token) { tokenRegistered = false; return false }
+    if (!token || generation !== accountGeneration) return false
+    devicePushToken = token
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { supabase } = require('@/lib/supabase')
     const { error } = await supabase.from('user_profiles').update({ push_token: token }).eq('id', userId)
+    if (generation !== accountGeneration) return false
+    registeredUserId = userId
     tokenRegistered = !error
     return tokenRegistered
   } catch {
-    tokenRegistered = false
     return false
   }
 }
@@ -212,13 +266,21 @@ function daysFrom(base: Date, days: number): Date {
  * Called on every dashboard focus, so no notification can go stale
  * (e.g. a streak reminder after the user already practiced).
  */
-export async function rescheduleAll(state: ScheduleState): Promise<void> {
+export function rescheduleAll(state: ScheduleState): Promise<void> {
+  const generation = ++scheduleGeneration
+  const task = scheduleTail.catch(() => {}).then(() => rebuildNotifications(state, generation))
+  scheduleTail = task.catch(() => {})
+  return task
+}
+async function rebuildNotifications(state: ScheduleState, generation: number): Promise<void> {
+  if (generation !== scheduleGeneration) return
   const Notifications = getNotifications()
   if (!Notifications) return
   try {
     const ok = await ensureNotificationPermissions(false)
-    if (!ok) return
+    if (!ok || generation !== scheduleGeneration) return
     await Notifications.cancelAllScheduledNotificationsAsync()
+    if (generation !== scheduleGeneration) return
 
     const now = new Date()
     const at = (d: Date): import('expo-notifications').DateTriggerInput => ({
@@ -226,7 +288,7 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
       date: d,
     })
     const sched = (msg: Msg, date: Date) => {
-      if (date <= now) return Promise.resolve('')
+      if (date <= now || generation !== scheduleGeneration) return Promise.resolve('')
       return Notifications.scheduleNotificationAsync({ content: { title: msg.title, body: msg.body }, trigger: at(date) })
     }
     const jobs: Promise<string>[] = []
@@ -292,7 +354,7 @@ export async function rescheduleAll(state: ScheduleState): Promise<void> {
       } catch { /* guard failures just skip the ping */ }
     }
 
-    await Promise.all(jobs)
+    await Promise.allSettled(jobs)
   } catch {
     // Notifications are best-effort — never let scheduling break the app
   }

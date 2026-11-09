@@ -9,6 +9,11 @@ import * as ImagePicker from 'expo-image-picker'
 // would require a native rebuild, not worth it for a fallback path)
 import { Clipboard } from 'react-native'
 import { supabase } from '@/lib/supabase'
+import { accountLocalKeys, finishAccountDeletion } from '@/lib/accountDeletion'
+import { appleDeletionCode } from '@/lib/appleAuth'
+import { cancelAccountNotifications } from '@/lib/notifications'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { readWithDeadline } from '@/lib/readWithDeadline'
 import { useAuth } from '@/hooks/useAuth'
 import { MAX_CONTENT } from '@/hooks/useResponsive'
 import { useTheme } from '@/hooks/useTheme'
@@ -146,6 +151,7 @@ export default function ProfileScreen() {
   const [deleteModal, setDeleteModal] = useState(false)
   const [deleteText, setDeleteText] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const deleteLock = useRef(false)
 
   // Local toggle state is optimistic — but the same settings can change from
   // OUTSIDE this screen (TopBar's TimedModeSheet writes timed_mode/seconds),
@@ -286,7 +292,10 @@ export default function ProfileScreen() {
   async function handleSignOut() {
     Alert.alert('Sign out', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign out', style: 'destructive', onPress: () => supabase.auth.signOut() },
+      { text: 'Sign out', style: 'destructive', onPress: async () => {
+        await cancelAccountNotifications(user?.id).catch(() => {})
+        await supabase.auth.signOut()
+      } },
     ])
   }
 
@@ -335,17 +344,75 @@ export default function ProfileScreen() {
     )
   }
 
-  async function executeDelete() {
-    if (deleteText.trim().toUpperCase() !== 'DELETE') return
+  function offerManualAppleDeletion() {
+    if (deleting || deleteText.trim().toUpperCase() !== 'DELETE') return
+    Alert.alert('Disconnect Apple manually?',
+      'Your Skoolie account will be deleted. Afterwards, open your Apple Account settings → Sign in with Apple → Skoolie → Stop Using Sign in with Apple.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete account', style: 'destructive', onPress: () => { void executeDelete(true) } },
+      ])
+  }
+
+  async function executeDelete(manualApple = false) {
+    if (deleteText.trim().toUpperCase() !== 'DELETE' || deleteLock.current) return
+    deleteLock.current = true
     setDeleting(true)
-    const { error } = await supabase.rpc('delete_account')
-    setDeleting(false)
-    if (error) {
-      Alert.alert('Error', "Couldn't delete your account — please try again or contact support@skoolieapp.com.")
-      return
+    try {
+      const uid = user!.id
+      const linkedApple = user!.identities?.some(identity => identity.provider === 'apple') === true
+      if (linkedApple && Platform.OS !== 'ios' && !manualApple) {
+        // Native Apple reauthorization is iOS-only. Never silently skip revocation.
+        setDeleting(false); deleteLock.current = false
+        offerManualAppleDeletion()
+        return
+      }
+      let appleCode: string | null | undefined
+      if (linkedApple && !manualApple) {
+        try { appleCode = await appleDeletionCode() }
+        catch { throw new Error('APPLE_AUTHORIZATION') }
+      }
+      if (appleCode === null) return // cancellation never deletes anything
+      const result = await finishAccountDeletion({
+        request: async () => {
+          const { data, error } = await readWithDeadline(signal => supabase.functions.invoke('delete-account', {
+            body: { confirm: 'DELETE', apple_authorization_code: appleCode, manual_apple_revoke: manualApple },
+            signal,
+          }), 28000)
+          if (error) {
+            const status = error.context?.status
+            throw new Error(status === 409 || status === 502 ? 'APPLE_AUTHORIZATION' : 'DELETION_UNCONFIRMED')
+          }
+          if (data?.deleted !== true) throw new Error('DELETION_UNCONFIRMED')
+          return data
+        },
+        checkUser: () => readWithDeadline(() => supabase.auth.getUser(), 8000),
+        cancelNotifications: cancelAccountNotifications,
+        clearLocalData: async () => {
+          const keys = accountLocalKeys(await AsyncStorage.getAllKeys(), uid)
+          if (keys.length) await AsyncStorage.multiRemove(keys)
+        },
+        signOut: async () => {
+          const { error } = await supabase.auth.signOut({ scope: 'local' })
+          if (error) throw error
+        },
+      })
+      setDeleteModal(false)
+      if (!result.deleted) {
+        Alert.alert('Sign in again', 'Your saved sign-in is no longer valid. We couldn’t confirm whether deletion finished. Sign in again to check, or contact support@skoolieapp.com.')
+        return
+      }
+      const messages = []
+      if (manualApple || result.manualAppleRevocation) messages.push('Disconnect Skoolie in your Apple Account settings → Sign in with Apple, or at account.apple.com.')
+      if (result.localCleanupFailed) messages.push('Please close and reopen Skoolie to finish clearing this device.')
+      Alert.alert('Account deleted', messages.join('\n\n') || 'Your Skoolie account has been deleted.')
+    } catch (error) {
+      Alert.alert('Couldn’t confirm deletion', error instanceof Error && error.message === 'APPLE_AUTHORIZATION'
+        ? 'Apple authorization did not complete. Try again, or choose “Can’t authorize with Apple?” to disconnect Apple manually.'
+        : 'Check your connection and try again. If you still need help, contact support@skoolieapp.com.')
+    } finally {
+      deleteLock.current = false
+      setDeleting(false)
     }
-    setDeleteModal(false)
-    supabase.auth.signOut()
   }
 
   return (
@@ -994,8 +1061,8 @@ export default function ProfileScreen() {
       </Modal>
 
       {/* Delete account — final stage: type DELETE to unlock the button */}
-      <Modal visible={deleteModal} transparent animationType="fade" onRequestClose={() => setDeleteModal(false)}>
-        <Pressable style={yr.overlay} onPress={() => setDeleteModal(false)}>
+      <Modal visible={deleteModal} transparent animationType="fade" onRequestClose={() => { if (!deleteLock.current) setDeleteModal(false) }}>
+        <Pressable style={yr.overlay} onPress={() => { if (!deleteLock.current) setDeleteModal(false) }}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <Pressable style={[yr.sheet, { backgroundColor: C.surface }]} onPress={() => {}}>
             <View style={[yr.handle, { backgroundColor: C.border }]} />
@@ -1005,6 +1072,7 @@ export default function ProfileScreen() {
             </Text>
             <TextInput
               value={deleteText}
+              editable={!deleting}
               onChangeText={setDeleteText}
               autoFocus
               autoCapitalize="characters"
@@ -1015,7 +1083,7 @@ export default function ProfileScreen() {
               accessibilityLabel="Type DELETE to confirm account deletion"
             />
             <TouchableOpacity
-              onPress={executeDelete}
+              onPress={() => { void executeDelete() }}
               disabled={deleteText.trim().toUpperCase() !== 'DELETE' || deleting}
               style={[s.modalBtn, {
                 backgroundColor: deleteText.trim().toUpperCase() === 'DELETE' ? C.red : C.surface3,
@@ -1029,7 +1097,12 @@ export default function ProfileScreen() {
                 ? <ActivityIndicator size="small" color="#fff" />
                 : <Text style={[s.modalBtnText, { color: deleteText.trim().toUpperCase() === 'DELETE' ? '#fff' : C.textFaint }]}>Delete forever</Text>}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setDeleteModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
+            {user.identities?.some(identity => identity.provider === 'apple') && !deleting && (
+              <TouchableOpacity onPress={offerManualAppleDeletion} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ color: C.textSoft }}>Can’t authorize with Apple?</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity disabled={deleting} onPress={() => setDeleteModal(false)} style={[yr.cancelBtn, { borderColor: C.border, marginTop: 10 }]}>
               <Text style={[yr.cancelText, { color: C.textSoft }]}>Keep my account</Text>
             </TouchableOpacity>
           </Pressable>

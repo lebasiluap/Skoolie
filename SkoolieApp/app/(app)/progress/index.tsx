@@ -302,7 +302,7 @@ export default function ProgressScreen() {
               {moves[u.id] === 'up' && <Ionicons name="caret-up" size={13} color={C.green} style={{ marginLeft: -6 }} />}
               {moves[u.id] === 'down' && <Ionicons name="caret-down" size={13} color={C.textFaint} style={{ marginLeft: -6 }} />}
               {(moves[u.id] === 'same' || !moves[u.id]) && <Text style={{ marginLeft: -6, fontSize: 12, color: C.textFaint, fontFamily: 'Nunito_800ExtraBold' }}>–</Text>}
-              <Avatar name={u.full_name} avatarUrl={u.avatar_url} size={40} />
+              <Avatar name={u.full_name} avatarUrl={u.avatar_url} publicId={u.id} size={40} />
               {/* Quiet row: the tier badge is the ONLY colored chip; the XP value
                   is the ONLY emphasized number. Everything else is neutral. */}
               <View style={{ flex: 1 }}>
@@ -418,7 +418,7 @@ export default function ProgressScreen() {
                     )}
                     <View style={[s.tourneyRow, isMe && { backgroundColor: C.tealTint, borderRadius: 10 }]}>
                       <Text style={[s.rankNum, { color: i < cut ? C.amber : C.textFaint, width: 26 }]}>#{i + 1}</Text>
-                      <Avatar name={e.full_name} avatarUrl={e.avatar_url} size={30} />
+                      <Avatar name={e.full_name} avatarUrl={e.avatar_url} publicId={e.id} size={30} />
                       <Text style={[s.name, { color: C.text, flex: 1, marginBottom: 0 }]} numberOfLines={1}>
                         {e.full_name}{isMe ? ' (you)' : ''}
                       </Text>
